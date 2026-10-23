@@ -1,0 +1,60 @@
+<div class="container py-4">
+    <h1 class="mb-4">Categorías</h1>
+    @if (cargando()) {
+    <div class="alert alert-info">
+        Cargando categorías...
+    </div>
+    }
+    @if (error()) {
+    <div class="alert alert-danger">
+        {{ error() }}
+    </div>
+    }
+    @if (!cargando() && !error()) {
+    <div class="card shadow-sm">
+        <div class="card-header">
+            Listado de categorías
+        </div>
+        <div class="card-body">
+            @if (categorias().length === 0) {
+            <p class="text-muted mb-0">
+                No hay categorías registradas.
+            </p>
+            } @else {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Activo</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (categoria of categorias(); track categoria.id) {
+                        <tr>
+                            <td>{{ categoria.id }}</td>
+                            <td>{{ categoria.nombre }}</td>
+                            <td>{{ categoria.descripcion }}</td>
+                            <td>
+                                @if (categoria.activo === true) {
+                                <span class="badge text-bg-success">
+                                    Activa
+                                </span>
+                                } @else {
+                                <span class="badge text-bg-secondary">
+                                    Inactiva
+                                </span>
+                                }
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+        </div>
+    </div>
+    }
+</div>
