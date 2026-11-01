@@ -38,3 +38,4 @@ export interface CheckoutPayload {
   notas?: string;
   items: CheckoutPayloadItem[];
 }
+

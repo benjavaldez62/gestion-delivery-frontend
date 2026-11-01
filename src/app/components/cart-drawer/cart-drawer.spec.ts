@@ -73,3 +73,4 @@ describe('CartDrawer', () => {
     expect(navigateSpy).toHaveBeenCalledWith(['/checkout']);
   });
 });
+

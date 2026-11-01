@@ -39,3 +39,4 @@ export class CartDrawer {
     this.router.navigate(['/checkout']);
   }
 }
+
