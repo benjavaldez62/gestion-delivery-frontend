@@ -3,7 +3,7 @@
         <a class="navbar-brand" routerLink="/inicio">
             La Posta
         </a>
-        <div class="navbar-nav ms-auto">
+        <div class="navbar-nav ms-auto align-items-center">
             <a class="nav-link" routerLink="/inicio" routerLinkActive="active"
                 [routerLinkActiveOptions]="{ exact: true }">
                 Inicio
@@ -11,6 +11,20 @@
             <a class="nav-link" routerLink="/categorias" routerLinkActive="active">
                 Categorías
             </a>
+            <button
+                type="button"
+                class="btn btn-outline-light position-relative ms-lg-3 mt-2 mt-lg-0"
+                (click)="cart.openCart()"
+                aria-label="Abrir carrito de compras"
+            >
+                🛒 Carrito
+                @if (cart.totalItems() > 0) {
+                    <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                        {{ cart.totalItems() }}
+                        <span class="visually-hidden">productos en el carrito</span>
+                    </span>
+                }
+            </button>
         </div>
     </div>
 </nav>

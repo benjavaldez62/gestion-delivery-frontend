@@ -1,0 +1,132 @@
+<!-- Backdrop oscuro para cerrar al hacer clic afuera -->
+@if (cart.isDrawerOpen()) {
+  <div class="cart-backdrop" (click)="close()"></div>
+}
+
+<!-- Panel lateral deslizable -->
+<aside class="cart-drawer" [class.open]="cart.isDrawerOpen()" aria-label="Carrito de compras">
+  <!-- Cabecera del Drawer -->
+  <header class="cart-header">
+    <div class="cart-title">
+      <span class="cart-icon">🛒</span>
+      <h2>Tu Pedido</h2>
+      @if (cart.totalItems() > 0) {
+        <span class="badge bg-danger rounded-pill">{{ cart.totalItems() }}</span>
+      }
+    </div>
+    <button type="button" class="btn-close-drawer" (click)="close()" aria-label="Cerrar carrito">
+      ✕
+    </button>
+  </header>
+
+  <!-- Cuerpo con listado de ítems -->
+  <div class="cart-body">
+    @if (cart.items().length === 0) {
+      <div class="cart-empty text-center">
+        <div class="empty-icon">🍽️</div>
+        <h3>Tu carrito está vacío</h3>
+        <p class="text-muted">¡Elegí las mejores opciones de nuestro menú para comenzar tu pedido!</p>
+        <button type="button" class="btn btn-primary btn-sm mt-2" (click)="close()">
+          Explorar Menú
+        </button>
+      </div>
+    } @else {
+      <ul class="cart-item-list">
+        @for (item of cart.items(); track item.idTemporal) {
+          <li class="cart-item">
+            <div class="item-info">
+              <h4 class="item-name">{{ item.nombre }}</h4>
+              <div class="item-price-unit text-muted">
+                ${{ item.precioUnitario | number:'1.2-2' }} c/u
+              </div>
+
+              <!-- Lista de modificadores/adicionales seleccionados -->
+              @if (item.adicionales && item.adicionales.length > 0) {
+                <div class="item-modifiers">
+                  @for (adic of item.adicionales; track adic.id) {
+                    <span class="modifier-tag">
+                      + {{ adic.nombre }} (${{ adic.precio | number:'1.0-0' }})
+                    </span>
+                  }
+                </div>
+              }
+            </div>
+
+            <!-- Controles de cantidad y precio -->
+            <div class="item-actions">
+              <div class="quantity-controls">
+                <button
+                  type="button"
+                  class="btn-qty"
+                  (click)="decrement(item.idTemporal)"
+                  aria-label="Disminuir cantidad"
+                >
+                  −
+                </button>
+                <span class="qty-value">{{ item.cantidad }}</span>
+                <button
+                  type="button"
+                  class="btn-qty"
+                  (click)="increment(item.idTemporal)"
+                  aria-label="Aumentar cantidad"
+                >
+                  +
+                </button>
+              </div>
+
+              <div class="item-subtotal">
+                ${{ item.subtotal | number:'1.2-2' }}
+              </div>
+
+              <button
+                type="button"
+                class="btn-remove"
+                (click)="remove(item.idTemporal)"
+                title="Eliminar producto"
+                aria-label="Eliminar producto"
+              >
+                🗑️
+              </button>
+            </div>
+          </li>
+        }
+      </ul>
+    }
+  </div>
+
+  <!-- Pie del Drawer con totales y acción de compra -->
+  @if (cart.items().length > 0) {
+    <footer class="cart-footer">
+      <div class="summary-line">
+        <span class="text-muted">Subtotal:</span>
+        <span class="fw-semibold">${{ cart.subtotal() | number:'1.2-2' }}</span>
+      </div>
+      <div class="summary-line">
+        <span class="text-muted">Envío estimado:</span>
+        <span class="fw-semibold text-success">${{ cart.costoEnvio() | number:'1.2-2' }}</span>
+      </div>
+      <hr class="my-2" />
+      <div class="summary-line total-line">
+        <span class="fs-5 fw-bold">Total:</span>
+        <span class="fs-4 fw-bolder text-primary">${{ cart.montoTotal() | number:'1.2-2' }}</span>
+      </div>
+
+      <div class="d-grid gap-2 mt-3">
+        <button
+          type="button"
+          class="btn btn-success btn-lg fw-bold shadow-sm"
+          (click)="irAlCheckout()"
+        >
+          Confirmar y Pagar
+        </button>
+        <button
+          type="button"
+          class="btn btn-outline-secondary btn-sm"
+          (click)="clear()"
+        >
+          Vaciar carrito
+        </button>
+      </div>
+    </footer>
+  }
+</aside>
