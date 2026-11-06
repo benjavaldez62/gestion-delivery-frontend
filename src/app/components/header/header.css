@@ -1,0 +1,113 @@
+.mozzo-header {
+  background-color: var(--header);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.25);
+}
+
+.mozzo-brand-icon {
+  width: 38px;
+  height: 38px;
+  background-color: var(--theme);
+  color: var(--white);
+  transition: transform 0.3s ease;
+}
+
+.navbar-brand:hover .mozzo-brand-icon {
+  transform: rotate(-10deg) scale(1.06);
+}
+
+.mozzo-nav-link {
+  color: rgba(255, 255, 255, 0.88) !important;
+  font-weight: 600;
+  font-size: 1rem;
+  position: relative;
+  transition: color 0.25s ease;
+}
+
+.mozzo-nav-link:hover,
+.mozzo-nav-link.active {
+  color: var(--theme) !important;
+}
+
+.mozzo-nav-link.active::after {
+  content: '';
+  position: absolute;
+  bottom: 0;
+  left: 0.5rem;
+  right: 0.5rem;
+  height: 2px;
+  background-color: var(--theme);
+  border-radius: 2px;
+}
+
+.mozzo-cart-btn {
+  background-color: var(--theme);
+  color: var(--white);
+  border: 1.5px solid var(--theme);
+  box-shadow: 0 0 0 0 rgba(255, 82, 0, 0.45);
+  transition: all 0.3s ease;
+}
+
+.mozzo-cart-btn:hover,
+.mozzo-cart-btn:focus {
+  background-color: var(--theme-hover);
+  color: var(--white);
+  border-color: var(--theme2);
+  transform: translateY(-1px);
+  animation: rippleOne 1.2s ease-out;
+}
+
+/* --------------------------------------------------------------------------
+   Popup dropdown en hover para previsualización del carrito
+   -------------------------------------------------------------------------- */
+.mozzo-cart-wrapper {
+  position: relative;
+}
+
+.mozzo-cart-dropdown {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 320px;
+  background-color: #ffffff;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(12px);
+  transition: opacity 0.25s ease, transform 0.25s ease, visibility 0.25s;
+  z-index: 1050;
+  pointer-events: none;
+}
+
+/* Área de puente invisible para que el cursor no pierda el hover */
+.mozzo-cart-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -12px;
+  left: 0;
+  right: 0;
+  height: 12px;
+}
+
+.mozzo-cart-wrapper:hover .mozzo-cart-dropdown,
+.mozzo-cart-wrapper:focus-within .mozzo-cart-dropdown {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(6px);
+  pointer-events: auto;
+}
+
+.mozzo-cart-items-preview {
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.mozzo-cart-items-preview::-webkit-scrollbar {
+  width: 4px;
+}
+
+.mozzo-cart-items-preview::-webkit-scrollbar-thumb {
+  background-color: #ddd;
+  border-radius: 4px;
+}
+

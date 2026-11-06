@@ -1,1 +1,403 @@
-/* You can add global styles to this file, and also import other style files */
+/* ==========================================================================
+   Mozzo Design System & Typography — La Posta
+   ========================================================================== */
+
+@font-face {
+  font-family: 'Expose';
+  src: url('/assets/fonts/Expose.woff2') format('woff2');
+  font-weight: 400 900;
+  font-display: swap;
+  font-style: normal;
+}
+
+@font-face {
+  font-family: 'Edensor';
+  src: url('/assets/fonts/Edensor-FREE.otf') format('opentype');
+  font-weight: normal;
+  font-display: swap;
+  font-style: normal;
+}
+
+:root {
+  /* Paleta original Mozzo */
+  --body: #ffffff;
+  --black: #111111;
+  --black2: #353844;
+  --text-secondary: #86624A;
+  --white: #ffffff;
+  --theme: #FF5200;
+  --theme-hover: #e04800;
+  --theme2: #FBBC00;
+  --theme3: #EA0000;
+  --theme4: #0162FD;
+  --theme5: #C19D56;
+  --header: #01030D;
+  --header2: #161616;
+  --ratting: #febb02;
+  --text: #4B4B4B;
+  --text2: #f5f5f5;
+  --text3: #e2dfeb;
+  --text4: #B0B0B0;
+  --border: #e2dfeb;
+  --bg: #F9DABB;
+  --bg2: #F8F5F0;
+  --bg3: #FFFDFB;
+  --bg4: #1C210C;
+  --bg5: #EEEEEE;
+  --bg6: #00BE23;
+  --bg7: #FFF3EE;
+  --section-bg2: #FEF9F8;
+  --box-shadow: 0px 4px 25px 0px rgba(0, 0, 0, 0.06);
+
+  /* Alias retrocompatibles en el proyecto */
+  --mozzo-theme: var(--theme);
+  --mozzo-theme-hover: var(--theme-hover);
+  --mozzo-theme2: var(--theme2);
+  --mozzo-dark: var(--header);
+  --mozzo-dark-surface: var(--header2);
+  --mozzo-title: var(--header);
+  --mozzo-text: var(--text);
+  --mozzo-bg-light: var(--bg3);
+}
+
+/* --------------------------------------------------------------------------
+   Tipografia base y clases de fuentes Mozzo
+   -------------------------------------------------------------------------- */
+body {
+  font-family: 'Inter', sans-serif;
+  font-size: 16px;
+  font-weight: 400;
+  line-height: 1.65;
+  color: var(--text);
+  background-color: var(--body);
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+
+app-root {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Outfit', sans-serif;
+  color: var(--header);
+  font-style: normal;
+  transition: all 0.4s ease-in-out;
+}
+
+.heading-font {
+  font-family: 'Outfit', sans-serif !important;
+}
+
+.heading-font-bhalo {
+  font-family: 'Baloo Bhai 2', cursive, sans-serif !important;
+}
+
+.heading-font-edensor {
+  font-family: 'Edensor', serif !important;
+  letter-spacing: 0.5px;
+}
+
+.heading-font-expose {
+  font-family: 'Expose', sans-serif !important;
+}
+
+.heading-font-afasad {
+  font-family: 'Afacad', sans-serif !important;
+}
+
+.body-font {
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* --------------------------------------------------------------------------
+   Colores de texto y fondos Mozzo
+   -------------------------------------------------------------------------- */
+.theme-clr {
+  color: var(--theme) !important;
+}
+
+.theme-bg {
+  background-color: var(--theme) !important;
+}
+
+.theme2-clr {
+  color: var(--theme2) !important;
+}
+
+.theme2-bg {
+  background-color: var(--theme2) !important;
+}
+
+.theme3-clr {
+  color: var(--theme3) !important;
+}
+
+.theme3-bg {
+  background-color: var(--theme3) !important;
+}
+
+.black-clr {
+  color: var(--black) !important;
+}
+
+.black2-clr {
+  color: var(--black2) !important;
+}
+
+.white-clr {
+  color: var(--white) !important;
+}
+
+.text-clr {
+  color: var(--text) !important;
+}
+
+.text-secondary-mozzo {
+  color: var(--text-secondary) !important;
+}
+
+.section-badge1 {
+  width: 38px;
+  height: 5px;
+  background-color: var(--theme);
+  border-radius: 100px;
+  display: inline-block;
+}
+
+.rounded-20 {
+  border-radius: 20px;
+}
+
+/* --------------------------------------------------------------------------
+   Boton animado .theme-btn (Efecto cortina circular doble de Mozzo)
+   -------------------------------------------------------------------------- */
+.theme-btn {
+  position: relative;
+  z-index: 2;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  border: none;
+  text-align: center;
+  background-color: var(--theme);
+  color: var(--white);
+  font-family: 'Outfit', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.2;
+  padding: 13px 26px;
+  overflow: hidden;
+  border-radius: 50rem;
+  text-decoration: none;
+  transition: color 0.4s ease, transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.theme-btn::before,
+.theme-btn::after {
+  content: '';
+  display: block;
+  width: 50px;
+  height: 50px;
+  transform: translate(-50%, -50%);
+  position: absolute;
+  border-radius: 50%;
+  z-index: -1;
+  background-color: var(--header);
+  transition: 0.9s ease;
+}
+
+.theme-btn::before {
+  top: -2em;
+  left: -2em;
+}
+
+.theme-btn::after {
+  left: calc(100% + 2em);
+  top: calc(100% + 2em);
+}
+
+.theme-btn:hover,
+.theme-btn:focus {
+  color: var(--white);
+}
+
+.theme-btn:hover::before,
+.theme-btn:hover::after,
+.theme-btn:focus::before,
+.theme-btn:focus::after {
+  height: 420px;
+  width: 420px;
+}
+
+.theme-btn.theme-btn-white {
+  background-color: var(--white);
+  color: var(--header);
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.16);
+}
+
+.theme-btn.theme-btn-white::before,
+.theme-btn.theme-btn-white::after {
+  background-color: var(--header);
+}
+
+.theme-btn.theme-btn-white:hover,
+.theme-btn.theme-btn-white:focus {
+  color: var(--white);
+  transform: translateY(-2px);
+}
+
+/* --------------------------------------------------------------------------
+   Micro-interacciones y efectos de enlaces / tarjetas de Mozzo
+   -------------------------------------------------------------------------- */
+.link-effect {
+  background-position: 0 95%;
+  background-repeat: no-repeat;
+  background-size: 0% 2px;
+  display: inline;
+  transition: color 0.3s ease, background-size 0.35s ease;
+}
+
+.link-effect:hover {
+  color: var(--theme) !important;
+  background-size: 100% 2px;
+  background-image: linear-gradient(180deg, var(--theme) 0%, var(--theme) 100%);
+}
+
+.icon-effect:hover .icon {
+  animation: zoomInMozzo 0.45s ease-out !important;
+}
+
+.card-effect {
+  position: relative;
+  overflow: hidden;
+}
+
+.card-effect::after {
+  position: absolute;
+  width: 200%;
+  height: 0%;
+  left: 50%;
+  top: 50%;
+  background-color: rgba(255, 255, 255, 0.22);
+  transform: translate(-50%, -50%) rotate(-45deg);
+  content: '';
+  z-index: 0;
+  pointer-events: none;
+}
+
+.card-effect:hover::after {
+  height: 250%;
+  transition: all 650ms linear;
+  background-color: transparent;
+}
+
+/* --------------------------------------------------------------------------
+   Keyframes de animaciones Mozzo
+   -------------------------------------------------------------------------- */
+@keyframes zoomInMozzo {
+  from {
+    opacity: 0.4;
+    transform: scale(0.55);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes floatBobY {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@keyframes bounceX {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  50% {
+    transform: translateX(10px);
+  }
+}
+
+@keyframes cir36 {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes fadeInUpMozzo {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 28px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes fadeInDownMozzo {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -24px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes rippleOne {
+  70% {
+    box-shadow: 0 0 0 28px rgba(255, 82, 0, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(255, 82, 0, 0);
+  }
+}
+
+.float-bob-y {
+  animation: floatBobY 3s ease-in-out infinite;
+}
+
+.bounce-x {
+  animation: bounceX 3.5s ease-in-out infinite;
+}
+
+.ani-circle {
+  animation: cir36 20s linear infinite;
+}
+
+.fade-in-up {
+  animation: fadeInUpMozzo 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.fade-in-down {
+  animation: fadeInDownMozzo 0.65s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.delay-1 {
+  animation-delay: 0.15s;
+}
+
+.delay-2 {
+  animation-delay: 0.3s;
+}
+
+.delay-3 {
+  animation-delay: 0.45s;
+}
+
+.delay-4 {
+  animation-delay: 0.6s;
+}

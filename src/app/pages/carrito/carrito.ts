@@ -1,21 +1,20 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { Router } from '@angular/router';
+import { RouterLink } from '@angular/router';
 import { CartService } from '../../services/cart';
 
 @Component({
-  selector: 'app-cart-drawer',
+  selector: 'app-carrito',
   standalone: true,
-  imports: [CommonModule],
-  templateUrl: './cart-drawer.html',
-  styleUrl: './cart-drawer.css',
+  imports: [CommonModule, RouterLink],
+  templateUrl: './carrito.html',
+  styleUrl: './carrito.css',
 })
-export class CartDrawer {
+export class Carrito {
   public readonly cart = inject(CartService);
-  private readonly router = inject(Router);
 
-  close(): void {
-    this.cart.closeCart();
+  cargarDemo(): void {
+    this.cart.cargarDatosPrueba();
   }
 
   increment(idTemporal: string): void {
@@ -32,11 +31,6 @@ export class CartDrawer {
 
   clear(): void {
     this.cart.clear();
-  }
-
-  irAlCheckout(): void {
-    this.cart.closeCart();
-    this.router.navigate(['/checkout']);
   }
 }
 

@@ -1,8 +1,11 @@
-:host {
- display: flex;
- flex-direction: column;
- min-height: 100vh;
+.mozzo-footer {
+  background-color: var(--mozzo-dark);
+  border-top: 3px solid var(--mozzo-theme);
 }
-main {
- flex: 1;
+
+.mozzo-footer-badge {
+  width: 28px;
+  height: 28px;
+  background-color: var(--mozzo-theme);
+  color: #ffffff;
 }

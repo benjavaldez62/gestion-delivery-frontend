@@ -1,0 +1,149 @@
+.mozzo-hero {
+  background-image: url('/assets/img/home-1/element/hero-bg1.jpg');
+  background-color: var(--theme);
+  background-size: cover;
+  background-position: center;
+  min-height: 410px;
+  display: flex;
+  align-items: center;
+}
+
+.mozzo-hero-subtitle {
+  font-size: 1.25rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+}
+
+.mozzo-hero-title {
+  font-size: clamp(2.2rem, 4.6vw, 3.75rem);
+  line-height: 1.12;
+  text-shadow: 0 4px 16px rgba(0, 0, 0, 0.14);
+}
+
+.mozzo-hero-cta {
+  font-weight: 700;
+  font-size: 1.05rem;
+  padding: 0.9rem 2.3rem;
+}
+
+.mozzo-hero-shape-start {
+  bottom: 0;
+  left: 0;
+  max-width: 240px;
+  pointer-events: none;
+}
+
+.mozzo-hero-shape-end {
+  bottom: 0;
+  right: 0;
+  max-width: 240px;
+  pointer-events: none;
+}
+
+.mozzo-menu-wrap {
+  padding: 44px 56px;
+  background-color: rgba(217, 217, 217, 0.21);
+  border-radius: 36px;
+}
+
+.mozzo-card-split {
+  width: 92px;
+  height: 92px;
+  box-shadow: 0 5px 20px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mozzo-category-item:hover .mozzo-card-split {
+  transform: translateY(-5px);
+  box-shadow: 0 10px 24px rgba(255, 82, 0, 0.22);
+}
+
+.mozzo-category-img {
+  object-fit: contain;
+}
+
+.mozzo-arrow-box {
+  width: 72px;
+  height: 72px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.mozzo-arrow-start {
+  position: absolute;
+  top: 50%;
+  left: -34px;
+  transform: translateY(-50%);
+}
+
+.mozzo-arrow-end {
+  position: absolute;
+  top: 50%;
+  right: -34px;
+  transform: translateY(-50%);
+}
+
+.mozzo-slide-btn {
+  width: 54px;
+  height: 54px;
+  border: 2px solid var(--theme2);
+  background-color: var(--white);
+  color: var(--black);
+  transition: all 0.35s ease;
+}
+
+.mozzo-slide-btn:hover {
+  background-color: var(--theme);
+  border-color: var(--theme);
+  color: var(--white);
+}
+
+.mozzo-badge-gold {
+  display: inline-block;
+  color: var(--header);
+  font-weight: 700;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.9rem;
+  border-radius: 50rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.mozzo-offer-card {
+  background-size: cover;
+  background-position: center;
+  min-height: 235px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.mozzo-offer-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.16);
+}
+
+.mozzo-offer-thumb {
+  max-width: 165px;
+  pointer-events: none;
+}
+
+.mozzo-offer-pizza {
+  right: -25px;
+  bottom: -25px;
+  width: 175px;
+  pointer-events: none;
+}
+
+.mozzo-price-tag {
+  max-height: 44px;
+}
+
+@media (max-width: 991px) {
+  .mozzo-menu-wrap {
+    padding: 32px 24px;
+  }
+
+  .mozzo-arrow-start,
+  .mozzo-arrow-end {
+    position: static;
+    transform: none;
+  }
+}

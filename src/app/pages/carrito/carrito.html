@@ -1,0 +1,172 @@
+<section class="carrito-page py-5 bg-light min-vh-100">
+  <div class="container py-lg-3">
+    <!-- Encabezado de la página -->
+    <div class="d-flex flex-wrap align-items-center justify-content-between mb-4 pb-2 border-bottom">
+      <div>
+        <h1 class="heading-font fw-bold black-clr fs-2 mb-1">Tu Carrito</h1>
+        <p class="text-muted body-font mb-0">Revisá tus productos seleccionados antes de confirmar el pedido</p>
+      </div>
+      @if (cart.items().length > 0) {
+        <button
+          type="button"
+          class="btn btn-outline-danger btn-sm heading-font d-inline-flex align-items-center gap-1"
+          (click)="clear()"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5m3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0z"/>
+            <path d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4zM2.5 3h11V2h-11z"/>
+          </svg>
+          <span>Vaciar carrito</span>
+        </button>
+      }
+    </div>
+
+    <!-- Si el carrito está vacío -->
+    @if (cart.items().length === 0) {
+      <div class="card border-0 shadow-sm rounded-4 p-5 text-center my-4 bg-white">
+        <div class="empty-icon text-muted mb-3">
+          <svg xmlns="http://www.w3.org/2000/svg" width="64" height="64" fill="var(--theme)" viewBox="0 0 16 16" aria-hidden="true">
+            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+          </svg>
+        </div>
+        <h2 class="heading-font fw-bold black-clr fs-3 mb-2">Tu carrito está vacío</h2>
+        <p class="text-muted body-font mb-4">¡Explorá nuestro catálogo con los mejores sabores artesanales!</p>
+        <div class="d-flex flex-wrap justify-content-center gap-3">
+          <a routerLink="/categorias" class="theme-btn heading-font">
+            <span>Ver catálogo</span>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+              <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+            </svg>
+          </a>
+          <button
+            type="button"
+            class="btn btn-outline-secondary heading-font rounded-pill px-4"
+            (click)="cargarDemo()"
+          >
+            Cargar productos de prueba
+          </button>
+        </div>
+      </div>
+    } @else {
+      <!-- Layout 2 columnas estilo Mercado Libre -->
+      <div class="row g-4 align-items-start">
+        <!-- Columna Izquierda: Listado de Productos -->
+        <div class="col-lg-8">
+          <div class="card border-0 shadow-sm rounded-4 overflow-hidden bg-white">
+            <div class="card-header bg-white py-3 px-4 border-bottom">
+              <h5 class="heading-font fw-bold mb-0">Productos ({{ cart.totalItems() }})</h5>
+            </div>
+            <div class="card-body p-0">
+              <div class="list-group list-group-flush">
+                @for (item of cart.items(); track item.idTemporal) {
+                  <div class="list-group-item p-4 border-bottom">
+                    <div class="row g-3 align-items-center">
+                      <!-- Detalle del producto -->
+                      <div class="col-12 col-md-6">
+                        <h5 class="heading-font fw-bold black-clr mb-1">{{ item.nombre }}</h5>
+                        <p class="text-muted body-font small mb-2">${{ item.precioUnitario | number:'1.2-2' }} c/u</p>
+
+                        @if (item.adicionales && item.adicionales.length > 0) {
+                          <div class="product-modifiers bg-light p-2 rounded-3 mb-2">
+                            <span class="d-block text-muted fw-semibold small mb-1">Adicionales:</span>
+                            <ul class="list-unstyled mb-0 small text-secondary">
+                              @for (adic of item.adicionales; track adic.id) {
+                                <li class="d-flex justify-content-between">
+                                  <span>+ {{ adic.nombre }}</span>
+                                  <span>${{ adic.precio | number:'1.2-2' }}</span>
+                                </li>
+                              }
+                            </ul>
+                          </div>
+                        }
+                      </div>
+
+                      <!-- Selector de cantidad -->
+                      <div class="col-6 col-md-3">
+                        <div class="quantity-control d-inline-flex align-items-center border rounded-pill bg-white px-2 py-1">
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-link text-dark p-0 px-2 text-decoration-none fw-bold"
+                            (click)="decrement(item.idTemporal)"
+                            [attr.aria-label]="'Restar ' + item.nombre"
+                          >
+                            −
+                          </button>
+                          <span class="px-2 fw-bold heading-font">{{ item.cantidad }}</span>
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-link text-dark p-0 px-2 text-decoration-none fw-bold"
+                            (click)="increment(item.idTemporal)"
+                            [attr.aria-label]="'Sumar ' + item.nombre"
+                          >
+                            +
+                          </button>
+                        </div>
+                      </div>
+
+                      <!-- Subtotal y botón eliminar -->
+                      <div class="col-6 col-md-3 text-end">
+                        <div class="fs-5 fw-bold heading-font theme-clr mb-2">
+                          ${{ item.subtotal | number:'1.2-2' }}
+                        </div>
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-secondary rounded-pill"
+                          (click)="remove(item.idTemporal)"
+                          [attr.aria-label]="'Eliminar ' + item.nombre"
+                        >
+                          Eliminar
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </div>
+            </div>
+            <div class="card-footer bg-white p-3 text-start border-top">
+              <a routerLink="/categorias" class="text-decoration-none theme-clr fw-semibold body-font d-inline-flex align-items-center gap-1">
+                <span>← Seguir comprando productos</span>
+              </a>
+            </div>
+          </div>
+        </div>
+
+        <!-- Columna Derecha: Resumen de Compra -->
+        <div class="col-lg-4">
+          <div class="card border-0 shadow-sm rounded-4 p-4 bg-white sticky-summary">
+            <h5 class="heading-font fw-bold black-clr mb-3 pb-2 border-bottom">Resumen de compra</h5>
+
+            <div class="d-flex justify-content-between mb-2 body-font text-muted">
+              <span>Productos ({{ cart.totalItems() }})</span>
+              <span>${{ cart.subtotal() | number:'1.2-2' }}</span>
+            </div>
+
+            <div class="d-flex justify-content-between mb-3 body-font">
+              <span class="text-muted">Envío</span>
+              @if (cart.costoEnvio() > 0) {
+                <span class="fw-semibold text-dark">${{ cart.costoEnvio() | number:'1.2-2' }}</span>
+              } @else {
+                <span class="text-success fw-bold">Gratis</span>
+              }
+            </div>
+
+            <div class="border-top pt-3 mb-4">
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="fs-5 fw-bold heading-font black-clr">Total</span>
+                <span class="fs-4 fw-bold heading-font theme-clr">${{ cart.montoTotal() | number:'1.2-2' }}</span>
+              </div>
+              <small class="text-muted d-block mt-1">Impuestos y recargos incluidos</small>
+            </div>
+
+            <a routerLink="/checkout" class="theme-btn w-100 py-3 text-center rounded-pill fw-bold heading-font">
+              <span>Continuar compra</span>
+              <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+              </svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    }
+  </div>
+</section>
