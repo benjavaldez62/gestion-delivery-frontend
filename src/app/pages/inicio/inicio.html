@@ -1,1 +1,171 @@
-<h1>Inicio</h1>
+<!-- Hero principal de La Posta -->
+<section class="mozzo-hero position-relative overflow-hidden">
+    <div class="container position-relative z-1 py-5">
+        <div class="mozzo-hero-content text-center mx-auto py-lg-5 py-4">
+            <p class="mozzo-hero-subtitle heading-font-bhalo white-clr mb-2 fade-in-up delay-1">
+                Sabores artesanales recién salidos de nuestra cocina
+            </p>
+            <h1 class="mozzo-hero-title heading-font-bhalo white-clr fw-bold mb-4 fade-in-up delay-2">
+                Envío Rápido. Cero Complicaciones.
+            </h1>
+            <div class="d-flex justify-content-center pt-2 fade-in-up delay-3">
+                <a routerLink="/categorias" class="theme-btn theme-btn-white mozzo-hero-cta heading-font rounded-pill d-inline-flex align-items-center gap-2">
+                    <span>Ver catálogo</span>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                        <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </div>
+    <img src="assets/img/home-1/home-shape-start.png" alt="" aria-hidden="true" class="mozzo-hero-shape-start position-absolute d-none d-md-block">
+    <img src="assets/img/home-1/home-shape-end.png" alt="" aria-hidden="true" class="mozzo-hero-shape-end position-absolute d-none d-sm-block">
+</section>
+
+<!-- Seccion de Categorias Populares (Carrusel en zona blanca) -->
+<section class="mozzo-categories-section bg-white py-5">
+    <div class="container py-lg-3">
+        <div class="text-center mb-4 pb-2 fade-in-down">
+            <h2 class="heading-font fw-bold black-clr fs-2 mb-1">
+                Categorías Populares
+            </h2>
+            <div class="section-badge1 mx-auto mt-2"></div>
+        </div>
+
+        <div
+            class="mozzo-menu-wrap position-relative fade-in-up delay-1"
+            (mouseenter)="pausarAutoplay()"
+            (mouseleave)="reanudarAutoplay()"
+        >
+            <div class="row g-4 justify-content-center align-items-center">
+                @for (item of categoriasVisibles(); track item.id + '-' + $index) {
+                    <div class="col-6 col-sm-4 col-md-3 col-lg-2">
+                        <div class="mozzo-category-item icon-effect text-center d-flex flex-column align-items-center gap-2">
+                            <a
+                                routerLink="/categorias"
+                                class="mozzo-card-split rounded-circle d-flex align-items-center justify-content-center bg-white text-decoration-none"
+                                [attr.aria-label]="'Ver categoría ' + item.nombre"
+                            >
+                                <img
+                                    width="60"
+                                    height="60"
+                                    [src]="item.imagen"
+                                    [alt]="item.nombre"
+                                    class="mozzo-category-img icon rounded-3"
+                                >
+                            </a>
+                            <h6 class="heading-font mb-0 pt-1 fw-bold">
+                                <a routerLink="/categorias" class="black-clr text-decoration-none link-effect mozzo-category-link">
+                                    {{ item.nombre }}
+                                </a>
+                            </h6>
+                        </div>
+                    </div>
+                }
+            </div>
+
+            <div class="mozzo-arrows d-flex justify-content-center justify-content-lg-between align-items-center gap-3 mt-4 mt-lg-0">
+                <div class="mozzo-arrow-box mozzo-arrow-start d-flex align-items-center justify-content-center bg-white rounded-circle">
+                    <button
+                        type="button"
+                        class="mozzo-slide-btn rounded-circle d-flex align-items-center justify-content-center"
+                        (click)="anteriorCategoria()"
+                        aria-label="Categoría anterior"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8"/>
+                        </svg>
+                    </button>
+                </div>
+                <div class="mozzo-arrow-box mozzo-arrow-end d-flex align-items-center justify-content-center bg-white rounded-circle">
+                    <button
+                        type="button"
+                        class="mozzo-slide-btn rounded-circle d-flex align-items-center justify-content-center"
+                        (click)="siguienteCategoria()"
+                        aria-label="Categoría siguiente"
+                    >
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
+                            <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Seccion de Promociones Destacadas (Offer Section) -->
+<section class="mozzo-offers-section bg-white pb-5 pt-2">
+    <div class="container pb-lg-4">
+        <div class="row g-4">
+            <div class="col-sm-6 col-lg-4 fade-in-up delay-1">
+                <a routerLink="/categorias" class="text-decoration-none d-block h-100">
+                    <div
+                        class="mozzo-offer-card card-effect position-relative overflow-hidden h-100 rounded-20 p-4"
+                        style="background-image: url('assets/img/home-1/offer-bg1.jpg');"
+                    >
+                        <div class="p-2 position-relative z-1">
+                            <span class="mozzo-badge-gold theme2-bg heading-font mb-3">
+                                Promo Especial
+                            </span>
+                            <h3 class="heading-font-bhalo text-uppercase black-clr lh-1 fs-3 fw-bold mb-3">
+                                Doble <br>
+                                Burger
+                            </h3>
+                            <img src="assets/img/home-1/text-price11.png" alt="Precio promocional" class="mozzo-price-tag">
+                        </div>
+                        <img
+                            src="assets/img/home-1/offer-burger.png"
+                            alt="Hamburguesa destacada"
+                            class="mozzo-offer-thumb position-absolute bottom-0 end-0 float-bob-y me-2"
+                        >
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-sm-6 col-lg-4 fade-in-up delay-2">
+                <a routerLink="/categorias" class="text-decoration-none d-block h-100">
+                    <div
+                        class="mozzo-offer-card card-effect text-center position-relative overflow-hidden h-100 rounded-20 p-4"
+                        style="background-image: url('assets/img/home-1/offer-bg2.jpg');"
+                    >
+                        <div class="p-2 position-relative z-1">
+                            <span class="mozzo-badge-gold theme2-bg heading-font mb-3">
+                                Receta Casera
+                            </span>
+                            <h3 class="heading-font-bhalo text-uppercase black-clr lh-1 fs-3 fw-bold mb-3">
+                                Pastas Frescas
+                            </h3>
+                            <img src="assets/img/home-1/text-price15.png" alt="Precio promocional" class="mozzo-price-tag">
+                        </div>
+                    </div>
+                </a>
+            </div>
+
+            <div class="col-sm-12 col-md-6 col-lg-4 fade-in-up delay-3">
+                <a routerLink="/categorias" class="text-decoration-none d-block h-100">
+                    <div
+                        class="mozzo-offer-card card-effect position-relative overflow-hidden h-100 rounded-20 p-4"
+                        style="background-image: url('assets/img/home-1/offer-bg3.png');"
+                    >
+                        <div class="p-2 position-relative z-1">
+                            <span class="mozzo-badge-gold theme2-bg heading-font mb-3">
+                                A la Piedra
+                            </span>
+                            <h3 class="heading-font-bhalo text-uppercase black-clr lh-1 fs-3 fw-bold mb-3">
+                                Pizza <br>
+                                Especial
+                            </h3>
+                            <img src="assets/img/home-1/text-price12.png" alt="Precio promocional" class="mozzo-price-tag">
+                        </div>
+                        <img
+                            src="assets/img/home-1/offer-pizza.png"
+                            alt="Pizza destacada"
+                            class="mozzo-offer-pizza ani-circle position-absolute"
+                        >
+                    </div>
+                </a>
+            </div>
+        </div>
+    </div>
+</section>
