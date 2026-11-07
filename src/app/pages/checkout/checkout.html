@@ -1,0 +1,87 @@
+<section class="checkout-page py-4">
+  <div class="container">
+    <h1 class="heading-font fw-bold mb-2">Datos de tu pedido</h1>
+    <p class="text-muted mb-4">Completá la información para preparar tu pedido.</p>
+
+    @if (borrador(); as guardado) {
+      <div class="card border-0 shadow-sm rounded-4 p-4">
+        <h2 class="fs-4">Borrador guardado</h2>
+        <p>El total actualizado es <strong>${{ guardado.monto_total | number:'1.2-2' }}</strong>.</p>
+        <p>Referencia del borrador: <code>{{ guardado.id }}</code></p>
+        <p class="alert alert-warning">Tu pedido todavía no fue confirmado ni enviado al restaurante. La vinculación con Telegram está pendiente de implementación.</p>
+        <p class="mb-1">Bot del restaurante: <a href="https://t.me/Restauransbot" target="_blank" rel="noopener noreferrer">&#64;Restauransbot</a></p>
+        <a routerLink="/carrito">Volver al carrito</a>
+      </div>
+    } @else if (cart.items().length === 0) {
+      <div class="alert alert-info">
+        Tu carrito está vacío. <a routerLink="/categorias">Ver categorías</a>
+      </div>
+    } @else {
+      <div class="row g-4 align-items-start">
+        <div class="col-lg-7">
+          <form [formGroup]="formulario" (ngSubmit)="guardar()" class="card border-0 shadow-sm rounded-4 p-4" novalidate>
+            <h2 class="fs-4 mb-3">Entrega y contacto</h2>
+            <div class="mb-3">
+              <label for="direccion" class="form-label">Dirección de entrega *</label>
+              <input id="direccion" class="form-control" formControlName="direccion" maxlength="255" autocomplete="street-address" [attr.aria-invalid]="formulario.controls.direccion.invalid && formulario.controls.direccion.touched">
+              @if (formulario.controls.direccion.invalid && formulario.controls.direccion.touched) {
+                <p class="text-danger small mt-1 mb-0">Ingresá una dirección de entrega.</p>
+              }
+            </div>
+            <div class="mb-3">
+              <label for="telefono" class="form-label">Teléfono *</label>
+              <input id="telefono" type="tel" class="form-control" formControlName="telefono" maxlength="30" autocomplete="tel" [attr.aria-invalid]="formulario.controls.telefono.invalid && formulario.controls.telefono.touched">
+              @if (formulario.controls.telefono.invalid && formulario.controls.telefono.touched) {
+                <p class="text-danger small mt-1 mb-0">Ingresá un teléfono válido.</p>
+              }
+            </div>
+            <div class="mb-4">
+              <label for="notas" class="form-label">Aclaraciones para la entrega</label>
+              <textarea id="notas" class="form-control" formControlName="notas" maxlength="500" rows="3"></textarea>
+            </div>
+            <fieldset class="mb-4">
+              <legend class="fs-5">Método de pago *</legend>
+              <div class="form-check">
+                <input id="efectivo" type="radio" class="form-check-input" formControlName="metodoPago" value="efectivo">
+                <label for="efectivo" class="form-check-label">Efectivo al recibir</label>
+              </div>
+              <div class="form-check">
+                <input id="tarjeta" type="radio" class="form-check-input" formControlName="metodoPago" value="tarjeta">
+                <label for="tarjeta" class="form-check-label">Tarjeta</label>
+              </div>
+            </fieldset>
+            @if (error()) {
+              <p class="alert alert-danger" role="alert">{{ error() }}</p>
+            }
+            <button type="submit" class="theme-btn border-0 rounded-pill py-3" [disabled]="formulario.invalid || guardando() || cart.items().length === 0">
+              {{ guardando() ? 'Guardando...' : 'Guardar y continuar' }}
+            </button>
+            <a routerLink="/carrito" class="mt-3">Volver al carrito</a>
+          </form>
+        </div>
+        <aside class="col-lg-5">
+          <div class="card border-0 shadow-sm rounded-4 p-4">
+            <h2 class="fs-4 mb-3">Resumen de compra</h2>
+            <ul class="list-unstyled">
+              @for (item of cart.items(); track item.idTemporal) {
+                <li class="border-bottom py-2">
+                  <div class="d-flex justify-content-between gap-2">
+                    <span>{{ item.cantidad }} x {{ item.nombre }}</span>
+                    <strong>${{ item.subtotal | number:'1.2-2' }}</strong>
+                  </div>
+                  @for (adicional of item.adicionales; track adicional.id) {
+                    <div class="small text-muted">+ {{ adicional.nombre }} (${{ adicional.precio | number:'1.2-2' }} c/u)</div>
+                  }
+                </li>
+              }
+            </ul>
+            <div class="d-flex justify-content-between"><span>Subtotal</span><span>${{ cart.subtotal() | number:'1.2-2' }}</span></div>
+            <div class="d-flex justify-content-between"><span>Envío estimado</span><span>${{ cart.costoEnvio() | number:'1.2-2' }}</span></div>
+            <div class="d-flex justify-content-between fw-bold border-top pt-3 mt-3"><span>Total estimado</span><span>${{ cart.montoTotal() | number:'1.2-2' }}</span></div>
+            <small class="text-muted mt-2">Los precios se verifican al guardar.</small>
+          </div>
+        </aside>
+      </div>
+    }
+  </div>
+</section>

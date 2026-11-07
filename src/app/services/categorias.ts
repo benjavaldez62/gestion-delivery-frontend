@@ -2,6 +2,7 @@ import { Service } from '@angular/core';
 import { Injectable, inject } from '@angular/core'; // 
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
+import { apiUrl } from '../config/api';
 
 /* @Service()
 export class Categorias {} */
@@ -22,7 +23,7 @@ interface RespuestaCategorias {
 })
 export class CategoriasService {
     private http = inject(HttpClient);
-    private apiUrl = 'http://127.0.0.1:8000/api/categorias';
+    private apiUrl = `${apiUrl}/categorias`;
     obtenerCategorias(): Observable<RespuestaCategorias> {
         return this.http.get<RespuestaCategorias>(this.apiUrl);
     }
