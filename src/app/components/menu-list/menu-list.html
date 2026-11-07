@@ -1,0 +1,115 @@
+<section class="menu-page py-5">
+  <div class="container">
+    <div class="menu-heading text-center mb-4 mb-lg-5">
+      <p class="menu-eyebrow heading-font mb-2">La Posta Pizzas y Pasas</p>
+      <h1 class="heading-font fw-bold mb-2">Nuestro Menú</h1>
+      <p class="body-font mb-0">Elegí tus platos favoritos y armá tu pedido.</p>
+    </div>
+
+    @if (loading()) {
+      <div class="menu-state" role="status">Cargando el menú...</div>
+    } @else if (error()) {
+      <div class="alert alert-danger text-center" role="alert">{{ error() }}</div>
+    } @else if (products().length === 0) {
+      <div class="menu-state">En este momento no hay platos disponibles en el menú.</div>
+    } @else {
+      <div class="row g-3">
+        @for (product of products(); track product.id) {
+          <div class="col-12 col-md-6 col-xxl-4">
+            <app-product-card
+              [product]="product"
+              (addRequested)="solicitarAgregar($event)"
+            ></app-product-card>
+          </div>
+        }
+      </div>
+    }
+  </div>
+</section>
+
+@if (selectedProduct(); as product) {
+  <div class="menu-drawer-backdrop" (click)="cerrarModal()">
+    <section
+      class="menu-additional-drawer"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="menu-additional-title"
+      (click)="$event.stopPropagation()"
+    >
+      <div class="menu-drawer-header">
+        <div>
+          <p class="menu-eyebrow heading-font mb-1">Personalizá tu pedido</p>
+          <h2 id="menu-additional-title" class="heading-font mb-0">{{ product.nombre }}</h2>
+        </div>
+        <button type="button" class="menu-drawer-close" (click)="cerrarModal()" aria-label="Cerrar adicionales">
+          &times;
+        </button>
+      </div>
+
+      <p class="menu-additional-hint body-font">Elegí hasta 2 adicionales. Son opcionales.</p>
+
+      @if (additionalsLoading()) {
+        <div class="menu-drawer-state" role="status">Cargando adicionales...</div>
+      } @else if (additionalsError()) {
+        <div class="alert alert-warning" role="status">
+          <p class="mb-2">{{ additionalsError() }}</p>
+          <button type="button" class="btn btn-outline-danger btn-sm" (click)="reintentarAdicionales()">
+            Reintentar
+          </button>
+        </div>
+      } @else if (additionals().length === 0) {
+        <div class="menu-drawer-state">Este plato no tiene adicionales disponibles.</div>
+      } @else {
+        <div class="menu-additional-list">
+          @for (additional of additionals(); track additional.id) {
+            <label class="menu-additional-option" [class.is-disabled]="selectedAdditionalIds().length >= 2 && !selectedAdditionalIds().includes(additional.id)">
+              <input
+                type="checkbox"
+                [checked]="selectedAdditionalIds().includes(additional.id)"
+                [disabled]="selectedAdditionalIds().length >= 2 && !selectedAdditionalIds().includes(additional.id)"
+                (change)="toggleAdicional(additional.id)"
+              >
+              <span class="menu-additional-copy">
+                <span class="heading-font fw-semibold">{{ additional.nombre }}</span>
+                @if (additional.descripcion) {
+                  <span class="body-font text-muted small">{{ additional.descripcion }}</span>
+                }
+              </span>
+              <span class="menu-additional-price heading-font">
+                +{{ additional.precio | currency:'ARS':'$':'1.0-0' }}
+              </span>
+            </label>
+          }
+        </div>
+      }
+
+      <div class="menu-drawer-footer">
+        <div class="menu-quantity-control">
+          <span class="body-font">Cantidad</span>
+          <div class="menu-quantity-stepper" aria-label="Cantidad de productos">
+            <button
+              type="button"
+              (click)="decrementarCantidad()"
+              [disabled]="quantity() <= 1"
+              aria-label="Quitar una unidad"
+            >−</button>
+            <output aria-live="polite">{{ quantity() }}</output>
+            <button type="button" (click)="incrementarCantidad()" aria-label="Agregar una unidad">+</button>
+          </div>
+        </div>
+        <div class="menu-drawer-total">
+          <span class="body-font">Total</span>
+          <strong class="heading-font">{{ selectedTotal() | currency:'ARS':'$':'1.0-0' }}</strong>
+        </div>
+        <button
+          type="button"
+          class="menu-confirm-button heading-font"
+          [disabled]="additionalsLoading()"
+          (click)="confirmarAgregar()"
+        >
+          Agregar {{ quantity() }} al pedido
+        </button>
+      </div>
+    </section>
+  </div>
+}
