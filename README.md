@@ -44,6 +44,12 @@ Ubicación: `src/app/components/header/`
 Ubicación: `src/app/services/categorias.ts`, `src/app/pages/categorias/`, `src/app/pages/inicio/`
 - Consumo de endpoints de categorías y productos activos desde la API REST.
 
+### 2.5. Checkout
+- La ruta `/checkout` permite completar dirección, teléfono, aclaraciones y método de pago, y consultar el resumen del carrito.
+- Al continuar se guarda un borrador mediante `POST /api/checkout/borradores`. El servidor valida los productos y recalcula los precios; los importes del carrito son estimados.
+- El borrador no es un pedido confirmado y no se envía automáticamente a Telegram. La vinculación con el bot y la creación definitiva del pedido son tareas pendientes; se conserva el carrito.
+- La URL local de la API se configura en `src/app/config/api.ts`. El costo de envío estimado es de $1500 y debe coincidir con el costo calculado por el backend.
+
 ---
 
 ## 3. Estructura del Proyecto
