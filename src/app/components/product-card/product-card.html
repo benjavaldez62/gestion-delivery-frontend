@@ -1,0 +1,36 @@
+<article class="menu-product-card h-100">
+  <div class="menu-product-content">
+    @if (product().categoria?.nombre) {
+      <p class="menu-product-category body-font mb-1">{{ product().categoria?.nombre }}</p>
+    }
+    <h2 class="menu-product-title heading-font">{{ product().nombre }}</h2>
+    <p class="menu-product-description body-font">
+      {{ product().descripcion || 'Preparado al momento con ingredientes seleccionados.' }}
+    </p>
+
+    <div class="menu-product-footer">
+      <span class="menu-product-price heading-font">
+        {{ product().precio | currency:'ARS':'$':'1.0-0' }}
+      </span>
+      <button
+        class="menu-product-add heading-font"
+        type="button"
+        [disabled]="!product().activo"
+        (click)="addRequested.emit(product())"
+        [attr.aria-label]="'Agregar ' + product().nombre + ' al pedido'"
+      >
+        {{ product().activo ? 'Agregar' : 'No disponible' }}
+        @if (product().activo) {
+          <span aria-hidden="true">+</span>
+        }
+      </button>
+    </div>
+  </div>
+
+  <div class="menu-product-image-wrap">
+    <img class="menu-product-image" [src]="imageUrl()" [alt]="product().nombre" loading="lazy">
+    <span class="menu-product-status" [class.is-unavailable]="!product().activo">
+      {{ product().activo ? 'Disponible' : 'Agotado' }}
+    </span>
+  </div>
+</article>

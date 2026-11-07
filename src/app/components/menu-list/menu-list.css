@@ -1,0 +1,240 @@
+.menu-page {
+  min-height: 55vh;
+  background: var(--bg3);
+}
+
+.menu-heading h1 {
+  font-size: clamp(2rem, 4vw, 3rem);
+}
+
+.menu-eyebrow {
+  color: var(--theme);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.menu-heading > p:last-child {
+  color: var(--text);
+}
+
+.menu-state,
+.menu-drawer-state {
+  padding: 2.5rem 1rem;
+  border-radius: 1rem;
+  color: var(--text);
+  background: var(--white);
+  text-align: center;
+}
+
+.menu-drawer-backdrop {
+  position: fixed;
+  z-index: 1100;
+  inset: 0;
+  display: flex;
+  justify-content: flex-end;
+  background: rgba(1, 3, 13, 0.58);
+}
+
+.menu-additional-drawer {
+  display: flex;
+  width: min(100%, 470px);
+  height: 100%;
+  flex-direction: column;
+  padding: 1.5rem;
+  overflow-y: auto;
+  background: var(--white);
+  box-shadow: -8px 0 32px rgba(0, 0, 0, 0.16);
+  animation: menu-drawer-in 0.22s ease-out;
+}
+
+.menu-drawer-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 1.1rem;
+  border-bottom: 1px solid var(--border);
+}
+
+.menu-drawer-header h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.menu-drawer-close {
+  display: grid;
+  width: 38px;
+  height: 38px;
+  flex: 0 0 auto;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--header);
+  background: var(--bg2);
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.menu-additional-hint {
+  margin: 1rem 0;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.menu-additional-list {
+  display: grid;
+  gap: 0.65rem;
+  overflow-y: auto;
+}
+
+.menu-additional-option {
+  display: flex;
+  min-height: 64px;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.8rem;
+  border: 1px solid var(--border);
+  border-radius: 0.8rem;
+  cursor: pointer;
+  transition: border-color 0.2s ease, background-color 0.2s ease;
+}
+
+.menu-additional-option:has(input:checked) {
+  border-color: var(--theme);
+  background: var(--bg7);
+}
+
+.menu-additional-option.is-disabled {
+  cursor: not-allowed;
+  opacity: 0.55;
+}
+
+.menu-additional-option input {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 auto;
+  accent-color: var(--theme);
+}
+
+.menu-additional-copy {
+  display: grid;
+  min-width: 0;
+  gap: 0.1rem;
+}
+
+.menu-additional-price {
+  margin-left: auto;
+  color: var(--theme);
+  font-weight: 700;
+  white-space: nowrap;
+}
+
+.menu-drawer-footer {
+  display: grid;
+  gap: 0.9rem;
+  margin-top: auto;
+  padding-top: 1.25rem;
+}
+
+.menu-quantity-control {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu-quantity-stepper {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.25rem;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.menu-quantity-stepper button {
+  display: grid;
+  width: 34px;
+  height: 34px;
+  place-items: center;
+  border: 0;
+  border-radius: 50%;
+  color: var(--white);
+  background: var(--theme);
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.menu-quantity-stepper button:disabled {
+  cursor: not-allowed;
+  background: #aaa;
+}
+
+.menu-quantity-stepper output {
+  min-width: 1.5rem;
+  font-weight: 700;
+  text-align: center;
+}
+
+.menu-drawer-total {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.menu-drawer-total strong {
+  color: var(--theme);
+  font-size: 1.2rem;
+}
+
+.menu-confirm-button {
+  min-height: 48px;
+  border: 0;
+  border-radius: 999px;
+  color: var(--white);
+  background: var(--theme);
+  font-weight: 700;
+}
+
+.menu-confirm-button:hover:not(:disabled) {
+  background: var(--theme-hover);
+}
+
+.menu-confirm-button:disabled {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+@keyframes menu-drawer-in {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@media (max-width: 575.98px) {
+  .menu-additional-drawer {
+    width: 100%;
+    height: min(90vh, 760px);
+    align-self: flex-end;
+    padding: 1.1rem;
+    border-radius: 1rem 1rem 0 0;
+    animation-name: menu-drawer-up;
+  }
+}
+
+@keyframes menu-drawer-up {
+  from {
+    transform: translateY(24px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
