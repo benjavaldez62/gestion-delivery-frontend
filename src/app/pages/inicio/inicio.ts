@@ -9,18 +9,6 @@ export interface CategoriaCarrusel {
   imagen: string;
 }
 
-const CATEGORIAS_POR_DEFECTO: CategoriaCarrusel[] = [
-  { id: 1, nombre: 'Hamburguesas', imagen: 'assets/img/home-1/menu-l1.png' },
-  { id: 2, nombre: 'Pastas', imagen: 'assets/img/home-1/menu-l2.png' },
-  { id: 3, nombre: 'Ensaladas', imagen: 'assets/img/home-1/menu-l3.png' },
-  { id: 4, nombre: 'Pizzas', imagen: 'assets/img/home-1/menu-l4.png' },
-  { id: 5, nombre: 'Sandwiches', imagen: 'assets/img/home-1/menu-l5.png' },
-  { id: 6, nombre: 'Guarniciones', imagen: 'assets/img/home-1/menu-l6.png' },
-  { id: 7, nombre: 'Milanesas', imagen: 'assets/img/home-1/pp-categori1.png' },
-  { id: 8, nombre: 'Empanadas', imagen: 'assets/img/home-1/pp-categori5.png' },
-  { id: 9, nombre: 'Entradas', imagen: 'assets/img/home-1/pp-categori7.png' },
-];
-
 @Component({
   imports: [RouterLink],
   selector: 'app-inicio',
@@ -31,9 +19,11 @@ export class Inicio implements OnInit, OnDestroy {
   private readonly categoriasService = inject(CategoriasService);
   private temporizadorAutoplay: ReturnType<typeof setInterval> | null = null;
 
-  readonly categoriasBase = signal<CategoriaCarrusel[]>(CATEGORIAS_POR_DEFECTO);
+  readonly categoriasBase = signal<CategoriaCarrusel[]>([]);
   readonly indiceActual = signal<number>(0);
   readonly pausado = signal<boolean>(false);
+  readonly categoriasCargando = signal(true);
+  readonly errorCategorias = signal('');
   readonly cantidadVisible = 6;
 
   readonly categoriasVisibles = computed<CategoriaCarrusel[]>(() => {
@@ -43,7 +33,7 @@ export class Inicio implements OnInit, OnDestroy {
     }
     const inicio = this.indiceActual();
     const resultado: CategoriaCarrusel[] = [];
-    for (let i = 0; i < this.cantidadVisible; i++) {
+    for (let i = 0; i < Math.min(this.cantidadVisible, lista.length); i++) {
       resultado.push(lista[(inicio + i) % lista.length]);
     }
     return resultado;
@@ -80,6 +70,13 @@ export class Inicio implements OnInit, OnDestroy {
     this.pausado.set(false);
   }
 
+  categoriaIdPorNombre(nombre: string): number | null {
+    const normalizar = (valor: string): string =>
+      valor.toLocaleLowerCase('es').normalize('NFD').replace(/[\u0300-\u036f]/g, '').trim();
+    const nombreBuscado = normalizar(nombre);
+    return this.categoriasBase().find((categoria) => normalizar(categoria.nombre) === nombreBuscado)?.id ?? null;
+  }
+
   private iniciarAutoplay(): void {
     this.detenerAutoplay();
     this.temporizadorAutoplay = setInterval(() => {
@@ -100,19 +97,20 @@ export class Inicio implements OnInit, OnDestroy {
     this.categoriasService.obtenerCategorias().subscribe({
       next: (respuesta) => {
         const activas = (respuesta?.categorias ?? []).filter((c) => c.activo);
-        if (activas.length > 0) {
-          this.categoriasBase.set(
-            activas.map((cat, idx) => ({
-              id: cat.id,
-              nombre: cat.nombre,
-              imagen: asignarImagenCategoria(cat, idx),
-            }))
-          );
-          this.indiceActual.set(0);
-        }
+        this.categoriasBase.set(
+          activas.map((cat, idx) => ({
+            id: cat.id,
+            nombre: cat.nombre,
+            imagen: asignarImagenCategoria(cat, idx),
+          }))
+        );
+        this.indiceActual.set(0);
+        this.categoriasCargando.set(false);
       },
-      error: () => {
-        // Se conservan las categorias visuales por defecto si el servidor no responde
+      error: (error: unknown) => {
+        console.error('Error al obtener categorías de Inicio:', error);
+        this.errorCategorias.set('No se pudieron cargar las categorías. Intenta nuevamente más tarde.');
+        this.categoriasCargando.set(false);
       },
     });
   }
