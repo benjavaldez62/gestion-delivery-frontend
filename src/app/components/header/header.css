@@ -111,3 +111,21 @@
   border-radius: 4px;
 }
 
+/* -------------------
+  BOTON CIERRE-SESION
+---------------------- */
+.icono {
+  padding-right: 3px;
+}
+.btn-cierreSesion {
+  color: #ff0000;
+}
+.btn-cierreSesion:hover {
+  background-color: #360309;
+  border-color: #360309;
+}
+.btn-cierreSesion:focus {
+  color: #360309;
+  background-color: #ff0000;
+  border-color: #360309;
+}

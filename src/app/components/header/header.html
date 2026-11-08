@@ -104,9 +104,19 @@
                         }
                     </div>
                 </div>
-                <a routerLink="/login" class="btn btn-outline-light heading-font rounded-pill px-3 py-2">
-                    LogIn
-                </a>
+
+
+                <!-- SESIÓN -->
+                @if(authService.estaAutenticado()) {
+                    <button type="button" class="btn btn-cierreSesion heading-font rounded-pill px-3 py-2" (click)="cerrarSesion()">
+                        <span><i class="bi bi-box-arrow-right icono"></i></span>
+                        Cerrar Sesión
+                    </button>
+                } @else {
+                    <a routerLink="/login" class="btn btn-outline-light heading-font rounded-pill px-3 py-2">
+                        LogIn
+                    </a>
+                }
             </div>
         </div>
     </nav>

@@ -23,12 +23,14 @@ export interface Credenciales {
     email: string;
     password: string;
 }
+
 @Injectable({
     providedIn: 'root'
 })
 export class AuthService {
     private apiUrl = 'http://127.0.0.1:8000/api';
     constructor(private http: HttpClient) { }
+    
     // Iniciar sesión
     login(credenciales: Credenciales): Observable<LoginResponse> {
         return this.http
@@ -45,15 +47,24 @@ export class AuthService {
                 })
             );
     }
+    
     // Obtener el token guardado
     obtenerToken(): string | null {
         return localStorage.getItem('token');
     }
+
     // Comprobar si existe un token
     estaAutenticado(): boolean {
         return !!this.obtenerToken();
     }
-    // Cerrar sesión local
+
+    // Cerrar sesión - LogOut
+    logout(): Observable<{ success: boolean; message: string }> 
+    {
+        return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/logout`, {});
+    }
+
+    // limpiamos la sesión - revocamos token
     limpiarSesion(): void {
         localStorage.removeItem('token');
     }
