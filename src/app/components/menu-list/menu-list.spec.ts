@@ -1,5 +1,6 @@
 import { TestBed } from '@angular/core/testing';
-import { Observable, of, throwError } from 'rxjs';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
+import { BehaviorSubject, Observable, of, throwError } from 'rxjs';
 import { MenuProduct, MenuAdditional } from '../../models/menu';
 import { CartService } from '../../services/cart';
 import { Categoria, CategoriasService } from '../../services/categorias';
@@ -30,9 +31,11 @@ describe('MenuListComponent', () => {
   let categoriasService: {
     obtenerCategorias: () => Observable<{ message: string; categorias: Categoria[] }>;
   };
+  let queryParams: BehaviorSubject<ReturnType<typeof convertToParamMap>>;
   let cart: CartService;
 
   beforeEach(() => {
+    queryParams = new BehaviorSubject(convertToParamMap({}));
     categoriasService = {
       obtenerCategorias: () => of({
         message: 'Categorías cargadas',
@@ -53,6 +56,7 @@ describe('MenuListComponent', () => {
       providers: [
         { provide: MenuService, useValue: menuService },
         { provide: CategoriasService, useValue: categoriasService },
+        { provide: ActivatedRoute, useValue: { queryParamMap: queryParams.asObservable() } },
         CartService,
       ],
     });
@@ -70,7 +74,7 @@ describe('MenuListComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Nuestro Menú');
     expect(fixture.nativeElement.textContent).toContain('Pizzas');
     expect(fixture.nativeElement.textContent).not.toContain('Oculta');
-    expect(fixture.nativeElement.textContent).toContain('Todos los productos');
+    expect(fixture.nativeElement.textContent).toContain('Ver todos los productos');
     expect(fixture.nativeElement.textContent).not.toContain('Pizza muzzarella');
     expect(fixture.nativeElement.querySelector('app-product-card')).toBeNull();
   });
@@ -98,7 +102,7 @@ describe('MenuListComponent', () => {
     const allProductsButton = Array.from(
       fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>
     )
-      .find((button) => button.textContent.includes('Todos los productos')) as HTMLButtonElement;
+      .find((button) => button.textContent.includes('Ver todos los productos')) as HTMLButtonElement;
     allProductsButton.click();
     fixture.detectChanges();
 
@@ -115,6 +119,25 @@ describe('MenuListComponent', () => {
     expect(categoryButtons[0].textContent.trim()).toBe('Pizzas');
     expect(categoryButtons[1].textContent.trim()).toBe('Empanadas');
     expect(categoryButtons[0].className).toBe(categoryButtons[1].className);
+  });
+
+  it('selecciona la categoría recibida desde Inicio por el parámetro de navegación', () => {
+    const anotherProduct: MenuProduct = {
+      ...product,
+      id: 8,
+      nombre: 'Empanada de carne',
+      categoria: { id: 3, nombre: 'Empanadas' },
+    };
+    fixture.componentInstance.products.set([product, anotherProduct]);
+    queryParams.next(convertToParamMap({ categoriaId: '3' }));
+    fixture.detectChanges();
+
+    expect(fixture.componentInstance.selectedCategoryId()).toBe(3);
+    expect(fixture.componentInstance.hasProductSelection()).toBe(true);
+    expect(fixture.componentInstance.filteredProducts()).toEqual([anotherProduct]);
+    expect(fixture.nativeElement.textContent).toContain('Empanadas');
+    expect(fixture.nativeElement.textContent).toContain('Empanada de carne');
+    expect(fixture.nativeElement.textContent).not.toContain('Pizza muzzarella');
   });
 
   it('despliega los adicionales en la tarjeta, limita la selección a dos y los agrega al carrito', () => {

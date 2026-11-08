@@ -1,5 +1,7 @@
 import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { ActivatedRoute, ParamMap } from '@angular/router';
+import { Subscription } from 'rxjs';
 import { CartService } from '../../services/cart';
 import { Categoria, CategoriasService } from '../../services/categorias';
 import { MenuService } from '../../services/menu';
@@ -17,8 +19,11 @@ export class MenuListComponent implements OnInit, OnDestroy {
   private readonly menuService = inject(MenuService);
   private readonly categoriasService = inject(CategoriasService);
   private readonly cartService = inject(CartService);
+  private readonly route = inject(ActivatedRoute);
   private additionalsRequestId = 0;
   private toastTimeout: ReturnType<typeof setTimeout> | null = null;
+  private routeSubscription: Subscription | null = null;
+  private requestedCategoryId: number | null = null;
 
   readonly products = signal<MenuProduct[]>([]);
   readonly categories = signal<Categoria[]>([]);
@@ -45,6 +50,16 @@ export class MenuListComponent implements OnInit, OnDestroy {
   readonly successMessage = signal('');
 
   ngOnInit(): void {
+    this.routeSubscription = this.route.queryParamMap.subscribe((params) => {
+      this.requestedCategoryId = this.parseCategoryId(params);
+      if (this.requestedCategoryId === null) {
+        this.selectedCategoryId.set(null);
+        this.allProductsSelected.set(false);
+        this.resetAdditionals();
+        return;
+      }
+      this.applyRequestedCategory();
+    });
     this.cargarCategorias();
     this.menuService.getProducts().subscribe({
       next: (products) => {
@@ -64,6 +79,7 @@ export class MenuListComponent implements OnInit, OnDestroy {
   }
 
   ngOnDestroy(): void {
+    this.routeSubscription?.unsubscribe();
     if (this.toastTimeout !== null) {
       clearTimeout(this.toastTimeout);
     }
@@ -190,6 +206,7 @@ export class MenuListComponent implements OnInit, OnDestroy {
           (respuesta?.categorias ?? []).filter((category) => category.activo)
         );
         this.categoriesLoading.set(false);
+        this.applyRequestedCategory();
       },
       error: (error: unknown) => {
         console.error('Error al obtener categorías del menú:', error);
@@ -197,6 +214,21 @@ export class MenuListComponent implements OnInit, OnDestroy {
         this.categoriesLoading.set(false);
       },
     });
+  }
+
+  private parseCategoryId(params: ParamMap): number | null {
+    const value = params.get('categoriaId');
+    if (value === null || !/^[1-9]\d*$/.test(value)) return null;
+    const categoryId = Number(value);
+    return Number.isSafeInteger(categoryId) ? categoryId : null;
+  }
+
+  private applyRequestedCategory(): void {
+    const categoryId = this.requestedCategoryId;
+    if (categoryId === null || this.categoriesLoading()) return;
+    if (this.categories().some((category) => category.id === categoryId)) {
+      this.seleccionarCategoria(categoryId);
+    }
   }
 
   private resetAdditionals(): void {
