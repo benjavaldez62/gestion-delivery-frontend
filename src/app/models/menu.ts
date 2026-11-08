@@ -22,3 +22,14 @@ export interface MenuAdditional {
   precio: number;
   activo: boolean;
 }
+
+const CATEGORIES_WITH_ADDITIONALS = new Set([
+  'pizzas',
+  'hamburguesas',
+  'pastas',
+  'sandwiches',
+]);
+
+export function supportsAdditionals(categoryName: string | undefined): boolean {
+  return categoryName !== undefined && CATEGORIES_WITH_ADDITIONALS.has(categoryName.trim().toLocaleLowerCase());
+}

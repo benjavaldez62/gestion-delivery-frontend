@@ -14,6 +14,8 @@ export interface CartItem {
   nombre: string;
   precioUnitario: number;
   cantidad: number;
+  categoriaId?: number;
+  categoriaNombre?: string;
   imagenUrl?: string;
   adicionales: CartItemAdicional[];
   subtotal: number;
@@ -38,4 +40,3 @@ export interface CheckoutPayload {
   notas?: string;
   items: CheckoutPayloadItem[];
 }
-
