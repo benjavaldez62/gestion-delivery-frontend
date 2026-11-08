@@ -1,6 +1,7 @@
-import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
+import { Component, OnDestroy, OnInit, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CartService } from '../../services/cart';
+import { Categoria, CategoriasService } from '../../services/categorias';
 import { MenuService } from '../../services/menu';
 import { MenuAdditional, MenuProduct, supportsAdditionals } from '../../models/menu';
 import { ProductCardComponent } from '../product-card/product-card';
@@ -14,11 +15,25 @@ import { ProductCardComponent } from '../product-card/product-card';
 })
 export class MenuListComponent implements OnInit, OnDestroy {
   private readonly menuService = inject(MenuService);
+  private readonly categoriasService = inject(CategoriasService);
   private readonly cartService = inject(CartService);
   private additionalsRequestId = 0;
   private toastTimeout: ReturnType<typeof setTimeout> | null = null;
 
   readonly products = signal<MenuProduct[]>([]);
+  readonly categories = signal<Categoria[]>([]);
+  readonly selectedCategoryId = signal<number | null>(null);
+  readonly allProductsSelected = signal(false);
+  readonly hasProductSelection = computed(() => this.selectedCategoryId() !== null || this.allProductsSelected());
+  readonly categoriesLoading = signal(true);
+  readonly categoriesError = signal('');
+  readonly filteredProducts = computed(() => {
+    const categoryId = this.selectedCategoryId();
+    if (categoryId !== null) {
+      return this.products().filter((product) => product.categoria?.id === categoryId);
+    }
+    return this.allProductsSelected() ? this.products() : [];
+  });
   readonly loading = signal(true);
   readonly error = signal('');
   readonly expandedProductId = signal<number | null>(null);
@@ -30,6 +45,7 @@ export class MenuListComponent implements OnInit, OnDestroy {
   readonly successMessage = signal('');
 
   ngOnInit(): void {
+    this.cargarCategorias();
     this.menuService.getProducts().subscribe({
       next: (products) => {
         this.products.set(products);
@@ -51,6 +67,18 @@ export class MenuListComponent implements OnInit, OnDestroy {
     if (this.toastTimeout !== null) {
       clearTimeout(this.toastTimeout);
     }
+  }
+
+  seleccionarCategoria(categoryId: number): void {
+    this.selectedCategoryId.set(categoryId);
+    this.allProductsSelected.set(false);
+    this.resetAdditionals();
+  }
+
+  mostrarTodosLosProductos(): void {
+    this.selectedCategoryId.set(null);
+    this.allProductsSelected.set(true);
+    this.resetAdditionals();
   }
 
   toggleAdditionals(product: MenuProduct, expanded: boolean): void {
@@ -151,6 +179,22 @@ export class MenuListComponent implements OnInit, OnDestroy {
         this.additionalsLoading.set(false);
         this.additionals.set([]);
         this.additionalsError.set('No se pudieron cargar los adicionales. Puedes agregar el producto sin adicionales o reintentar.');
+      },
+    });
+  }
+
+  private cargarCategorias(): void {
+    this.categoriasService.obtenerCategorias().subscribe({
+      next: (respuesta) => {
+        this.categories.set(
+          (respuesta?.categorias ?? []).filter((category) => category.activo)
+        );
+        this.categoriesLoading.set(false);
+      },
+      error: (error: unknown) => {
+        console.error('Error al obtener categorías del menú:', error);
+        this.categoriesError.set('No se pudieron cargar las categorías. Intenta nuevamente más tarde.');
+        this.categoriesLoading.set(false);
       },
     });
   }

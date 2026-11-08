@@ -1,6 +1,7 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CategoriasService, Categoria } from '../../services/categorias';
+import { CategoriasService } from '../../services/categorias';
+import { asignarImagenCategoria } from '../../utils/categoria-imagen';
 
 export interface CategoriaCarrusel {
   id: number;
@@ -104,7 +105,7 @@ export class Inicio implements OnInit, OnDestroy {
             activas.map((cat, idx) => ({
               id: cat.id,
               nombre: cat.nombre,
-              imagen: this.asignarImagenCategoria(cat, idx),
+              imagen: asignarImagenCategoria(cat, idx),
             }))
           );
           this.indiceActual.set(0);
@@ -116,30 +117,4 @@ export class Inicio implements OnInit, OnDestroy {
     });
   }
 
-  private asignarImagenCategoria(categoria: Categoria, indice: number): string {
-    const nombre = categoria.nombre.toLowerCase();
-    if (nombre.includes('hamburguesa') || nombre.includes('burger')) {
-      return 'assets/img/home-1/menu-l1.png';
-    }
-    if (nombre.includes('pasta') || nombre.includes('tallar') || nombre.includes('raviol')) {
-      return 'assets/img/home-1/menu-l2.png';
-    }
-    if (nombre.includes('ensalada')) {
-      return 'assets/img/home-1/menu-l3.png';
-    }
-    if (nombre.includes('pizza')) {
-      return 'assets/img/home-1/menu-l4.png';
-    }
-    if (nombre.includes('sandwich') || nombre.includes('lomo')) {
-      return 'assets/img/home-1/menu-l5.png';
-    }
-    if (nombre.includes('milanesa') || nombre.includes('carne')) {
-      return 'assets/img/home-1/pp-categori1.png';
-    }
-    if (nombre.includes('empanada')) {
-      return 'assets/img/home-1/pp-categori5.png';
-    }
-    const imagenesFallback = CATEGORIAS_POR_DEFECTO.map((c) => c.imagen);
-    return imagenesFallback[indice % imagenesFallback.length];
-  }
 }

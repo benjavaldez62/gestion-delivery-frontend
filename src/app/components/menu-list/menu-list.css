@@ -1,3 +1,33 @@
+.menu-categories-section h2 {
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.menu-category-button {
+  width: 100%;
+  min-height: 4.5rem;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(0, 0, 0, 0.12);
+  border-radius: 0.75rem;
+  color: var(--black);
+  background: var(--white);
+  font-weight: 700;
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.2s ease, color 0.2s ease, background-color 0.2s ease;
+}
+
+.menu-category-button:hover,
+.menu-category-button.is-selected {
+  border-color: var(--theme);
+  color: var(--white);
+  background-color: var(--theme);
+}
+
+.menu-category-button:focus-visible {
+  outline: 3px solid var(--theme);
+  outline-offset: 3px;
+}
+
 .menu-page {
   min-height: 55vh;
   background: var(--bg3);
@@ -68,4 +98,8 @@
     transform: translateY(0);
     opacity: 1;
   }
+}
+.divCategoría{
+  display:flex;
+  justify-content:center;
 }
