@@ -1,6 +1,6 @@
 # Sistema de Gestión de Delivery — La Posta (Frontend)
 
-Aplicación web desarrollada en **Angular 19** para la plataforma de pedidos y delivery del restaurante "La Posta". El sistema provee un portal interactivo y responsivo para clientes y personal operativo, integrando catálogo dinámico de productos, gestión reactiva de carrito de compras con persistencia local, selector de modificadores y consumo de la API REST del backend.
+Aplicación web desarrollada en **Angular 22** para la plataforma de pedidos y delivery del restaurante "La Posta". El sistema provee un portal interactivo y responsivo para clientes y personal operativo, integrando catálogo dinámico de productos, gestión reactiva de carrito de compras con persistencia local, selector de modificadores y consumo de la API REST del backend.
 
 ---
 
@@ -10,13 +10,13 @@ El proyecto sigue una arquitectura modular desacoplada basada en componentes ind
 
 | Componente | Tecnología | Versión | Rol en el Sistema |
 | :--- | :--- | :---: | :--- |
-| **Framework** | Angular | `^19.0.0` | Arquitectura basada en Standalone Components y nueva sintaxis de control de flujo (`@if`, `@for`). |
+| **Framework** | Angular | `^22.2.0` | Arquitectura basada en Standalone Components y nueva sintaxis de control de flujo (`@if`, `@for`). |
 | **Lenguaje** | TypeScript | `~5.6.2` | Tipado estático estricto para modelos de dominio, servicios e interfaces. |
 | **Gestión de Estado** | Signals API | Nativo | Estado reactivo síncrono y predecible mediante `signal`, `computed` y `effect`. |
 | **Diseño y Estilos** | Bootstrap | `^5.3.3` | Sistema de grillas responsivo, layout móvil y componentes de interfaz. |
 | **Iconografía** | SVG Vectorial | Estándar W3C | Iconografía vectorial inline accesible (`aria-hidden`) sin dependencias de fuentes pesadas ni emojis. |
 | **Testing** | Vitest | `^2.1.8` | Suite de pruebas unitarias y de integración rápida para servicios y componentes. |
-| **HTTP Client** | `@angular/common/http` | `^19.0.0` | Comunicación asíncrona con el backend mediante `provideHttpClient()`. |
+| **HTTP Client** | `@angular/common/http` | `^22.2.0` | Comunicación asíncrona con el backend mediante `provideHttpClient()`. |
 
 ---
 
