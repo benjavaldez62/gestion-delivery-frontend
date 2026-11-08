@@ -6,34 +6,83 @@
       <p class="body-font mb-0">Elegí tus platos favoritos y armá tu pedido.</p>
     </div>
 
-    @if (loading()) {
-      <div class="menu-state" role="status">Cargando el menú...</div>
-    } @else if (error()) {
-      <div class="alert alert-danger text-center" role="alert">{{ error() }}</div>
-    } @else if (products().length === 0) {
-      <div class="menu-state">En este momento no hay platos disponibles en el menú.</div>
-    } @else {
-      <div class="row g-3">
-        @for (product of products(); track product.id) {
-          <div class="col-12 col-md-6 col-xxl-4">
-            <app-product-card
-              [product]="product"
-              [additionalsAllowed]="permiteAdicionales(product)"
-              [additionalsExpanded]="expandedProductId() === product.id"
-              [additionals]="additionals()"
-              [additionalsLoading]="expandedProductId() === product.id && additionalsLoading()"
-              [additionalsError]="additionalsError()"
-              [selectedAdditionalIds]="selectedAdditionalIds()"
-              [quantity]="quantityFor(product.id)"
-              (additionalsToggled)="toggleAdditionals(product, $event)"
-              (additionalToggled)="toggleAdicional($event)"
-              (quantityChanged)="changeQuantity(product.id, $event)"
-              (retryAdditionals)="reintentarAdicionales(product)"
-              (addRequested)="solicitarAgregar($event.product, $event.quantity)"
-            ></app-product-card>
-          </div>
-        }
+    <section class="menu-categories-section mb-4 mb-lg-5" aria-labelledby="menu-categories-heading">
+      <div class="text-center mb-4">
+        <h2 id="menu-categories-heading" class="heading-font fw-bold mb-1"> Encontrá tu plato según la categoría</h2>
+        <div class="section-badge1 mx-auto mt-2"></div>
       </div>
+
+      @if (categoriesLoading()) {
+        <div class="menu-state" role="status">Cargando las categorías...</div>
+      } @else if (categoriesError()) {
+        <div class="alert alert-danger text-center" role="alert">{{ categoriesError() }}</div>
+      } @else if (categories().length === 0) {
+        <div class="menu-state">No hay categorías disponibles en este momento.</div>
+      } @else {
+        <div class="row g-3 divCategoría">
+          @for (category of categories(); track category.id) {
+            <div class="col-6 col-md-4 col-lg-3" >
+              <button
+                type="button"
+                class="menu-category-button heading-font"
+                [class.is-selected]="selectedCategoryId() === category.id"
+                [attr.aria-pressed]="selectedCategoryId() === category.id"
+                (click)="seleccionarCategoria(category.id)"
+              >
+                {{ category.nombre }}
+              </button>
+            </div>
+          }
+        </div>
+
+        <div class="d-flex justify-content-center mt-3">
+          <button
+            type="button"
+            class="btn btn-outline-secondary rounded-pill px-4"
+            [class.active]="allProductsSelected()"
+            [attr.aria-pressed]="allProductsSelected()"
+            (click)="mostrarTodosLosProductos()"
+          >
+            Todos los productos
+          </button>
+        </div>
+      }
+    </section>
+
+    @if (hasProductSelection()) {
+      @if (loading()) {
+        <div class="menu-state" role="status">Cargando el menú...</div>
+      } @else if (error()) {
+        <div class="alert alert-danger text-center" role="alert">{{ error() }}</div>
+      } @else if (filteredProducts().length === 0) {
+        <div class="menu-state">
+          {{ allProductsSelected()
+            ? 'En este momento no hay platos disponibles en el menú.'
+            : 'No hay productos disponibles en esta categoría.' }}
+        </div>
+      } @else {
+        <div class="row g-3">
+          @for (product of filteredProducts(); track product.id) {
+            <div class="col-12 col-md-6 col-xxl-4">
+              <app-product-card
+                [product]="product"
+                [additionalsAllowed]="permiteAdicionales(product)"
+                [additionalsExpanded]="expandedProductId() === product.id"
+                [additionals]="additionals()"
+                [additionalsLoading]="expandedProductId() === product.id && additionalsLoading()"
+                [additionalsError]="additionalsError()"
+                [selectedAdditionalIds]="selectedAdditionalIds()"
+                [quantity]="quantityFor(product.id)"
+                (additionalsToggled)="toggleAdditionals(product, $event)"
+                (additionalToggled)="toggleAdicional($event)"
+                (quantityChanged)="changeQuantity(product.id, $event)"
+                (retryAdditionals)="reintentarAdicionales(product)"
+                (addRequested)="solicitarAgregar($event.product, $event.quantity)"
+              ></app-product-card>
+            </div>
+          }
+        </div>
+      }
     }
   </div>
 </section>
