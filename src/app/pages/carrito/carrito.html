@@ -79,6 +79,15 @@
                             </ul>
                           </div>
                         }
+                        @if (puedeEditarAdicionales(item)) {
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-link p-0 text-decoration-none theme-clr body-font"
+                            (click)="editarAdicionales(item)"
+                          >
+                            Editar adicionales ({{ item.adicionales.length }}/2)
+                          </button>
+                        }
                       </div>
 
                       <!-- Selector de cantidad -->
@@ -170,3 +179,75 @@
     }
   </div>
 </section>
+
+@if (editingItem(); as item) {
+  <div class="cart-additional-backdrop" (click)="cancelarEdicionAdicionales()">
+    <section
+      class="cart-additional-dialog"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="cart-additional-title"
+      (click)="$event.stopPropagation()"
+    >
+      <header class="cart-additional-header">
+        <div>
+          <p class="menu-eyebrow heading-font mb-1">Personalizá tu pedido</p>
+          <h2 id="cart-additional-title" class="heading-font mb-0">{{ item.nombre }}</h2>
+        </div>
+        <button
+          type="button"
+          class="menu-drawer-close"
+          aria-label="Cerrar edición de adicionales"
+          (click)="cancelarEdicionAdicionales()"
+        >&times;</button>
+      </header>
+
+      <p class="body-font text-muted my-3">Elegí hasta 2 adicionales.</p>
+
+      @if (additionalsLoading()) {
+        <div class="menu-drawer-state" role="status">Cargando adicionales...</div>
+      } @else if (additionalsError()) {
+        <div class="alert alert-warning" role="alert">
+          <p class="mb-2">{{ additionalsError() }}</p>
+          <button type="button" class="btn btn-outline-danger btn-sm" (click)="reintentarCargaAdicionales()">
+            Reintentar
+          </button>
+        </div>
+      } @else if (availableAdditionals().length === 0) {
+        <div class="menu-drawer-state">No hay adicionales disponibles para esta categoría.</div>
+      } @else {
+        <div class="cart-additional-list">
+          @for (adicional of availableAdditionals(); track adicional.id) {
+            <label
+              class="cart-additional-option"
+              [class.is-disabled]="selectedAdditionalIds().length >= 2 && !selectedAdditionalIds().includes(adicional.id)"
+            >
+              <input
+                type="checkbox"
+                [checked]="selectedAdditionalIds().includes(adicional.id)"
+                [disabled]="selectedAdditionalIds().length >= 2 && !selectedAdditionalIds().includes(adicional.id)"
+                (change)="toggleAdicional(adicional.id)"
+              >
+              <span class="body-font fw-semibold">{{ adicional.nombre }}</span>
+              <span class="heading-font theme-clr ms-auto">+${{ adicional.precio | number:'1.2-2' }}</span>
+            </label>
+          }
+        </div>
+      }
+
+      <footer class="cart-additional-footer">
+        <button type="button" class="btn btn-outline-secondary rounded-pill" (click)="cancelarEdicionAdicionales()">
+          Cancelar
+        </button>
+        <button
+          type="button"
+          class="theme-btn rounded-pill"
+          [disabled]="additionalsLoading() || !!additionalsError()"
+          (click)="guardarAdicionales()"
+        >
+          Guardar cambios
+        </button>
+      </footer>
+    </section>
+  </div>
+}

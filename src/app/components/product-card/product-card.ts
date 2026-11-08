@@ -1,6 +1,6 @@
 import { ChangeDetectionStrategy, Component, computed, input, output } from '@angular/core';
 import { CurrencyPipe } from '@angular/common';
-import { MenuProduct } from '../../models/menu';
+import { MenuAdditional, MenuProduct } from '../../models/menu';
 
 @Component({
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -12,7 +12,29 @@ import { MenuProduct } from '../../models/menu';
 })
 export class ProductCardComponent {
   readonly product = input.required<MenuProduct>();
-  readonly addRequested = output<MenuProduct>();
+  readonly additionalsAllowed = input(false);
+  readonly additionalsExpanded = input(false);
+  readonly additionals = input<MenuAdditional[]>([]);
+  readonly additionalsLoading = input(false);
+  readonly additionalsError = input('');
+  readonly selectedAdditionalIds = input<number[]>([]);
+  readonly quantity = input(1);
+  readonly addRequested = output<{ product: MenuProduct; quantity: number }>();
+  readonly additionalsToggled = output<boolean>();
+  readonly additionalToggled = output<number>();
+  readonly quantityChanged = output<number>();
+  readonly retryAdditionals = output<void>();
+  readonly total = computed(() => {
+    const additionalTotal = this.additionals()
+      .filter((additional) => this.selectedAdditionalIds().includes(additional.id))
+      .reduce((sum, additional) => sum + additional.precio, 0);
+    return (this.product().precio + additionalTotal) * this.quantity();
+  });
+
+  agregarAlCarrito(): void {
+    this.addRequested.emit({ product: this.product(), quantity: this.quantity() });
+  }
+
   readonly imageUrl = computed(() => {
     const product = this.product();
     if (product.imagen) {

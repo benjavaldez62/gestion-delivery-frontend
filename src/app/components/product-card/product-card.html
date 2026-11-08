@@ -1,36 +1,101 @@
 <article class="menu-product-card h-100">
-  <div class="menu-product-content">
-    @if (product().categoria?.nombre) {
-      <p class="menu-product-category body-font mb-1">{{ product().categoria?.nombre }}</p>
-    }
-    <h2 class="menu-product-title heading-font">{{ product().nombre }}</h2>
-    <p class="menu-product-description body-font">
-      {{ product().descripcion || 'Preparado al momento con ingredientes seleccionados.' }}
-    </p>
+  <div class="menu-product-main">
+    <div class="menu-product-content">
+      @if (product().categoria?.nombre) {
+        <p class="menu-product-category body-font mb-1">{{ product().categoria?.nombre }}</p>
+      }
+      <h2 class="menu-product-title heading-font">{{ product().nombre }}</h2>
+      <p class="menu-product-description body-font">
+        {{ product().descripcion || 'Preparado al momento con ingredientes seleccionados.' }}
+      </p>
 
-    <div class="menu-product-footer">
-      <span class="menu-product-price heading-font">
-        {{ product().precio | currency:'ARS':'$':'1.0-0' }}
-      </span>
-      <button
-        class="menu-product-add heading-font"
-        type="button"
-        [disabled]="!product().activo"
-        (click)="addRequested.emit(product())"
-        [attr.aria-label]="'Agregar ' + product().nombre + ' al pedido'"
-      >
-        {{ product().activo ? 'Agregar' : 'No disponible' }}
-        @if (product().activo) {
+      <div class="menu-product-footer">
+        <span class="menu-product-price heading-font">
+          {{ product().precio | currency:'ARS':'$':'1.0-0' }}
+        </span>
+        <div class="menu-quantity-stepper" [attr.aria-label]="'Cantidad de ' + product().nombre">
+          <button
+            type="button"
+            [disabled]="!product().activo || quantity() <= 1"
+            (click)="quantityChanged.emit(-1)"
+            aria-label="Quitar una unidad"
+          >−</button>
+          <output aria-live="polite">{{ quantity() }}</output>
+          <button
+            type="button"
+            [disabled]="!product().activo"
+            (click)="quantityChanged.emit(1)"
+            aria-label="Agregar una unidad"
+          >+</button>
+        </div>
+        <button
+          class="menu-product-add heading-font"
+          type="button"
+          [disabled]="!product().activo || additionalsLoading()"
+          (click)="agregarAlCarrito()"
+          [attr.aria-label]="'Agregar ' + quantity() + ' ' + product().nombre + ' al pedido'"
+        >
+          Agregar
           <span aria-hidden="true">+</span>
-        }
-      </button>
+        </button>
+      </div>
+      <p class="menu-product-total body-font mb-0">
+        Total: {{ total() | currency:'ARS':'$':'1.0-0' }}
+      </p>
+    </div>
+
+    <div class="menu-product-image-wrap">
+      <img class="menu-product-image" [src]="imageUrl()" [alt]="product().nombre" loading="lazy">
+      <span class="menu-product-status" [class.is-unavailable]="!product().activo">
+        {{ product().activo ? 'Disponible' : 'Agotado' }}
+      </span>
     </div>
   </div>
 
-  <div class="menu-product-image-wrap">
-    <img class="menu-product-image" [src]="imageUrl()" [alt]="product().nombre" loading="lazy">
-    <span class="menu-product-status" [class.is-unavailable]="!product().activo">
-      {{ product().activo ? 'Disponible' : 'Agotado' }}
-    </span>
-  </div>
+  @if (additionalsAllowed() && product().activo) {
+    <div class="menu-additionals-section">
+      <label class="menu-additionals-toggle">
+        <input
+          type="checkbox"
+          [checked]="additionalsExpanded()"
+          (change)="additionalsToggled.emit(!additionalsExpanded())"
+        >
+        <span class="heading-font fw-semibold">Agregar adicionales</span>
+        <span class="body-font text-muted small">Elegí hasta 2</span>
+      </label>
+
+      @if (additionalsExpanded()) {
+        @if (additionalsLoading()) {
+          <p class="menu-additionals-message body-font mb-0" role="status">Cargando adicionales...</p>
+        } @else if (additionalsError()) {
+          <div class="menu-additionals-error" role="alert">
+            <span class="body-font">{{ additionalsError() }}</span>
+            <button type="button" class="btn btn-sm btn-outline-secondary" (click)="retryAdditionals.emit()">
+              Reintentar
+            </button>
+          </div>
+        } @else if (additionals().length === 0) {
+          <p class="menu-additionals-message body-font mb-0">No hay adicionales disponibles para esta categoría.</p>
+        } @else {
+          <div class="menu-additional-options">
+            @for (additional of additionals(); track additional.id) {
+              <label
+                class="menu-additional-option"
+                [class.is-disabled]="selectedAdditionalIds().length >= 2 && !selectedAdditionalIds().includes(additional.id)"
+              >
+                <input
+                  type="checkbox"
+                  [checked]="selectedAdditionalIds().includes(additional.id)"
+                  [disabled]="selectedAdditionalIds().length >= 2 && !selectedAdditionalIds().includes(additional.id)"
+                  (change)="additionalToggled.emit(additional.id)"
+                >
+                <span class="body-font">{{ additional.nombre }}</span>
+                <span class="menu-additional-price heading-font">+{{ additional.precio | currency:'ARS':'$':'1.0-0' }}</span>
+              </label>
+            }
+          </div>
+        }
+      }
+    </div>
+  }
 </article>
