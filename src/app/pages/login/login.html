@@ -1,0 +1,41 @@
+<section class="mozzo-hero position-relative overflow-hidden">
+    <div class="position-relative z-1 py-5 aca">
+        <div class="mozzo-hero-content login-card ">
+            <h1>Iniciar sesión</h1>
+            <p>Ingresá tus credenciales para continuar.</p>
+            <form (ngSubmit)="iniciarSesion()" #formLogin="ngForm">
+                <div class="form-group">
+                    <label for="email">Correo electrónico</label>
+                    <input type="email" id="email" name="email" [(ngModel)]="email" placeholder="usuario@ejemplo.com"
+                        autocomplete="username" required />
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" name="password" [(ngModel)]="password"
+                        placeholder="Ingresá tu contraseña" autocomplete="current-password" required />
+                </div>
+                @if (error) {
+                <div class="alert error">
+                    {{ error }}
+                </div>
+                }
+                @if (mensaje) {
+                <div class="alert success">
+                    {{ mensaje }}
+                </div>
+                }
+                <button type="submit" [disabled]="cargando || formLogin.invalid">
+                    @if (cargando) {
+                    Ingresando...
+                    } @else {
+                    Ingresar
+                    }
+                </button>
+            </form>
+        </div>
+    </div>
+    <img src="assets/img/home-1/home-shape-start.png" alt="" aria-hidden="true"
+        class="mozzo-hero-shape-start position-absolute d-none d-md-block">
+    <img src="assets/img/home-1/home-shape-end.png" alt="" aria-hidden="true"
+        class="mozzo-hero-shape-end position-absolute d-none d-sm-block">
+</section>
