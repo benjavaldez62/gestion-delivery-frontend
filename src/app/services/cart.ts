@@ -61,11 +61,10 @@ export class CartService {
 
   // Agregar producto con adicionales
   addItem(item: Omit<CartItem, 'idTemporal' | 'subtotal'>): void {
-    const additionalIds = (item.adicionales || [])
-      .map(a => a.id)
-      .sort((a, b) => a - b)
-      .join('-');
-    const compositeKey = `${item.productoId}_${additionalIds}`;
+    if (item.adicionales.length > 2) {
+      throw new RangeError('Un producto puede tener como máximo dos adicionales.');
+    }
+    const compositeKey = this.createItemKey(item.productoId, item.adicionales);
 
     this.itemsSignal.update(items => {
       const existingIndex = items.findIndex(i => i.idTemporal === compositeKey);
@@ -92,6 +91,43 @@ export class CartService {
           subtotal: lineUnit * item.cantidad
         }
       ];
+    });
+  }
+
+  updateAdditionals(idTemporal: string, adicionales: CartItemAdicional[]): void {
+    if (adicionales.length > 2) {
+      throw new RangeError('Un producto puede tener como máximo dos adicionales.');
+    }
+
+    this.itemsSignal.update(items => {
+      const target = items.find(item => item.idTemporal === idTemporal);
+      if (!target) return items;
+
+      const updatedKey = this.createItemKey(target.productoId, adicionales);
+      const unitPrice = target.precioUnitario + adicionales.reduce((sum, item) => sum + item.precio, 0);
+      const duplicate = items.find(item => item.idTemporal === updatedKey && item.idTemporal !== idTemporal);
+
+      if (duplicate) {
+        return items
+          .filter(item => item.idTemporal !== idTemporal)
+          .map(item => item.idTemporal === updatedKey
+            ? {
+                ...item,
+              adicionales,
+              cantidad: item.cantidad + target.cantidad,
+              subtotal: unitPrice * (item.cantidad + target.cantidad),
+              }
+            : item);
+      }
+
+      return items.map(item => item.idTemporal === idTemporal
+        ? {
+            ...item,
+            idTemporal: updatedKey,
+            adicionales,
+            subtotal: unitPrice * item.cantidad,
+          }
+        : item);
     });
   }
 
@@ -219,5 +255,12 @@ export class CartService {
       console.warn('No se pudo limpiar localStorage:', e);
     }
   }
-}
 
+  private createItemKey(productoId: number, adicionales: CartItemAdicional[]): string {
+    const additionalIds = adicionales
+      .map(adicional => adicional.id)
+      .sort((a, b) => a - b)
+      .join('-');
+    return `${productoId}_${additionalIds}`;
+  }
+}
