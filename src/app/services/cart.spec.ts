@@ -85,6 +85,73 @@ describe('CartService', () => {
     expect(service.subtotal()).toBe(11100);
   });
 
+  it('debe editar adicionales y recalcular la clave y el subtotal', () => {
+    service.addItem({
+      productoId: 10,
+      nombre: 'Hamburguesa Doble',
+      precioUnitario: 5000,
+      cantidad: 2,
+      categoriaId: 4,
+      categoriaNombre: 'Hamburguesas',
+      adicionales: [{ id: 1, nombre: 'Panceta', precio: 500 }]
+    });
+
+    const previousKey = service.items()[0].idTemporal;
+    service.updateAdditionals(previousKey, [
+      { id: 2, nombre: 'Cheddar extra', precio: 600 },
+      { id: 3, nombre: 'Huevo', precio: 300 }
+    ]);
+
+    expect(service.items()).toHaveLength(1);
+    expect(service.items()[0].idTemporal).toBe('10_2-3');
+    expect(service.items()[0].adicionales).toEqual([
+      { id: 2, nombre: 'Cheddar extra', precio: 600 },
+      { id: 3, nombre: 'Huevo', precio: 300 }
+    ]);
+    expect(service.items()[0].subtotal).toBe(11800);
+  });
+
+  it('debe combinar líneas si editar adicionales produce una combinación existente', () => {
+    service.addItem({
+      productoId: 10,
+      nombre: 'Hamburguesa Doble',
+      precioUnitario: 5000,
+      cantidad: 2,
+      adicionales: [{ id: 1, nombre: 'Panceta', precio: 500 }]
+    });
+    service.addItem({
+      productoId: 10,
+      nombre: 'Hamburguesa Doble',
+      precioUnitario: 5000,
+      cantidad: 1,
+      adicionales: [{ id: 2, nombre: 'Cheddar extra', precio: 600 }]
+    });
+
+    const previousKey = service.items()[0].idTemporal;
+    service.updateAdditionals(previousKey, [{ id: 2, nombre: 'Cheddar extra', precio: 600 }]);
+
+    expect(service.items()).toHaveLength(1);
+    expect(service.items()[0].idTemporal).toBe('10_2');
+    expect(service.items()[0].cantidad).toBe(3);
+    expect(service.items()[0].subtotal).toBe(16800);
+  });
+
+  it('debe rechazar más de dos adicionales al editar una línea', () => {
+    service.addItem({
+      productoId: 10,
+      nombre: 'Hamburguesa Doble',
+      precioUnitario: 5000,
+      cantidad: 1,
+      adicionales: []
+    });
+
+    expect(() => service.updateAdditionals(service.items()[0].idTemporal, [
+      { id: 1, nombre: 'A', precio: 100 },
+      { id: 2, nombre: 'B', precio: 100 },
+      { id: 3, nombre: 'C', precio: 100 }
+    ])).toThrow(RangeError);
+  });
+
   it('debe modificar cantidad con delta positivo y negativo', () => {
     service.addItem({
       productoId: 5,
@@ -187,4 +254,3 @@ describe('CartService', () => {
     expect(service.isDrawerOpen()).toBe(true);
   });
 });
-

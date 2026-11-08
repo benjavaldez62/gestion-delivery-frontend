@@ -1,42 +1,33 @@
-import { Component, OnInit, computed, inject, signal } from '@angular/core';
-import { CurrencyPipe } from '@angular/common';
+import { Component, OnDestroy, OnInit, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { CartService } from '../../services/cart';
 import { MenuService } from '../../services/menu';
-import { MenuAdditional, MenuProduct } from '../../models/menu';
+import { MenuAdditional, MenuProduct, supportsAdditionals } from '../../models/menu';
 import { ProductCardComponent } from '../product-card/product-card';
 
 @Component({
-  imports: [CurrencyPipe, ProductCardComponent],
+  imports: [ProductCardComponent],
   selector: 'app-menu-list',
   standalone: true,
   styleUrl: './menu-list.css',
   templateUrl: './menu-list.html',
 })
-export class MenuListComponent implements OnInit {
+export class MenuListComponent implements OnInit, OnDestroy {
   private readonly menuService = inject(MenuService);
   private readonly cartService = inject(CartService);
+  private additionalsRequestId = 0;
+  private toastTimeout: ReturnType<typeof setTimeout> | null = null;
 
   readonly products = signal<MenuProduct[]>([]);
   readonly loading = signal(true);
   readonly error = signal('');
-  readonly selectedProduct = signal<MenuProduct | null>(null);
+  readonly expandedProductId = signal<number | null>(null);
   readonly additionals = signal<MenuAdditional[]>([]);
   readonly additionalsLoading = signal(false);
   readonly additionalsError = signal('');
-  readonly quantity = signal(1);
   readonly selectedAdditionalIds = signal<number[]>([]);
-  readonly selectedAdditionals = computed(() => {
-    const selectedIds = this.selectedAdditionalIds();
-    return this.additionals().filter((additional) => selectedIds.includes(additional.id));
-  });
-  readonly selectedTotal = computed(() => {
-    const product = this.selectedProduct();
-    return product
-      ? (product.precio + this.selectedAdditionals().reduce((total, additional) => total + additional.precio, 0))
-        * this.quantity()
-      : 0;
-  });
+  readonly quantities = signal<Record<number, number>>({});
+  readonly successMessage = signal('');
 
   ngOnInit(): void {
     this.menuService.getProducts().subscribe({
@@ -56,55 +47,79 @@ export class MenuListComponent implements OnInit {
     });
   }
 
-  solicitarAgregar(product: MenuProduct): void {
-    if (!product.activo || this.additionalsLoading()) {
+  ngOnDestroy(): void {
+    if (this.toastTimeout !== null) {
+      clearTimeout(this.toastTimeout);
+    }
+  }
+
+  toggleAdditionals(product: MenuProduct, expanded: boolean): void {
+    if (!expanded) {
+      if (this.expandedProductId() === product.id) {
+        this.resetAdditionals();
+      }
       return;
     }
 
-    this.selectedProduct.set(product);
+    if (!product.activo || !supportsAdditionals(product.categoria?.nombre) || !product.categoria?.id) {
+      return;
+    }
+
+    this.expandedProductId.set(product.id);
     this.selectedAdditionalIds.set([]);
-    this.quantity.set(1);
     this.additionals.set([]);
     this.additionalsError.set('');
+    this.cargarAdicionales(product.categoria.id);
+  }
 
-    if (!product.categoria?.id) {
-      this.additionalsLoading.set(false);
+  quantityFor(productId: number): number {
+    return this.quantities()[productId] ?? 1;
+  }
+
+  permiteAdicionales(product: MenuProduct): boolean {
+    return supportsAdditionals(product.categoria?.nombre);
+  }
+
+  changeQuantity(productId: number, delta: number): void {
+    this.quantities.update((quantities) => ({
+      ...quantities,
+      [productId]: Math.max(1, this.quantityFor(productId) + delta),
+    }));
+  }
+
+  solicitarAgregar(product: MenuProduct, quantity: number): void {
+    if (!product.activo || (this.expandedProductId() === product.id && this.additionalsLoading())) {
       return;
     }
 
-    this.cargarAdicionales(product, product.categoria.id);
-  }
-
-  incrementarCantidad(): void {
-    this.quantity.update((current) => current + 1);
-  }
-
-  decrementarCantidad(): void {
-    this.quantity.update((current) => Math.max(1, current - 1));
-  }
-
-  private cargarAdicionales(product: MenuProduct, categoryId: number): void {
-    this.additionalsLoading.set(true);
-    this.additionalsError.set('');
-    this.menuService.getAdditionals(categoryId).subscribe({
-      next: (additionals) => {
-        this.additionalsLoading.set(false);
-        const availableAdditionals = additionals.filter((additional) => additional.activo);
-        this.additionals.set(availableAdditionals);
-      },
-      error: (error: unknown) => {
-        console.error('Error al obtener adicionales del menú:', error);
-        this.additionalsLoading.set(false);
-        this.additionals.set([]);
-        this.additionalsError.set('No se pudieron cargar los adicionales. Puedes agregar el producto sin adicionales o reintentar.');
-      },
+    const additionals = this.expandedProductId() === product.id
+      ? this.additionals().filter((additional) => this.selectedAdditionalIds().includes(additional.id))
+      : [];
+    this.cartService.addItem({
+      productoId: product.id,
+      nombre: product.nombre,
+      precioUnitario: product.precio,
+      cantidad: quantity,
+      categoriaId: product.categoria?.id,
+      categoriaNombre: product.categoria?.nombre,
+      imagenUrl: product.imagen ?? undefined,
+      adicionales: additionals.map(({ id, nombre, precio }) => ({ id, nombre, precio })),
     });
+
+    this.showSuccessMessage(
+      quantity > 1
+        ? `${quantity} ${product.nombre} agregados correctamente`
+        : `${product.nombre} agregado correctamente`
+    );
+    this.quantities.update((quantities) => ({ ...quantities, [product.id]: 1 }));
+    if (this.expandedProductId() === product.id) {
+      this.resetAdditionals();
+    }
   }
 
-  reintentarAdicionales(): void {
-    const product = this.selectedProduct();
-    if (product?.categoria?.id) {
-      this.cargarAdicionales(product, product.categoria.id);
+  reintentarAdicionales(product: MenuProduct): void {
+    if (product.categoria?.id && this.expandedProductId() === product.id) {
+      this.cargarAdicionales(product.categoria.id);
     }
   }
 
@@ -120,32 +135,43 @@ export class MenuListComponent implements OnInit {
     });
   }
 
-  confirmarAgregar(): void {
-    const product = this.selectedProduct();
-    if (!product || !product.activo || this.selectedAdditionalIds().length > 2) {
-      return;
-    }
-    this.agregarProducto(product, this.selectedAdditionals());
+  private cargarAdicionales(categoryId: number): void {
+    const requestId = ++this.additionalsRequestId;
+    this.additionalsLoading.set(true);
+    this.additionalsError.set('');
+    this.menuService.getAdditionals(categoryId).subscribe({
+      next: (additionals) => {
+        if (requestId !== this.additionalsRequestId) return;
+        this.additionalsLoading.set(false);
+        this.additionals.set(additionals.filter((additional) => additional.activo));
+      },
+      error: (error: unknown) => {
+        if (requestId !== this.additionalsRequestId) return;
+        console.error('Error al obtener adicionales del menú:', error);
+        this.additionalsLoading.set(false);
+        this.additionals.set([]);
+        this.additionalsError.set('No se pudieron cargar los adicionales. Puedes agregar el producto sin adicionales o reintentar.');
+      },
+    });
   }
 
-  cerrarModal(): void {
-    this.selectedProduct.set(null);
+  private resetAdditionals(): void {
+    this.additionalsRequestId++;
+    this.expandedProductId.set(null);
     this.selectedAdditionalIds.set([]);
-    this.quantity.set(1);
     this.additionals.set([]);
     this.additionalsLoading.set(false);
     this.additionalsError.set('');
   }
 
-  private agregarProducto(product: MenuProduct, additionals: MenuAdditional[]): void {
-    this.cartService.addItem({
-      productoId: product.id,
-      nombre: product.nombre,
-      precioUnitario: product.precio,
-      cantidad: this.quantity(),
-      imagenUrl: product.imagen ?? undefined,
-      adicionales: additionals.map(({ id, nombre, precio }) => ({ id, nombre, precio })),
-    });
-    this.cerrarModal();
+  private showSuccessMessage(message: string): void {
+    this.successMessage.set(message);
+    if (this.toastTimeout !== null) {
+      clearTimeout(this.toastTimeout);
+    }
+    this.toastTimeout = setTimeout(() => {
+      this.successMessage.set('');
+      this.toastTimeout = null;
+    }, 3500);
   }
 }

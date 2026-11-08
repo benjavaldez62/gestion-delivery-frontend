@@ -53,17 +53,38 @@ describe('MenuListComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Pizza muzzarella');
   });
 
-  it('limita la selección a dos adicionales y los agrega al carrito', () => {
+  it('despliega los adicionales en la tarjeta, limita la selección a dos y los agrega al carrito', () => {
     const component = fixture.componentInstance;
-    component.solicitarAgregar(product);
+    const checkbox = fixture.nativeElement.querySelector('.menu-additionals-toggle input') as HTMLInputElement;
+    expect(checkbox).toBeTruthy();
+    expect(fixture.nativeElement.textContent).toContain('Agregar adicionales');
 
-    component.toggleAdicional(1);
-    component.toggleAdicional(2);
-    component.toggleAdicional(3);
+    checkbox.checked = true;
+    checkbox.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(component.expandedProductId()).toBe(product.id);
+    expect(fixture.nativeElement.textContent).toContain('Extra queso');
+
+    const additionalCheckboxes = Array.from(
+      fixture.nativeElement.querySelectorAll('.menu-additional-option input')
+    ) as HTMLInputElement[];
+    additionalCheckboxes[0].checked = true;
+    additionalCheckboxes[0].dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    additionalCheckboxes[1].checked = true;
+    additionalCheckboxes[1].dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+    additionalCheckboxes[2].checked = true;
+    additionalCheckboxes[2].dispatchEvent(new Event('change'));
+    fixture.detectChanges();
 
     expect(component.selectedAdditionalIds()).toEqual([1, 2]);
+    expect(additionalCheckboxes[2].disabled).toBe(true);
 
-    component.confirmarAgregar();
+    const addButton = fixture.nativeElement.querySelector('.menu-product-add') as HTMLButtonElement;
+    addButton.click();
+    fixture.detectChanges();
 
     expect(cart.items()).toHaveLength(1);
     expect(cart.items()[0].adicionales).toEqual([
@@ -71,7 +92,9 @@ describe('MenuListComponent', () => {
       { id: 2, nombre: 'Aceitunas', precio: 200 },
     ]);
     expect(cart.items()[0].subtotal).toBe(5700);
-    expect(component.selectedProduct()).toBeNull();
+    expect(component.expandedProductId()).toBeNull();
+    expect(component.successMessage()).toBe('Pizza muzzarella agregado correctamente');
+    expect(fixture.nativeElement.textContent).toContain('Pizza muzzarella agregado correctamente');
   });
 
   it('permite agregar el producto sin adicionales cuando falla su consulta', () => {
@@ -80,33 +103,49 @@ describe('MenuListComponent', () => {
       throwError(() => new Error('No se pudo cargar'))
     );
 
-    component.solicitarAgregar(product);
+    component.toggleAdditionals(product, true);
 
     expect(component.additionalsError()).toContain('Puedes agregar el producto sin adicionales');
     expect(component.additionalsLoading()).toBe(false);
 
-    component.confirmarAgregar();
+    component.solicitarAgregar(product, 1);
 
     expect(cart.items()).toHaveLength(1);
     expect(cart.items()[0].cantidad).toBe(1);
     expect(cart.items()[0].adicionales).toEqual([]);
-    expect(component.selectedProduct()).toBeNull();
+    expect(component.expandedProductId()).toBeNull();
   });
 
   it('agrega cualquier cantidad seleccionada y calcula el total', () => {
     const component = fixture.componentInstance;
-    component.solicitarAgregar(product);
-    component.incrementarCantidad();
-    component.incrementarCantidad();
-    component.incrementarCantidad();
+    component.changeQuantity(product.id, 3);
 
-    expect(component.quantity()).toBe(4);
-    expect(component.selectedTotal()).toBe(20000);
+    expect(component.quantityFor(product.id)).toBe(4);
 
-    component.confirmarAgregar();
+    component.solicitarAgregar(product, component.quantityFor(product.id));
 
     expect(cart.items()[0].cantidad).toBe(4);
     expect(cart.items()[0].subtotal).toBe(20000);
+    expect(component.quantityFor(product.id)).toBe(1);
+    expect(component.successMessage()).toBe('4 Pizza muzzarella agregados correctamente');
+  });
+
+  it('agrega directamente productos de categorías que no permiten adicionales', () => {
+    const component = fixture.componentInstance;
+    const empanada: MenuProduct = {
+      ...product,
+      id: 8,
+      nombre: 'Empanada de carne',
+      categoria: { id: 2, nombre: 'Empanadas' },
+    };
+    const getAdditionals = vi.spyOn(menuService, 'getAdditionals');
+
+    component.solicitarAgregar(empanada, 1);
+
+    expect(getAdditionals).not.toHaveBeenCalled();
+    expect(cart.items()).toHaveLength(1);
+    expect(cart.items()[0].categoriaNombre).toBe('Empanadas');
+    expect(component.expandedProductId()).toBeNull();
   });
 
   it('no agrega productos agotados ni solicita sus adicionales', () => {
@@ -114,9 +153,9 @@ describe('MenuListComponent', () => {
     const component = fixture.componentInstance;
     const getAdditionals = vi.spyOn(menuService, 'getAdditionals');
 
-    component.solicitarAgregar(unavailableProduct);
+    component.solicitarAgregar(unavailableProduct, 1);
 
-    expect(component.selectedProduct()).toBeNull();
+    expect(component.expandedProductId()).toBeNull();
     expect(cart.items()).toEqual([]);
     expect(getAdditionals).not.toHaveBeenCalled();
   });
