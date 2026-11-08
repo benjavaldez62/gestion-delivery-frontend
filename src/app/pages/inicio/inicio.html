@@ -9,8 +9,8 @@
                 Envío Rápido. Cero Complicaciones.
             </h1>
             <div class="d-flex justify-content-center pt-2 fade-in-up delay-3">
-                <a routerLink="/categorias" class="theme-btn theme-btn-white mozzo-hero-cta heading-font rounded-pill d-inline-flex align-items-center gap-2">
-                    <span>Ver catálogo</span>
+                <a routerLink="/menu" class="theme-btn theme-btn-white mozzo-hero-cta heading-font rounded-pill d-inline-flex align-items-center gap-2">
+                    <span>Ver Menú</span>
                     <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
                         <path fill-rule="evenodd" d="M1 8a.5.5 0 0 1 .5-.5h11.793l-3.147-3.146a.5.5 0 0 1 .708-.708l4 4a.5.5 0 0 1 0 .708l-4 4a.5.5 0 0 1-.708-.708L13.293 8.5H1.5A.5.5 0 0 1 1 8"/>
                     </svg>
@@ -27,22 +27,30 @@
     <div class="container py-lg-3">
         <div class="text-center mb-4 pb-2 fade-in-down">
             <h2 class="heading-font fw-bold black-clr fs-2 mb-1">
-                Categorías Populares
+                Elegí tu plato según la categoría
             </h2>
             <div class="section-badge1 mx-auto mt-2"></div>
         </div>
 
-        <div
-            class="mozzo-menu-wrap position-relative fade-in-up delay-1"
-            (mouseenter)="pausarAutoplay()"
-            (mouseleave)="reanudarAutoplay()"
-        >
+        @if (categoriasCargando()) {
+            <div class="menu-state" role="status">Cargando las categorías...</div>
+        } @else if (errorCategorias()) {
+            <div class="alert alert-danger text-center" role="alert">{{ errorCategorias() }}</div>
+        } @else if (categoriasBase().length === 0) {
+            <div class="menu-state">No hay categorías disponibles en este momento.</div>
+        } @else {
+          <div
+              class="mozzo-menu-wrap position-relative fade-in-up delay-1"
+              (mouseenter)="pausarAutoplay()"
+              (mouseleave)="reanudarAutoplay()"
+          >
             <div class="row g-4 justify-content-center align-items-center">
                 @for (item of categoriasVisibles(); track item.id + '-' + $index) {
                     <div class="col-6 col-sm-4 col-md-3 col-lg-2">
                         <div class="mozzo-category-item icon-effect text-center d-flex flex-column align-items-center gap-2">
                             <a
-                                routerLink="/categorias"
+                                routerLink="/menu"
+                                [queryParams]="{ categoriaId: item.id }"
                                 class="mozzo-card-split rounded-circle d-flex align-items-center justify-content-center bg-white text-decoration-none"
                                 [attr.aria-label]="'Ver categoría ' + item.nombre"
                             >
@@ -55,13 +63,17 @@
                                 >
                             </a>
                             <h6 class="heading-font mb-0 pt-1 fw-bold">
-                                <a routerLink="/categorias" class="black-clr text-decoration-none link-effect mozzo-category-link">
+                                <a
+                                    routerLink="/menu"
+                                    [queryParams]="{ categoriaId: item.id }"
+                                    class="black-clr text-decoration-none link-effect mozzo-category-link"
+                                >
                                     {{ item.nombre }}
                                 </a>
                             </h6>
                         </div>
-                    </div>
-                }
+                      </div>
+                    }
             </div>
 
             <div class="mozzo-arrows d-flex justify-content-center justify-content-lg-between align-items-center gap-3 mt-4 mt-lg-0">
@@ -91,6 +103,7 @@
                 </div>
             </div>
         </div>
+        }
     </div>
 </section>
 
@@ -99,7 +112,11 @@
     <div class="container pb-lg-4">
         <div class="row g-4">
             <div class="col-sm-6 col-lg-4 fade-in-up delay-1">
-                <a routerLink="/categorias" class="text-decoration-none d-block h-100">
+                <a
+                    routerLink="/menu"
+                    [queryParams]="{ categoriaId: categoriaIdPorNombre('Hamburguesas') }"
+                    class="text-decoration-none d-block h-100"
+                >
                     <div
                         class="mozzo-offer-card card-effect position-relative overflow-hidden h-100 rounded-20 p-4"
                         style="background-image: url('assets/img/home-1/offer-bg1.jpg');"
@@ -109,8 +126,7 @@
                                 Promo Especial
                             </span>
                             <h3 class="heading-font-bhalo text-uppercase black-clr lh-1 fs-3 fw-bold mb-3">
-                                Doble <br>
-                                Burger
+                                Hamburguesa Clásica
                             </h3>
                             <img src="assets/img/home-1/text-price11.png" alt="Precio promocional" class="mozzo-price-tag">
                         </div>
@@ -124,7 +140,11 @@
             </div>
 
             <div class="col-sm-6 col-lg-4 fade-in-up delay-2">
-                <a routerLink="/categorias" class="text-decoration-none d-block h-100">
+                <a
+                    routerLink="/menu"
+                    [queryParams]="{ categoriaId: categoriaIdPorNombre('Pastas') }"
+                    class="text-decoration-none d-block h-100"
+                >
                     <div
                         class="mozzo-offer-card card-effect text-center position-relative overflow-hidden h-100 rounded-20 p-4"
                         style="background-image: url('assets/img/home-1/offer-bg2.jpg');"
@@ -134,7 +154,7 @@
                                 Receta Casera
                             </span>
                             <h3 class="heading-font-bhalo text-uppercase black-clr lh-1 fs-3 fw-bold mb-3">
-                                Pastas Frescas
+                                Ravioles de queso
                             </h3>
                             <img src="assets/img/home-1/text-price15.png" alt="Precio promocional" class="mozzo-price-tag">
                         </div>
@@ -143,7 +163,11 @@
             </div>
 
             <div class="col-sm-12 col-md-6 col-lg-4 fade-in-up delay-3">
-                <a routerLink="/categorias" class="text-decoration-none d-block h-100">
+                <a
+                    routerLink="/menu"
+                    [queryParams]="{ categoriaId: categoriaIdPorNombre('Pizzas') }"
+                    class="text-decoration-none d-block h-100"
+                >
                     <div
                         class="mozzo-offer-card card-effect position-relative overflow-hidden h-100 rounded-20 p-4"
                         style="background-image: url('assets/img/home-1/offer-bg3.png');"
@@ -153,8 +177,7 @@
                                 A la Piedra
                             </span>
                             <h3 class="heading-font-bhalo text-uppercase black-clr lh-1 fs-3 fw-bold mb-3">
-                                Pizza <br>
-                                Especial
+                                Pizza margherita
                             </h3>
                             <img src="assets/img/home-1/text-price12.png" alt="Precio promocional" class="mozzo-price-tag">
                         </div>

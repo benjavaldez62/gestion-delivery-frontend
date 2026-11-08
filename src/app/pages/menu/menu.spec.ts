@@ -1,4 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
+import { ActivatedRoute, convertToParamMap } from '@angular/router';
 import { of } from 'rxjs';
 import { Categoria, CategoriasService } from '../../services/categorias';
 import { MenuProduct } from '../../models/menu';
@@ -30,6 +31,7 @@ describe('Menu', () => {
           provide: CategoriasService,
           useValue: { obtenerCategorias: () => of({ message: 'ok', categorias: categories }) },
         },
+        { provide: ActivatedRoute, useValue: { queryParamMap: of(convertToParamMap({})) } },
       ],
     }).compileComponents();
 
