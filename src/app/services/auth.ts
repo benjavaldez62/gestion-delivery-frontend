@@ -1,78 +1,60 @@
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { computed, inject, Injectable, signal } from '@angular/core';
-import { Observable } from 'rxjs';
+import { Injectable } from '@angular/core';
+import { HttpClient } from '@angular/common/http';
+import { Observable, tap } from 'rxjs';
 
-export interface AuthUser {
-  id: number;
-  name: string;
-  email: string;
+export interface Usuario {
+    id: number;
+    name: string;
+    email: string;
+    role_id: number;
 }
 
+export interface LoginResponse {
+    success: boolean;
+    message: string;
+    data: {
+        access_token: string;
+        token_type: string;
+        user: Usuario;
+    };
+}
+
+export interface Credenciales {
+    email: string;
+    password: string;
+}
 @Injectable({
-  providedIn: 'root'
+    providedIn: 'root'
 })
 export class AuthService {
-  private readonly http = inject(HttpClient);
-  private readonly apiUrl = 'http://127.0.0.1:8000/api';
-  private readonly tokenStorageKey = 'auth_token';
-  private readonly userStorageKey = 'auth_user';
-  private readonly tokenSignal = signal<string | null>(this.readToken());
-  private readonly userSignal = signal<AuthUser | null>(this.readUser());
-
-  readonly token = this.tokenSignal.asReadonly();
-  readonly user = this.userSignal.asReadonly();
-  readonly isAuthenticated = computed(() => this.tokenSignal() !== null);
-
-  logout(): Observable<void> {
-    const token = this.tokenSignal();
-    const options = token
-      ? { headers: new HttpHeaders({ Authorization: `Bearer ${token}` }) }
-      : {};
-
-    this.clearSession();
-    return this.http.post<void>(`${this.apiUrl}/logout`, {}, options);
-  }
-
-  private clearSession(): void {
-    this.tokenSignal.set(null);
-    this.userSignal.set(null);
-
-    if (typeof window === 'undefined') {
-      return;
+    private apiUrl = 'http://127.0.0.1:8000/api';
+    constructor(private http: HttpClient) { }
+    // Iniciar sesión
+    login(credenciales: Credenciales): Observable<LoginResponse> {
+        return this.http
+            .post<LoginResponse>(
+                `${this.apiUrl}/login`,
+                credenciales
+            )
+            .pipe(
+                tap(respuesta => {
+                    localStorage.setItem(
+                        'token',
+                        respuesta.data.access_token
+                    );
+                })
+            );
     }
-
-    try {
-      window.localStorage.removeItem(this.tokenStorageKey);
-      window.localStorage.removeItem(this.userStorageKey);
-    } catch (error) {
-      console.error('No se pudieron eliminar las credenciales locales:', error);
+    // Obtener el token guardado
+    obtenerToken(): string | null {
+        return localStorage.getItem('token');
     }
-  }
-
-  private readToken(): string | null {
-    if (typeof window === 'undefined') {
-      return null;
+    // Comprobar si existe un token
+    estaAutenticado(): boolean {
+        return !!this.obtenerToken();
     }
-
-    try {
-      return window.localStorage.getItem(this.tokenStorageKey);
-    } catch (error) {
-      console.error('No se pudo leer el token local:', error);
-      return null;
+    // Cerrar sesión local
+    limpiarSesion(): void {
+        localStorage.removeItem('token');
     }
-  }
-
-  private readUser(): AuthUser | null {
-    if (typeof window === 'undefined') {
-      return null;
-    }
-
-    try {
-      const user = window.localStorage.getItem(this.userStorageKey);
-      return user ? JSON.parse(user) as AuthUser : null;
-    } catch (error) {
-      console.error('No se pudo leer el usuario local:', error);
-      return null;
-    }
-  }
 }

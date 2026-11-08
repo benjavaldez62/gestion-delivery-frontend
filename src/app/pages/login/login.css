@@ -1,0 +1,145 @@
+.mozzo-hero {
+    background-image: url('/assets/img/home-1/element/hero-bg1.jpg');
+    background-color: var(--theme);
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - 135px);
+}
+
+/*.aca {
+    height: 100%;
+}*/
+.mozzo-hero-shape-start {
+    top: 60px;
+    left: 40px;
+    rotate: -2deg;
+    animation: animacion-elemento1 4s linear infinite;
+    animation-direction: alternate;
+    max-width: 240px;
+    pointer-events: none;
+    opacity: 80%;
+}
+
+.mozzo-hero-shape-end {
+    bottom: 0;
+    right: 0;
+    max-width: 240px;
+    pointer-events: none;
+    animation: animacion-elemento2 5s linear infinite;
+    animation-direction: alternate;
+}
+
+.login-container {
+    max-width: 700px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 18px 10px;
+    background: #f3f4f6;
+}
+
+.login-card {
+    min-width: 500px;
+    padding: 40px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+}
+
+h1 {
+    margin: 0 0 8px;
+    color: #ff5200;
+    text-align: center;
+}
+
+.login-card>p {
+    margin-bottom: 28px;
+    color: #6b7280;
+    text-align: center;
+}
+
+.form-group {
+    margin-bottom: 18px;
+}
+
+label {
+    display: block;
+    margin-bottom: 7px;
+    font-weight: 600;
+}
+
+input {
+    box-sizing: border-box;
+    width: 100%;
+    padding: 12px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 15px;
+}
+
+input:focus {
+    outline: 2px solid #93c5fd;
+    border-color: #2563eb;
+}
+
+button {
+    width: 100%;
+    padding: 12px;
+    border: none;
+    border-radius: 6px;
+    background: #ff5200;
+    color: white;
+    font-size: 16px;
+    cursor: pointer;
+   
+}
+
+button:hover {
+    background: #000000;
+}
+
+button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    background: #ff5200;
+}
+
+.alert {
+    margin-bottom: 16px;
+    padding: 12px;
+    border-radius: 6px;
+    font-size: 14px;
+}
+
+.error {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.success {
+    background: #dcfce7;
+    color: #166534;
+}
+
+@keyframes animacion-elemento1 {
+    from {
+        transform: scale(3);
+    }
+
+    to {
+        transform: scale(2.8);
+    }
+}
+
+@keyframes animacion-elemento2 {
+    from {
+        transform: scale(2.05) rotate(0deg);
+    }
+
+    to {
+        transform: scale(2.08) rotate(12deg);
+    }
+}

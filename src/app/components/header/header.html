@@ -1,10 +1,13 @@
 <header class="mozzo-header sticky-top">
     <nav class="navbar navbar-expand-lg navbar-dark py-3">
         <div class="container">
-            <a class="navbar-brand heading-font d-inline-flex align-items-center gap-2 fw-bold fs-4 white-clr" routerLink="/inicio">
+            <a class="navbar-brand heading-font d-inline-flex align-items-center gap-2 fw-bold fs-4 white-clr"
+                routerLink="/inicio">
                 <span class="mozzo-brand-icon d-inline-flex align-items-center justify-content-center rounded-circle">
-                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor" viewBox="0 0 16 16" aria-hidden="true">
-                        <path d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 1.5-1.25 2-1.25 2C11 4 9 .5 6 0c.357 2 .5 4-2 6-1.25 1-2 2.729-2 4.5C2 14 4.686 16 8 16m0-1c-1.657 0-3-1-3-2.75 0-.75.25-2 1.25-3C6.125 10 7 10.5 7 10.5c-.375-1.25.5-3.25 2-3.5-.179 1-.25 2 1 3 .625.5 1 1.364 1 2.25C11 14 9.657 15 8 15"/>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="currentColor"
+                        viewBox="0 0 16 16" aria-hidden="true">
+                        <path
+                            d="M8 16c3.314 0 6-2 6-5.5 0-1.5-.5-4-2.5-6 .25 1.5-1.25 2-1.25 2C11 4 9 .5 6 0c.357 2 .5 4-2 6-1.25 1-2 2.729-2 4.5C2 14 4.686 16 8 16m0-1c-1.657 0-3-1-3-2.75 0-.75.25-2 1.25-3C6.125 10 7 10.5 7 10.5c-.375-1.25.5-3.25 2-3.5-.179 1-.25 2 1 3 .625.5 1 1.364 1 2.25C11 14 9.657 15 8 15" />
                     </svg>
                 </span>
                 <span>La Posta</span>
@@ -22,86 +25,88 @@
                     Categorías
                 </a>
                 <div class="mozzo-cart-wrapper position-relative">
-                    <a
-                        routerLink="/carrito"
+                    <a routerLink="/carrito"
                         class="btn mozzo-cart-btn heading-font rounded-pill position-relative d-inline-flex align-items-center gap-2 px-3 py-2 text-decoration-none"
-                        aria-label="Ver carrito de compras"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-cart" viewBox="0 0 16 16" aria-hidden="true">
-                            <path d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2"/>
+                        aria-label="Ver carrito de compras">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor"
+                            class="bi bi-cart" viewBox="0 0 16 16" aria-hidden="true">
+                            <path
+                                d="M0 1.5A.5.5 0 0 1 .5 1H2a.5.5 0 0 1 .485.379L2.89 3H14.5a.5.5 0 0 1 .491.592l-1.5 8A.5.5 0 0 1 13 12H4a.5.5 0 0 1-.491-.408L2.01 3.607 1.61 2H.5a.5.5 0 0 1-.5-.5M3.102 4l1.313 7h8.17l1.313-7zM5 12a2 2 0 1 0 0 4 2 2 0 0 0 0-4m7 0a2 2 0 1 0 0 4 2 2 0 0 0 0-4m-7 1a1 1 0 1 1 0 2 1 1 0 0 1 0-2m7 0a1 1 0 1 1 0 2 1 1 0 0 1 0-2" />
                         </svg>
                         <span class="fw-semibold">Carrito</span>
                         @if (cart.totalItems() > 0) {
-                            <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
-                                {{ cart.totalItems() }}
-                                <span class="visually-hidden">productos en el carrito</span>
-                            </span>
+                        <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger">
+                            {{ cart.totalItems() }}
+                            <span class="visually-hidden">productos en el carrito</span>
+                        </span>
                         }
                     </a>
 
                     <!-- Popup desplegable al hacer hover -->
                     <div class="mozzo-cart-dropdown shadow-lg rounded-4 p-3 bg-white text-dark">
                         @if (cart.items().length === 0) {
-                            <div class="text-center py-3 px-2">
-                                <p class="mb-2 text-muted small body-font">Tu carrito está vacío</p>
-                                <div class="d-flex flex-column gap-2">
-                                    <a routerLink="/categorias" class="btn btn-sm btn-outline-warning text-dark heading-font rounded-pill">
-                                        Ver platos
-                                    </a>
-                                    <button
-                                        type="button"
-                                        class="btn btn-sm btn-outline-secondary heading-font rounded-pill"
-                                        (click)="cargarDemo()"
-                                    >
-                                        Cargar demo
+                        <div class="text-center py-3 px-2">
+                            <p class="mb-2 text-muted small body-font">Tu carrito está vacío</p>
+                            <div class="d-flex flex-column gap-2">
+                                <a routerLink="/categorias"
+                                    class="btn btn-sm btn-outline-warning text-dark heading-font rounded-pill">
+                                    Ver platos
+                                </a>
+                                <button type="button" class="btn btn-sm btn-outline-secondary heading-font rounded-pill"
+                                    (click)="cargarDemo()">
+                                    Cargar demo
+                                </button>
+                            </div>
+                        </div>
+                        } @else {
+                        <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom">
+                            <span class="fw-bold heading-font small">Mi Pedido ({{ cart.totalItems() }})</span>
+                            <span class="badge bg-light text-dark border small">${{ cart.subtotal() | number:'1.2-2'
+                                }}</span>
+                        </div>
+
+                        <ul class="list-unstyled mozzo-cart-items-preview mb-3 pe-1">
+                            @for (item of cart.items(); track item.idTemporal) {
+                            <li
+                                class="d-flex align-items-start justify-content-between gap-2 py-2 border-bottom border-light">
+                                <div class="lh-sm">
+                                    <div class="fw-semibold small heading-font text-truncate" style="max-width: 170px;">
+                                        {{ item.nombre }}
+                                    </div>
+                                    <span class="text-muted small body-font">
+                                        {{ item.cantidad }} x ${{ item.precioUnitario | number:'1.2-2' }}
+                                    </span>
+                                </div>
+                                <div class="d-flex align-items-center gap-1">
+                                    <span class="fw-bold small heading-font text-dark">
+                                        ${{ item.subtotal | number:'1.2-2' }}
+                                    </span>
+                                    <button type="button"
+                                        class="btn btn-sm btn-link text-danger p-0 ms-1 text-decoration-none"
+                                        (click)="remove(item.idTemporal)" [attr.aria-label]="'Quitar ' + item.nombre">
+                                        ✕
                                     </button>
                                 </div>
-                            </div>
-                        } @else {
-                            <div class="d-flex justify-content-between align-items-center pb-2 mb-2 border-bottom">
-                                <span class="fw-bold heading-font small">Mi Pedido ({{ cart.totalItems() }})</span>
-                                <span class="badge bg-light text-dark border small">${{ cart.subtotal() | number:'1.2-2' }}</span>
-                            </div>
+                            </li>
+                            }
+                        </ul>
 
-                            <ul class="list-unstyled mozzo-cart-items-preview mb-3 pe-1">
-                                @for (item of cart.items(); track item.idTemporal) {
-                                    <li class="d-flex align-items-start justify-content-between gap-2 py-2 border-bottom border-light">
-                                        <div class="lh-sm">
-                                            <div class="fw-semibold small heading-font text-truncate" style="max-width: 170px;">
-                                                {{ item.nombre }}
-                                            </div>
-                                            <span class="text-muted small body-font">
-                                                {{ item.cantidad }} x ${{ item.precioUnitario | number:'1.2-2' }}
-                                            </span>
-                                        </div>
-                                        <div class="d-flex align-items-center gap-1">
-                                            <span class="fw-bold small heading-font text-dark">
-                                                ${{ item.subtotal | number:'1.2-2' }}
-                                            </span>
-                                            <button
-                                                type="button"
-                                                class="btn btn-sm btn-link text-danger p-0 ms-1 text-decoration-none"
-                                                (click)="remove(item.idTemporal)"
-                                                [attr.aria-label]="'Quitar ' + item.nombre"
-                                            >
-                                                ✕
-                                            </button>
-                                        </div>
-                                    </li>
-                                }
-                            </ul>
+                        <div class="d-flex justify-content-between align-items-center pt-1 mb-3">
+                            <span class="text-muted small">Subtotal</span>
+                            <span class="fw-bold fs-6 heading-font theme-clr">${{ cart.subtotal() | number:'1.2-2'
+                                }}</span>
+                        </div>
 
-                            <div class="d-flex justify-content-between align-items-center pt-1 mb-3">
-                                <span class="text-muted small">Subtotal</span>
-                                <span class="fw-bold fs-6 heading-font theme-clr">${{ cart.subtotal() | number:'1.2-2' }}</span>
-                            </div>
-
-                            <a routerLink="/carrito" class="theme-btn w-100 py-2 fs-6 rounded-pill text-center heading-font">
-                                <span>Ir al carrito</span>
-                            </a>
+                        <a routerLink="/carrito"
+                            class="theme-btn w-100 py-2 fs-6 rounded-pill text-center heading-font">
+                            <span>Ir al carrito</span>
+                        </a>
                         }
                     </div>
                 </div>
+                <a routerLink="/login" class="btn btn-outline-light heading-font rounded-pill px-3 py-2">
+                    LogIn
+                </a>
             </div>
         </div>
     </nav>
