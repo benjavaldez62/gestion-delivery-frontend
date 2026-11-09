@@ -107,6 +107,26 @@ button:disabled {
     background: #ff5200;
 }
 
+/* GOOGLE AUTH PARTE */
+.google-wrapper {
+    display: flex;
+    justify-content: center;
+
+    /* pequeño espacio para que no afecte el scale*/
+    margin-bottom: 8px;
+}
+
+.google-wrapper > div {
+    transform: scale(1.05);
+    transform-origin: center;
+}
+
+.divider {
+    text-align: center;
+    margin: 16px 0;
+    color: #6b7280;
+}
+
 .alert {
     margin-bottom: 16px;
     padding: 12px;

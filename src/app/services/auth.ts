@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
+import { apiUrl, googleClientId } from '../config/api';
 
 export interface Usuario {
     id: number;
@@ -27,8 +28,11 @@ export interface Credenciales {
 @Injectable({
     providedIn: 'root'
 })
+
 export class AuthService {
     private apiUrl = 'http://127.0.0.1:8000/api';
+    private googleScript?: Promise<void>;
+
     constructor(private http: HttpClient) { }
     
     // Iniciar sesión
@@ -46,6 +50,48 @@ export class AuthService {
                     );
                 })
             );
+    }
+
+    // Iniciar sesión con Google
+    loginConGoogle(idToken:string): Observable<LoginResponse> {
+        return this.http
+            .post<LoginResponse>(
+                `${this.apiUrl}/auth/google`,
+                { idToken }
+            )
+            .pipe(
+                tap(respuesta => {
+                    localStorage.setItem(
+                        'token',
+                        respuesta.data.access_token
+                    );
+                })
+            );
+    }
+
+    // Cargamos el script de Google Identity Services
+    cargarScriptGoogle(): Promise<void> {
+        if(this.googleScript) 
+        {
+            return this.googleScript;
+        }
+
+        this.googleScript = new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            
+            script.src = 'https://accounts.google.com/gsi/client';
+            script.async = true;
+            script.defer = true;
+            script.onload = () => resolve();
+            script.onerror = () => {
+
+                // En caso de falla, permitimos la opcion de 'Reintentar'
+                this.googleScript = undefined;
+                reject(new Error('No se pudo cargar Google Identity Services'));
+            };
+            document.head.appendChild(script);
+        });
+        return this.googleScript;
     }
     
     // Obtener el token guardado
