@@ -5,6 +5,7 @@ import { Inicio } from './pages/inicio/inicio';
 import { Carrito } from './pages/carrito/carrito';
 import { Checkout } from './pages/checkout/checkout';
 import { Login } from './pages/login/login';
+import { Cocina } from './pages/cocina/cocina';
 import { authGuard } from './guards/auth-guard';
 
 export const routes: Routes = [
@@ -32,6 +33,11 @@ export const routes: Routes = [
     {
         path: 'checkout',
         component: Checkout
+    },
+    {
+        path: 'cocina',
+        component: Cocina,
+        canActivate: [authGuard]
     },
     {
         path: '',
