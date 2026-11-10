@@ -1,16 +1,25 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
 import { CartService } from '../../services/cart';
-import { BorradorCheckout, CheckoutService } from '../../services/checkout';
+import { BorradorCheckout, CheckoutService, MetodoPago } from '../../services/checkout';
+import { DatosMensajeTelegram, TelegramMessageBuilder } from '../../services/telegram-message-builder';
+import { PaymentSelectorComponent } from './payment-selector';
+
+const importeValido: ValidatorFn = control => {
+  const valor: number | null = control.value;
+  return valor === null || (Number.isFinite(valor) && Math.abs(valor * 100 - Math.round(valor * 100)) < 1e-8)
+    ? null : { importe: true };
+};
 
 @Component({
   selector: 'app-checkout',
   standalone: true,
-  imports: [DecimalPipe, ReactiveFormsModule, RouterLink],
+  imports: [DecimalPipe, ReactiveFormsModule, RouterLink, PaymentSelectorComponent],
   templateUrl: './checkout.html',
   styleUrl: './checkout.css',
 })
@@ -18,27 +27,48 @@ export class Checkout {
   readonly cart = inject(CartService);
   private readonly checkout = inject(CheckoutService);
   private readonly fb = inject(FormBuilder);
+  private readonly telegram = inject(TelegramMessageBuilder);
 
   readonly guardando = signal(false);
   readonly error = signal('');
   readonly borrador = signal<BorradorCheckout | null>(null);
+  readonly datosTelegram = signal<DatosMensajeTelegram | null>(null);
+  readonly enlaceTelegram = signal('');
+  readonly confirmandoTelegram = signal(false);
   readonly formulario = this.fb.nonNullable.group({
     direccion: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/\S/)]],
     telefono: ['', [Validators.required, Validators.maxLength(30), Validators.pattern(/^(?=(?:[^0-9]*[0-9]){6})[0-9+() \-]{6,30}$/)]],
     notas: ['', [Validators.maxLength(500)]],
-    metodoPago: this.fb.nonNullable.control<'efectivo' | 'tarjeta' | ''>('', Validators.required),
+    metodoPago: this.fb.nonNullable.control<MetodoPago | ''>('', Validators.required),
+    montoRecibido: this.fb.control<number | null>(null, [Validators.min(0), importeValido]),
   });
 
+  constructor() {
+    this.formulario.controls.metodoPago.valueChanges.pipe(takeUntilDestroyed()).subscribe(metodo => {
+      if (metodo !== 'efectivo') this.formulario.controls.montoRecibido.reset();
+    });
+  }
+
+  montoInsuficiente(): boolean {
+    const { metodoPago, montoRecibido } = this.formulario.getRawValue();
+    return metodoPago === 'efectivo' && montoRecibido !== null && montoRecibido < this.cart.montoTotal();
+  }
+
+  vueltoEstimado(): number {
+    return Math.round(((this.formulario.controls.montoRecibido.value ?? 0) - this.cart.montoTotal()) * 100) / 100;
+  }
+
   guardar(): void {
-    if (this.guardando() || this.borrador() || this.formulario.invalid || this.cart.items().length === 0) {
+    if (this.guardando() || this.borrador() || this.formulario.invalid || this.montoInsuficiente() || this.cart.items().length === 0) {
       this.formulario.markAllAsTouched();
       return;
     }
 
     const valores = this.formulario.getRawValue();
-    if (valores.metodoPago !== 'efectivo' && valores.metodoPago !== 'tarjeta') {
+    if (!valores.metodoPago) {
       return;
     }
+    const metodoPago = valores.metodoPago;
 
     this.error.set('');
     this.guardando.set(true);
@@ -46,19 +76,47 @@ export class Checkout {
       direccion: valores.direccion.trim(),
       telefono: valores.telefono.trim(),
       notas: valores.notas.trim(),
-      metodo_pago: valores.metodoPago,
+      metodo_pago: metodoPago,
+      ...(metodoPago === 'efectivo' && valores.montoRecibido !== null
+        ? { monto_recibido: valores.montoRecibido } : {}),
       items: this.cart.items().map(item => ({
         producto_id: item.productoId,
         cantidad: item.cantidad,
         adicionales: item.adicionales.map(adicional => adicional.id),
       })),
     }).pipe(finalize(() => this.guardando.set(false))).subscribe({
-      next: (respuesta) => this.borrador.set(respuesta),
+      next: (respuesta) => {
+        this.datosTelegram.set({
+          direccion: valores.direccion.trim(),
+          telefono: valores.telefono.trim(),
+          notas: valores.notas.trim(),
+          metodoPago,
+          montoRecibido: metodoPago === 'efectivo' ? valores.montoRecibido : null,
+          borrador: respuesta,
+        });
+        this.borrador.set(respuesta);
+      },
       error: (error: HttpErrorResponse) => {
         this.error.set(error.status === 422
-          ? 'No se pudo guardar: revisá los datos y la disponibilidad de los productos.'
+          ? error.error?.errors?.monto_recibido?.[0] || 'No se pudo guardar: revisá los datos y la disponibilidad de los productos.'
           : 'No se pudo guardar el borrador. Intentá nuevamente.');
       },
     });
+  }
+
+  prepararTelegram(): void {
+    const datos = this.datosTelegram();
+    if (!datos) {
+      this.error.set('No se encontró el resumen del borrador para Telegram.');
+      return;
+    }
+    try {
+      this.enlaceTelegram.set(this.telegram.enlace(this.telegram.construir(datos)));
+      this.error.set('');
+      this.confirmandoTelegram.set(true);
+    } catch (error) {
+      if (!(error instanceof RangeError)) throw error;
+      this.error.set(error.message);
+    }
   }
 }

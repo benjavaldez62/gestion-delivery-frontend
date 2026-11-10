@@ -8,8 +8,11 @@
         <h2 class="fs-4">Borrador guardado</h2>
         <p>El total actualizado es <strong>${{ guardado.monto_total | number:'1.2-2' }}</strong>.</p>
         <p>Referencia del borrador: <code>{{ guardado.id }}</code></p>
-        <p class="alert alert-warning">Tu pedido todavía no fue confirmado ni enviado al restaurante. La vinculación con Telegram está pendiente de implementación.</p>
-        <p class="mb-1">Bot del restaurante: <a href="https://t.me/Restauransbot" target="_blank" rel="noopener noreferrer">&#64;Restauransbot</a></p>
+        <p class="alert alert-warning">Tu pedido todavía no fue confirmado ni enviado al restaurante. Abrí Telegram y enviá el mensaje para continuar.</p>
+        @if (error()) {
+          <p class="alert alert-danger" role="alert">{{ error() }}</p>
+        }
+        <button type="button" class="theme-btn border-0 rounded-pill py-3 mb-3" (click)="prepararTelegram()">Continuar con Telegram</button>
         <a routerLink="/carrito">Volver al carrito</a>
       </div>
     } @else if (cart.items().length === 0) {
@@ -39,21 +42,11 @@
               <label for="notas" class="form-label">Aclaraciones para la entrega</label>
               <textarea id="notas" class="form-control" formControlName="notas" maxlength="500" rows="3"></textarea>
             </div>
-            <fieldset class="mb-4">
-              <legend class="fs-5">Método de pago *</legend>
-              <div class="form-check">
-                <input id="efectivo" type="radio" class="form-check-input" formControlName="metodoPago" value="efectivo">
-                <label for="efectivo" class="form-check-label">Efectivo al recibir</label>
-              </div>
-              <div class="form-check">
-                <input id="tarjeta" type="radio" class="form-check-input" formControlName="metodoPago" value="tarjeta">
-                <label for="tarjeta" class="form-check-label">Tarjeta</label>
-              </div>
-            </fieldset>
+            <app-payment-selector [metodo]="formulario.controls.metodoPago" [monto]="formulario.controls.montoRecibido" [total]="cart.montoTotal()" />
             @if (error()) {
               <p class="alert alert-danger" role="alert">{{ error() }}</p>
             }
-            <button type="submit" class="theme-btn border-0 rounded-pill py-3" [disabled]="formulario.invalid || guardando() || cart.items().length === 0">
+            <button type="submit" class="theme-btn border-0 rounded-pill py-3" [disabled]="formulario.invalid || montoInsuficiente() || guardando() || cart.items().length === 0">
               {{ guardando() ? 'Guardando...' : 'Guardar y continuar' }}
             </button>
             <a routerLink="/carrito" class="mt-3">Volver al carrito</a>
@@ -78,6 +71,19 @@
             <div class="d-flex justify-content-between"><span>Subtotal</span><span>${{ cart.subtotal() | number:'1.2-2' }}</span></div>
             <div class="d-flex justify-content-between"><span>Envío estimado</span><span>${{ cart.costoEnvio() | number:'1.2-2' }}</span></div>
             <div class="d-flex justify-content-between fw-bold border-top pt-3 mt-3"><span>Total estimado</span><span>${{ cart.montoTotal() | number:'1.2-2' }}</span></div>
+            @if (formulario.controls.metodoPago.value) {
+              <div class="mt-3">Pago:
+                @switch (formulario.controls.metodoPago.value) {
+                  @case ('efectivo') { Efectivo al recibir }
+                  @case ('tarjeta') { Tarjeta (pendiente) }
+                  @case ('transferencia') { Transferencia (pendiente) }
+                }
+              </div>
+              @if (formulario.controls.metodoPago.value === 'efectivo' && formulario.controls.montoRecibido.value !== null && !formulario.controls.montoRecibido.invalid && !montoInsuficiente()) {
+                <div>Abona con: ${{ formulario.controls.montoRecibido.value | number:'1.2-2' }}</div>
+                <div>Vuelto estimado: ${{ vueltoEstimado() | number:'1.2-2' }}</div>
+              }
+            }
             <small class="text-muted mt-2">Los precios se verifican al guardar.</small>
           </div>
         </aside>
@@ -85,3 +91,18 @@
     }
   </div>
 </section>
+
+@if (confirmandoTelegram()) {
+  <div class="telegram-overlay" (keydown.escape)="confirmandoTelegram.set(false)">
+    <div class="card shadow rounded-4 p-4 telegram-dialog" role="dialog" aria-modal="true" aria-labelledby="telegram-title">
+      <h2 id="telegram-title" class="fs-4">Continuar en Telegram</h2>
+      <p>Se abrirá el bot con un borrador que incluye productos, dirección, teléfono y método de pago. Revisalo y envialo en Telegram.</p>
+      <p>Esta acción no confirma el pedido ni registra un pago.</p>
+      <div class="d-flex gap-2 flex-wrap">
+        <button type="button" class="btn btn-outline-secondary" (click)="confirmandoTelegram.set(false)">Cancelar</button>
+        <a class="theme-btn rounded-pill px-4 py-2" [href]="enlaceTelegram()" target="_blank" rel="noopener noreferrer"
+          (click)="confirmandoTelegram.set(false)">Abrir Telegram</a>
+      </div>
+    </div>
+  </div>
+}

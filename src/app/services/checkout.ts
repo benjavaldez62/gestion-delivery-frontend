@@ -4,12 +4,24 @@ import { Observable } from 'rxjs';
 import { apiUrl } from '../config/api';
 import { CheckoutPayloadItem } from '../models/cart';
 
+export type MetodoPago = 'efectivo' | 'tarjeta' | 'transferencia';
+
 export interface DatosCheckout {
   direccion: string;
   telefono: string;
   notas: string;
-  metodo_pago: 'efectivo' | 'tarjeta';
+  metodo_pago: MetodoPago;
+  monto_recibido?: number;
   items: CheckoutPayloadItem[];
+}
+
+export interface ItemBorrador {
+  producto_id: number;
+  nombre: string;
+  precio_unitario: number;
+  cantidad: number;
+  adicionales: { id: number; nombre: string; precio: number }[];
+  subtotal: number;
 }
 
 export interface BorradorCheckout {
@@ -18,6 +30,7 @@ export interface BorradorCheckout {
   subtotal: number;
   costo_envio: number;
   monto_total: number;
+  items: ItemBorrador[];
 }
 
 @Injectable({ providedIn: 'root' })
