@@ -5,8 +5,6 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../services/auth';
 import { googleClientId } from '../../config/api';
 
-declare const google: any;
-
 @Component({
   imports: [FormsModule],
   selector: 'app-login',
@@ -46,7 +44,7 @@ export class Login implements AfterViewInit {
 
     google.accounts.id.initialize({
       client_id: googleClientId,
-      callback: (respuesta: any) =>
+      callback: (respuesta: google.accounts.id.CredentialResponse) =>
         // El callback de Google corre fuera de Angular, hay que volver a la zona
         this.zone.run(() => this.iniciarSesionConGoogle(respuesta.credential)),
     });
