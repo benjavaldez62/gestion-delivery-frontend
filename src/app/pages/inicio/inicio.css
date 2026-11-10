@@ -132,6 +132,13 @@
   pointer-events: none;
 }
 
+.mozzo-offer-ravioles {
+  right: -78px;
+  bottom: -88px;
+  width: 210px;
+  pointer-events: none;
+}
+
 .mozzo-price-tag {
   max-height: 44px;
 }
