@@ -1,0 +1,89 @@
+<main class="admin-orders-page">
+  <div class="admin-eyebrow">
+    <p>PANEL ADMINISTRATIVO - LA POSTA PIZZAS Y PASTAS</p>
+    <span aria-hidden="true"></span>
+  </div>
+
+  <section class="orders-content" aria-labelledby="orders-title">
+    <div class="orders-heading">
+      <h1 id="orders-title">Pedidos</h1>
+    </div>
+
+    @if (error) {
+      <div class="orders-alert" role="alert">{{ error }}</div>
+    }
+
+    @if (cargando) {
+      <p class="orders-message" role="status">Cargando pedidos...</p>
+    } @else if (pedidos.length === 0) {
+      <p class="orders-message">No hay pedidos para mostrar.</p>
+    } @else {
+      <div class="orders-grid">
+        @for (pedido of pedidos; track pedido.id) {
+          <article class="order-card">
+            <div class="order-card-heading">
+              <h2>Pedido #{{ pedido.id }}</h2>
+              @if (pedido.estado; as estado) {
+                <span class="order-status" [class]="'order-status status-' + claseEstado(estado.nombre)">
+                  {{ estado.nombre | uppercase }}
+                </span>
+              }
+            </div>
+
+            <dl class="order-fields">
+              <div class="order-field">
+                <dt>
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm5 6a5 5 0 0 0-10 0h2a3 3 0 0 1 6 0h2Z" /></svg>
+                  Cliente
+                </dt>
+                <dd>{{ pedido.cliente?.username || '—' }}</dd>
+              </div>
+              <div class="order-field">
+                <dt>
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M5 1h6l1 3-2 2v2l2 2v4H4v-4l2-2V6L4 4l1-3Zm1.4 2-.4 1.2 2 2v2.6l-2 2V12h4v-1.2l-2-2V6.2l2-2L9.6 3H6.4Z" /></svg>
+                  Cocinero
+                </dt>
+                <dd>
+                  @if (esSinAsignar(pedido)) {
+                    <select [value]="pedido.cocinero?.id ?? ''"
+                      [disabled]="asignandoPedidoId !== null || cocineros.length === 0"
+                      [attr.aria-label]="'Asignar cocinero al pedido ' + pedido.id"
+                      (change)="asignar(pedido, 'cocinero_id', $event)">
+                      <option value="">{{ cocineros.length ? 'Seleccionar cocinero...' : 'No hay cocineros activos' }}</option>
+                      @for (cocinero of cocineros; track cocinero.id) {
+                        <option [value]="cocinero.id">{{ cocinero.name }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <span>{{ pedido.cocinero?.name || '—' }}</span>
+                  }
+                </dd>
+              </div>
+              <div class="order-field">
+                <dt>
+                  <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M2 9h8l2-3h2l1 3v3h-2a2 2 0 0 1-4 0H7a2 2 0 0 1-4 0H1V6h6v2H3v1h-1Zm2 3a1 1 0 1 0 0-2 1 1 0 0 0 0 2Zm7 0a1 1 0 1 0 0-2 1 1 0 0 0 0 2ZM8 2a3 3 0 0 0-3 3h2a1 1 0 1 1 1 1v2a3 3 0 1 0 0-6Z" /></svg>
+                  Repartidor
+                </dt>
+                <dd>
+                  @if (esSinAsignar(pedido)) {
+                    <select [value]="pedido.repartidor?.id ?? ''"
+                      [disabled]="asignandoPedidoId !== null || repartidores.length === 0"
+                      [attr.aria-label]="'Asignar repartidor al pedido ' + pedido.id"
+                      (change)="asignar(pedido, 'repartidor_id', $event)">
+                      <option value="">{{ repartidores.length ? 'Seleccionar repartidor...' : 'No hay repartidores activos' }}</option>
+                      @for (repartidor of repartidores; track repartidor.id) {
+                        <option [value]="repartidor.id">{{ repartidor.name }}</option>
+                      }
+                    </select>
+                  } @else {
+                    <span>{{ pedido.repartidor?.name || '—' }}</span>
+                  }
+                </dd>
+              </div>
+            </dl>
+          </article>
+        }
+      </div>
+    }
+  </section>
+</main>

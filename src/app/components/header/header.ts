@@ -13,13 +13,27 @@ import { CartService } from '../../services/cart';
   templateUrl: './header.html',
 })
 export class Header {
-  // ==============
-  //    SESIÓN
-  // ============== 
   constructor(
-    private authService: AuthService,
+    public authService: AuthService,
     private router: Router
   ) {}
+
+  get esAdministrador(): boolean {
+    const role = this.authService.obtenerRol()?.trim().toLocaleLowerCase();
+    return role === 'administrador' || role === 'superadmin';
+  }
+
+  get esCocinero(): boolean {
+    return this.authService.obtenerRol()?.trim().toLocaleLowerCase() === 'cocinero';
+  }
+
+  get esRepartidor(): boolean {
+    return this.authService.obtenerRol()?.trim().toLocaleLowerCase() === 'repartidor';
+  }
+
+  get esPersonal(): boolean {
+    return this.esAdministrador || this.esCocinero || this.esRepartidor;
+  }
 
   // Cierre de sesión
   cerrarSesion(): void {
