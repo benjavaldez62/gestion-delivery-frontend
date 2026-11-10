@@ -51,6 +51,11 @@ Ubicación: `src/app/services/categorias.ts`, `src/app/pages/categorias/`, `src/
 - Luego de guardar, una confirmación permite abrir el bot de Telegram con un texto preparado con los precios calculados por el servidor. El cliente debe revisarlo y enviarlo; la recepción y procesamiento por el bot, la asociación del cliente y la creación definitiva del pedido siguen pendientes. Se conserva el carrito.
 - La URL local de la API se configura en `src/app/config/api.ts`. El costo de envío estimado es de $1500 y debe coincidir con el costo calculado por el backend.
 
+### 2.6. Recuperación de contraseña
+- Desde el login, `¿Olvidaste tu contraseña?` abre `/recuperar-contrasena`. La respuesta es genérica para no revelar si el correo pertenece a una cuenta.
+- El enlace recibido abre `/restablecer-contrasena` con el token y correo en el fragmento. El frontend elimina el fragmento de la barra y permite establecer una nueva contraseña; al hacerlo se cierra la sesión local.
+- El envío real requiere configurar el correo y `FRONTEND_URL` en Laravel. Esta recuperación afecta a la contraseña local, no a la cuenta de Google.
+
 ---
 
 ## 3. Estructura del Proyecto
