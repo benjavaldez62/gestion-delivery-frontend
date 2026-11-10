@@ -1,0 +1,16 @@
+.login-card {
+    min-width: 0;
+    width: min(500px, calc(100% - 32px));
+    margin: 24px auto;
+}
+
+.field-error {
+    color: #991b1b;
+    font-size: 0.875rem;
+    margin: 6px 0 0;
+}
+
+.back-link {
+    margin: 20px 0 0;
+    text-align: center;
+}

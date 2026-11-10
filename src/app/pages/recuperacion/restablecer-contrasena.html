@@ -1,0 +1,38 @@
+<section class="mozzo-hero">
+  <div class="login-card">
+    <h1>Nueva contraseña</h1>
+    @if (mensaje()) {
+      <div class="alert success" role="status">{{ mensaje() }}</div>
+      <p class="back-link"><a routerLink="/login">Iniciar sesión</a></p>
+    } @else if (!enlaceValido) {
+      <div class="alert error" role="alert">El enlace de recuperación no es válido. Solicitá uno nuevo.</div>
+      <p class="back-link"><a routerLink="/recuperar-contrasena">Solicitar otro enlace</a></p>
+    } @else {
+      <p>Elegí una contraseña de al menos 8 caracteres y hasta 72 bytes.</p>
+      <form [formGroup]="formulario" (ngSubmit)="restablecer()" novalidate>
+        <div class="form-group">
+          <label for="nueva-contrasena">Nueva contraseña</label>
+          <input id="nueva-contrasena" type="password" formControlName="password" autocomplete="new-password"
+            [attr.aria-invalid]="formulario.controls.password.invalid && formulario.controls.password.touched">
+          @if (formulario.controls.password.invalid && formulario.controls.password.touched) {
+            <p class="field-error" role="alert">Ingresá al menos 8 caracteres y hasta 72 bytes, sin caracteres nulos.</p>
+          }
+        </div>
+        <div class="form-group">
+          <label for="confirmar-contrasena">Confirmar contraseña</label>
+          <input id="confirmar-contrasena" type="password" formControlName="confirmacion" autocomplete="new-password"
+            [attr.aria-invalid]="formulario.controls.confirmacion.touched && (formulario.controls.confirmacion.invalid || formulario.hasError('noCoinciden'))">
+          @if (formulario.controls.confirmacion.touched && (formulario.controls.confirmacion.invalid || formulario.hasError('noCoinciden'))) {
+            <p class="field-error" role="alert">Las contraseñas deben coincidir.</p>
+          }
+        </div>
+        @if (error()) {
+          <div class="alert error" role="alert">{{ error() }}</div>
+          <p><a routerLink="/recuperar-contrasena">Solicitar otro enlace</a></p>
+        }
+        <button type="submit" [disabled]="cargando()">{{ cargando() ? 'Actualizando...' : 'Actualizar contraseña' }}</button>
+      </form>
+      <p class="back-link"><a routerLink="/login">Volver a iniciar sesión</a></p>
+    }
+  </div>
+</section>

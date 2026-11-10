@@ -9,6 +9,8 @@ import { Cocina } from './pages/cocina/cocina';
 import { authGuard } from './guards/auth-guard';
 import { guardRole } from './guards/role-guard';
 import { Pedidos } from './pages/pedidos/pedidos';
+import { RecuperarContrasena } from './pages/recuperacion/recuperar-contrasena';
+import { RestablecerContrasena } from './pages/recuperacion/restablecer-contrasena';
 
 export const routes: Routes = [
     {
@@ -38,6 +40,14 @@ export const routes: Routes = [
     {
         path: 'login',
         component: Login
+    },
+    {
+        path: 'recuperar-contrasena',
+        component: RecuperarContrasena
+    },
+    {
+        path: 'restablecer-contrasena',
+        component: RestablecerContrasena
     },
     {
         path: 'checkout',

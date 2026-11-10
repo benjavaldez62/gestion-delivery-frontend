@@ -1,0 +1,25 @@
+<section class="mozzo-hero">
+  <div class="login-card">
+    <h1>Recuperar contraseña</h1>
+    <p>Ingresá el correo asociado a tu cuenta.</p>
+    @if (mensaje()) {
+      <div class="alert success" role="status">{{ mensaje() }}</div>
+    } @else {
+      <form [formGroup]="formulario" (ngSubmit)="solicitar()" novalidate>
+        <div class="form-group">
+          <label for="correo-recuperacion">Correo electrónico</label>
+          <input id="correo-recuperacion" type="email" autocomplete="email" formControlName="correo"
+            [attr.aria-invalid]="correo.invalid && correo.touched" maxlength="255">
+          @if (correo.invalid && correo.touched) {
+            <p class="field-error" role="alert">Ingresá un correo válido.</p>
+          }
+        </div>
+        @if (error()) {
+          <div class="alert error" role="alert">{{ error() }}</div>
+        }
+        <button type="submit" [disabled]="cargando()">{{ cargando() ? 'Enviando...' : 'Enviar enlace' }}</button>
+      </form>
+    }
+    <p class="back-link"><a routerLink="/login">Volver a iniciar sesión</a></p>
+  </div>
+</section>
