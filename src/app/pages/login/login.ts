@@ -69,7 +69,7 @@ export class Login implements AfterViewInit {
       next: (respuesta) => {
         this.cargando = false;
         this.mensaje = respuesta.message;
-        this.router.navigate(['/categorias']);
+        this.router.navigateByUrl(this.authService.rutaInicial());
       },
       error: (err: HttpErrorResponse) => {
         this.cargando = false;
@@ -102,7 +102,7 @@ export class Login implements AfterViewInit {
       next: (respuesta) => {
         this.cargando = false;
         this.mensaje = respuesta.message;
-        this.router.navigate(['/categorias']);
+        this.router.navigateByUrl(this.authService.rutaInicial());
       },
       error: (err: HttpErrorResponse) => {
         this.cargando = false;

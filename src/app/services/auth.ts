@@ -1,4 +1,4 @@
-import { Injectable } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable, tap } from 'rxjs';
 import { apiUrl, googleClientId } from '../config/api';
@@ -7,7 +7,10 @@ export interface Usuario {
     id: number;
     name: string;
     email: string;
-    role_id: number;
+    role: {
+        id: number;
+        nombre: string;
+    } | null;
 }
 
 export interface LoginResponse {
@@ -30,8 +33,9 @@ export interface Credenciales {
 })
 
 export class AuthService {
-    private apiUrl = 'http://127.0.0.1:8000/api';
     private googleScript?: Promise<void>;
+    private readonly token = signal<string | null>(localStorage.getItem('token'));
+    private readonly rolUsuario = signal<string | null>(localStorage.getItem('rol_usuario'));
 
     constructor(private http: HttpClient) { }
     
@@ -39,15 +43,12 @@ export class AuthService {
     login(credenciales: Credenciales): Observable<LoginResponse> {
         return this.http
             .post<LoginResponse>(
-                `${this.apiUrl}/login`,
+                `${apiUrl}/login`,
                 credenciales
             )
             .pipe(
                 tap(respuesta => {
-                    localStorage.setItem(
-                        'token',
-                        respuesta.data.access_token
-                    );
+                    this.guardarSesion(respuesta.data.access_token, respuesta.data.user);
                 })
             );
     }
@@ -56,15 +57,12 @@ export class AuthService {
     loginConGoogle(idToken:string): Observable<LoginResponse> {
         return this.http
             .post<LoginResponse>(
-                `${this.apiUrl}/auth/google`,
+                `${apiUrl}/auth/google`,
                 { idToken }
             )
             .pipe(
                 tap(respuesta => {
-                    localStorage.setItem(
-                        'token',
-                        respuesta.data.access_token
-                    );
+                    this.guardarSesion(respuesta.data.access_token, respuesta.data.user);
                 })
             );
     }
@@ -96,7 +94,7 @@ export class AuthService {
     
     // Obtener el token guardado
     obtenerToken(): string | null {
-        return localStorage.getItem('token');
+        return this.token();
     }
 
     // Comprobar si existe un token
@@ -104,14 +102,48 @@ export class AuthService {
         return !!this.obtenerToken();
     }
 
+    obtenerRol(): string | null {
+        return this.rolUsuario();
+    }
+
+    rutaInicial(): string {
+        const rol = this.obtenerRol()?.trim().toLocaleLowerCase();
+
+        if (rol === 'administrador' || rol === 'superadmin') {
+            return '/pedidos';
+        }
+        if (rol === 'cocinero') {
+            return '/cocina';
+        }
+        if (rol === 'repartidor') {
+            return '/repartos';
+        }
+        return '/categorias';
+    }
+
     // Cerrar sesión - LogOut
     logout(): Observable<{ success: boolean; message: string }> 
     {
-        return this.http.post<{ success: boolean; message: string }>(`${this.apiUrl}/logout`, {});
+        return this.http.post<{ success: boolean; message: string }>(`${apiUrl}/logout`, {});
     }
 
     // limpiamos la sesión - revocamos token
     limpiarSesion(): void {
         localStorage.removeItem('token');
+        localStorage.removeItem('rol_usuario');
+        this.token.set(null);
+        this.rolUsuario.set(null);
+    }
+
+    private guardarSesion(token: string, usuario: Usuario): void {
+        localStorage.setItem('token', token);
+        this.token.set(token);
+        if (usuario.role?.nombre) {
+            localStorage.setItem('rol_usuario', usuario.role.nombre);
+            this.rolUsuario.set(usuario.role.nombre);
+        } else {
+            localStorage.removeItem('rol_usuario');
+            this.rolUsuario.set(null);
+        }
     }
 }
