@@ -40,6 +40,10 @@
   border-radius: 2px;
 }
 
+.admin-nav-disabled {
+  cursor: default;
+}
+
 .mozzo-cart-btn {
   background-color: var(--theme);
   color: var(--white);
