@@ -47,7 +47,8 @@ Ubicación: `src/app/services/categorias.ts`, `src/app/pages/categorias/`, `src/
 ### 2.5. Checkout
 - La ruta `/checkout` permite completar dirección, teléfono, aclaraciones y método de pago, y consultar el resumen del carrito.
 - Al continuar se guarda un borrador mediante `POST /api/checkout/borradores`. El servidor valida los productos y recalcula los precios; los importes del carrito son estimados.
-- El borrador no es un pedido confirmado y no se envía automáticamente a Telegram. La vinculación con el bot y la creación definitiva del pedido son tareas pendientes; se conserva el carrito.
+- Se puede elegir efectivo, tarjeta o transferencia. En efectivo es posible indicar el importe para calcular el vuelto estimado; los pagos digitales aún no están habilitados ni se confirman automáticamente.
+- Luego de guardar, una confirmación permite abrir el bot de Telegram con un texto preparado con los precios calculados por el servidor. El cliente debe revisarlo y enviarlo; la recepción y procesamiento por el bot, la asociación del cliente y la creación definitiva del pedido siguen pendientes. Se conserva el carrito.
 - La URL local de la API se configura en `src/app/config/api.ts`. El costo de envío estimado es de $1500 y debe coincidir con el costo calculado por el backend.
 
 ---
