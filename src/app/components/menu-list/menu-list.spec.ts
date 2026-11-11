@@ -186,6 +186,41 @@ describe('MenuListComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Pizza muzzarella agregado correctamente');
   });
 
+  it('muestra el precio de los adicionales solo en el producto que los tiene seleccionados', () => {
+    const component = fixture.componentInstance;
+    const roquefort: MenuProduct = {
+      ...product,
+      id: 8,
+      nombre: 'Pizza roquefort',
+      precio: 7000,
+    };
+    component.products.set([product, roquefort]);
+    component.mostrarTodosLosProductos();
+    fixture.detectChanges();
+
+    const cards = fixture.nativeElement.querySelectorAll('app-product-card') as NodeListOf<HTMLElement>;
+    const additionalsToggle = cards[0].querySelector('.menu-additionals-toggle input') as HTMLInputElement;
+    additionalsToggle.checked = true;
+    additionalsToggle.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    const olivesCheckbox = cards[0].querySelectorAll('.menu-additional-option input')[1] as HTMLInputElement;
+    olivesCheckbox.checked = true;
+    olivesCheckbox.dispatchEvent(new Event('change'));
+    fixture.detectChanges();
+
+    expect(cards[0].querySelector('.menu-product-total')?.textContent).toContain('$5,200');
+    expect(cards[1].querySelector('.menu-product-total')?.textContent).toContain('$7,000');
+
+    (cards[1].querySelector('.menu-product-add') as HTMLButtonElement).click();
+    fixture.detectChanges();
+
+    expect(cart.items()).toHaveLength(1);
+    expect(cart.items()[0].nombre).toBe('Pizza roquefort');
+    expect(cart.items()[0].subtotal).toBe(7000);
+    expect(cart.items()[0].adicionales).toEqual([]);
+  });
+
   it('permite agregar el producto sin adicionales cuando falla su consulta', () => {
     const component = fixture.componentInstance;
     component.mostrarTodosLosProductos();

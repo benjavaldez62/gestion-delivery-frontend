@@ -72,6 +72,7 @@
                 [additionalsLoading]="expandedProductId() === product.id && additionalsLoading()"
                 [additionalsError]="additionalsError()"
                 [selectedAdditionalIds]="selectedAdditionalIds()"
+                [additionalsPrice]="expandedProductId() === product.id ? selectedAdditionalsPrice() : 0"
                 [quantity]="quantityFor(product.id)"
                 (additionalsToggled)="toggleAdditionals(product, $event)"
                 (additionalToggled)="toggleAdicional($event)"
