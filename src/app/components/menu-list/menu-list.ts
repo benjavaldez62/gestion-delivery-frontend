@@ -46,6 +46,12 @@ export class MenuListComponent implements OnInit, OnDestroy {
   readonly additionalsLoading = signal(false);
   readonly additionalsError = signal('');
   readonly selectedAdditionalIds = signal<number[]>([]);
+  readonly selectedAdditionalsPrice = computed(() => {
+    const selectedIds = this.selectedAdditionalIds();
+    return this.additionals()
+      .filter((additional) => selectedIds.includes(additional.id))
+      .reduce((sum, additional) => sum + additional.precio, 0);
+  });
   readonly quantities = signal<Record<number, number>>({});
   readonly successMessage = signal('');
 
