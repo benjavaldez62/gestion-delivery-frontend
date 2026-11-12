@@ -38,7 +38,7 @@ export class Pedidos implements OnInit {
   }
 
   esSinAsignar(pedido: PedidoAdministracion): boolean {
-    return pedido.estado?.nombre.trim().toLocaleUpperCase() === 'SIN_ASIGNAR';
+    return this.claseEstado(pedido.estado?.nombre ?? '') === 'sin_asignar';
   }
 
   claseEstado(nombre: string): string {
