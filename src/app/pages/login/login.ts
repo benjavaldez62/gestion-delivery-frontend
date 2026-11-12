@@ -1,7 +1,8 @@
-import { Component, AfterViewInit, ElementRef, NgZone, viewChild, inject } from '@angular/core';
+import { Component, AfterViewInit, ElementRef, NgZone, signal, viewChild } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
+import { finalize } from 'rxjs';
 import { AuthService } from '../../services/auth';
 import { googleClientId } from '../../config/api';
 
@@ -16,9 +17,9 @@ import { googleClientId } from '../../config/api';
 export class Login implements AfterViewInit {
   email = '';
   password = '';
-  cargando = false;
-  error = '';
-  mensaje = '';
+  readonly cargando = signal(false);
+  readonly error = signal('');
+  readonly mensaje = signal('');
 
   // Referencia al <div #googleBtn> del HTML
   googleBtn = viewChild<ElementRef<HTMLDivElement>>('googleBtn');
@@ -34,7 +35,7 @@ export class Login implements AfterViewInit {
     try {
       await this.authService.cargarScriptGoogle();
     } catch {
-      this.error = 'No se pudo cargar el inicio de sesión con Google.';
+      this.error.set('No se pudo cargar el inicio de sesión con Google.');
       return;
     }
 
@@ -61,60 +62,56 @@ export class Login implements AfterViewInit {
   }
 
   private iniciarSesionConGoogle(idToken: string): void {
-    this.error = '';
-    this.mensaje = '';
-    this.cargando = true;
+    if (this.cargando()) return;
+    this.error.set('');
+    this.mensaje.set('');
+    this.cargando.set(true);
 
-    this.authService.loginConGoogle(idToken).subscribe({
+    this.authService.loginConGoogle(idToken).pipe(finalize(() => this.cargando.set(false))).subscribe({
       next: (respuesta) => {
-        this.cargando = false;
-        this.mensaje = respuesta.message;
+        this.mensaje.set(respuesta.message);
         this.router.navigateByUrl(this.authService.rutaInicial());
       },
       error: (err: HttpErrorResponse) => {
-        this.cargando = false;
-
         if (err.status === 0) {
-          this.error = 'No se pudo conectar con la API de Laravel.';
+          this.error.set('No se pudo conectar con la API de Laravel.');
         } else {
           // Muestra el mensaje del backend
-          this.error = err.error?.message || 'No se pudo iniciar sesión con Google.';
+          this.error.set(err.error?.message || 'No se pudo iniciar sesión con Google.');
         }
       }
     });
   }
 
   iniciarSesion(): void {
-    this.error = '';
-    this.mensaje = '';
+    if (this.cargando()) return;
+    this.error.set('');
+    this.mensaje.set('');
 
     // Validacion y manejo de error cuando es inválido
     if (!this.email.trim() || !this.password) {
-      this.error = 'Ingresá tu correo y contraseña.';
+      this.error.set('Ingresá tu correo y contraseña.');
       return;
     }
 
-    this.cargando = true;
+    this.cargando.set(true);
     this.authService.login({
       email: this.email.trim(),
       password: this.password
-    }).subscribe({
+    }).pipe(finalize(() => this.cargando.set(false))).subscribe({
       next: (respuesta) => {
-        this.cargando = false;
-        this.mensaje = respuesta.message;
+        this.mensaje.set(respuesta.message);
         this.router.navigateByUrl(this.authService.rutaInicial());
       },
       error: (err: HttpErrorResponse) => {
-        this.cargando = false;
-
         if (err.status === 401) {
-          this.error = 'El correo o la contraseña son incorrectos.';
+          this.error.set('El correo o la contraseña son incorrectos.');
         } else if (err.status === 422) {
-          this.error = 'Revisá los datos ingresados.';
+          this.error.set('Revisá los datos ingresados.');
         } else if (err.status === 0) {
-          this.error = 'No se pudo conectar con la API de Laravel.';
+          this.error.set('No se pudo conectar con la API de Laravel.');
         } else {
-          this.error = err.error?.message || 'Ocurrió un error al iniciar sesión.';
+          this.error.set(err.error?.message || 'Ocurrió un error al iniciar sesión.');
         }
       }
     });
