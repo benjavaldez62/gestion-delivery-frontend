@@ -61,7 +61,10 @@
                         {{ item.producto?.nombre || 'Producto' }}
                         @if (item.adicionales.length) {
                           <small>
-                            + {{ item.adicionales.length }} adicional(es)
+                            + {{ item.adicionales.length }} adicional(es):
+                            @for (adicional of item.adicionales; track $index) {
+                              {{ adicional.nombre }}@if (!$last) {, }
+                            }
                           </small>
                         }
                       </span>
