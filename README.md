@@ -52,9 +52,10 @@ Ubicación: `src/app/services/categorias.ts`, `src/app/pages/categorias/`, `src/
 - La URL local de la API se configura en `src/app/config/api.ts`. El costo de envío estimado es de $1500 y debe coincidir con el costo calculado por el backend.
 
 ### 2.6. Recuperación de contraseña
-- Desde el login, `¿Olvidaste tu contraseña?` abre `/recuperar-contrasena`. La respuesta es genérica para no revelar si el correo pertenece a una cuenta.
+- Desde el login, `¿Olvidaste tu contraseña?` abre `/recuperar-contrasena`. Se distinguen correo inexistente, usuario inactivo, errores de envío y limitación; esto permite enumerar cuentas y debe coordinarse con el criterio de privacidad de SD-150.
+- Los correos del dominio exacto `test.com` deben contactar al administrador; no se les envía enlace ni notificación automática. El flujo administrativo corresponde a una tarea independiente.
 - El enlace recibido abre `/restablecer-contrasena` con el token y correo en el fragmento. El frontend elimina el fragmento de la barra y permite establecer una nueva contraseña; al hacerlo se cierra la sesión local.
-- El envío real requiere configurar el correo y `FRONTEND_URL` en Laravel. Esta recuperación afecta a la contraseña local, no a la cuenta de Google.
+- El envío real requiere configurar SMTP y `FRONTEND_URL` en Laravel. La confirmación indica aceptación por el servidor SMTP, no entrega garantizada en la bandeja. Esta recuperación afecta a la contraseña local, no a la cuenta de Google.
 
 ---
 
