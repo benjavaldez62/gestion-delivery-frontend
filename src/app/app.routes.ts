@@ -9,6 +9,7 @@ import { Cocina } from './pages/cocina/cocina';
 import { authGuard } from './guards/auth-guard';
 import { guardRole } from './guards/role-guard';
 import { Pedidos } from './pages/pedidos/pedidos';
+import { Repartos } from './pages/repartos/repartos';
 
 export const routes: Routes = [
     {
@@ -59,7 +60,7 @@ export const routes: Routes = [
     },
     {
         path: 'repartos',
-        children: [],
+        component: Repartos,
         canActivate: [authGuard, guardRole],
         data: { roles: ['Repartidor'] }
     },
