@@ -14,50 +14,62 @@ describe('Dashboard', () => {
 
   const resumenMock: DashboardResumen = {
     periodo: 'historico',
+    admin_nombre: 'Benjamín Valdez',
     kpis: {
-      ingresos_totales: 84500,
-      total_pedidos: 14,
-      pedidos_validos: 13,
-      pedidos_entregados: 8,
+      ingresos_totales: 65500,
+      total_pedidos: 5,
+      pedidos_validos: 4,
+      pedidos_entregados: 1,
       pedidos_cancelados: 1,
-      pedidos_en_curso: 5,
+      pedidos_en_curso: 3,
       pedidos_sin_asignar: 2,
-      ticket_promedio: 6500,
-      tasa_entrega: 61.5,
+      ticket_promedio: 16375,
+      tasa_entrega: 20,
     },
     por_estado: [
-      { id: 1, nombre: 'Sin asignar', cantidad: 2, monto_total: 13000, porcentaje: 14.3 },
-      { id: 2, nombre: 'En preparación', cantidad: 3, monto_total: 21500, porcentaje: 21.4 },
-      { id: 5, nombre: 'Entregado', cantidad: 8, monto_total: 50000, porcentaje: 57.1 },
+      { id: 1, nombre: 'Sin asignar', cantidad: 0, monto_total: 0, porcentaje: 0 },
+      { id: 2, nombre: 'Pendiente', cantidad: 1, monto_total: 16000, porcentaje: 20 },
+      { id: 3, nombre: 'En preparación', cantidad: 1, monto_total: 13000, porcentaje: 20 },
+      { id: 4, nombre: 'Listo para entregar', cantidad: 0, monto_total: 0, porcentaje: 0 },
+      { id: 5, nombre: 'En camino', cantidad: 1, monto_total: 25500, porcentaje: 20 },
+      { id: 6, nombre: 'Entregado', cantidad: 1, monto_total: 11000, porcentaje: 20 },
+      { id: 7, nombre: 'Cancelado', cantidad: 1, monto_total: 15000, porcentaje: 20 },
     ],
     por_metodo_pago: [
-      { id: 1, nombre: 'Transferencia bancaria', cantidad: 8, monto_total: 52000, porcentaje: 61.5 },
-      { id: 2, nombre: 'Efectivo', cantidad: 5, monto_total: 32500, porcentaje: 38.5 },
+      { id: 1, nombre: 'Transferencia bancaria', cantidad: 2, monto_total: 41500, porcentaje: 63 },
+      { id: 2, nombre: 'Efectivo', cantidad: 2, monto_total: 24000, porcentaje: 37 },
     ],
     staff: {
       cocineros: [
         {
           id: 2,
-          name: 'Felipe Martinez',
+          name: 'Felipe Martínez',
           email: 'felipe@test.com',
           rol: 'Cocinero',
           disponible: false,
-          pedidos_activos_count: 1,
-          pedidos_completados_periodo: 5,
+          pedidos_activos_count: 2,
+          pedidos_completados_periodo: 1,
           pedidos_activos: [
             {
-              id: 110,
-              codigo: 'PED-110',
+              id: 2,
+              codigo: 'PED-002',
               estado: 'En preparación',
-              cliente: 'juanperez',
-              monto_total: 7800,
+              cliente: 'gusmachax779',
+              monto_total: 13000,
+            },
+            {
+              id: 3,
+              codigo: 'PED-003',
+              estado: 'En camino',
+              cliente: 'cata_lopez001',
+              monto_total: 25500,
             },
           ],
         },
         {
           id: 4,
-          name: 'Lucía Fernández',
-          email: 'lucia@test.com',
+          name: 'Benjamín Valdez',
+          email: 'benja@test.com',
           rol: 'Cocinero',
           disponible: true,
           pedidos_activos_count: 0,
@@ -71,23 +83,52 @@ describe('Dashboard', () => {
           name: 'Sebastián Gómez',
           email: 'sebastian@test.com',
           rol: 'Repartidor',
+          disponible: false,
+          pedidos_activos_count: 1,
+          pedidos_completados_periodo: 1,
+          pedidos_activos: [
+            {
+              id: 3,
+              codigo: 'PED-003',
+              estado: 'En camino',
+              cliente: 'cata_lopez001',
+              monto_total: 25500,
+            },
+          ],
+        },
+        {
+          id: 5,
+          name: 'Fabricio Alanis',
+          email: 'fabri@test.com',
+          rol: 'Repartidor',
           disponible: true,
           pedidos_activos_count: 0,
-          pedidos_completados_periodo: 4,
+          pedidos_completados_periodo: 2,
           pedidos_activos: [],
         },
       ],
     },
     pedidos_para_asignar: [
       {
-        id: 113,
-        codigo: 'PED-113',
-        monto_total: 6500,
-        created_at: '2026-11-11T20:00:00.000000Z',
-        cliente: { id: 1, username: 'mariagomez' },
-        estado: { id: 1, nombre: 'Sin asignar' },
+        id: 1,
+        codigo: 'PED-001',
+        monto_total: 16000,
+        created_at: '2026-11-12T10:00:00.000000Z',
+        cliente: { id: 1, username: 'juan-martin96' },
+        estado: { id: 2, nombre: 'Pendiente' },
         metodo_pago: 'Transferencia bancaria',
         cocinero: null,
+        repartidor: null,
+      },
+      {
+        id: 2,
+        codigo: 'PED-002',
+        monto_total: 13000,
+        created_at: '2026-11-12T10:05:00.000000Z',
+        cliente: { id: 2, username: 'gusmachax779' },
+        estado: { id: 3, nombre: 'En preparación' },
+        metodo_pago: 'Efectivo',
+        cocinero: { id: 2, name: 'Felipe Martínez' },
         repartidor: null,
       },
     ],
@@ -116,52 +157,40 @@ describe('Dashboard', () => {
     expect(component).toBeTruthy();
     expect(dashboardServiceSpy.obtenerResumen).toHaveBeenCalledWith('historico');
     expect(component.resumen).toEqual(resumenMock);
-    expect(component.cocinerosDisponiblesCount).toBe(1);
-    expect(component.repartidoresDisponiblesCount).toBe(1);
+    expect(component.totalDisponibles).toBe(2);
+    expect(component.porcentajeEntregados).toBe(20);
   });
 
-  it('debe renderizar los bloques de KPIs, estado del personal y notificaciones de pedidos por asignar sin selectores', () => {
+  it('debe renderizar el encabezado, KPIs, pedidos pendientes de asignación, equipo y resumen inferior', () => {
     const compiled = fixture.nativeElement as HTMLElement;
 
-    expect(compiled.textContent).toContain('Dashboard General');
-    expect(compiled.textContent).toContain('$84,500');
-    expect(compiled.textContent).toContain('13 cobrados');
-    expect(compiled.textContent).toContain('$6,500');
+    expect(compiled.textContent).toContain(component.saludoEncabezado);
+    expect(compiled.textContent).toContain('$65,500');
+    expect(compiled.textContent).toContain('4 pedidos cobrados');
+    expect(compiled.textContent).toContain('$16,375');
     expect(compiled.textContent).toContain('2 sin asignar');
-    expect(compiled.textContent).toContain('1 cancelado');
-    expect(compiled.textContent).toContain('Felipe Martinez');
-    expect(compiled.textContent).toContain('1 act.');
-    expect(compiled.textContent).toContain('En: #110');
-    expect(compiled.textContent).toContain('Lucía Fernández');
-    expect(compiled.textContent).toContain('Disponible para asignar');
-    expect(compiled.textContent).toContain('Pedido #113 · mariagomez');
-    expect(compiled.textContent).toContain('Falta asignar cocinero y repartidor');
-    expect(compiled.textContent).toContain('Asignar en Pedidos →');
-    expect(compiled.querySelector('select')).toBeNull();
+    expect(compiled.textContent).toContain('Requieren asignación');
+    expect(compiled.textContent).toContain('juan-martin96');
+    expect(compiled.textContent).toContain('Falta: cocinero y repartidor');
+    expect(compiled.textContent).toContain('Falta: repartidor');
+    expect(compiled.textContent).toContain('2 de 4 disponibles');
+    expect(compiled.textContent).toContain('FM');
+    expect(compiled.textContent).toContain('Pedidos #2, #3');
+    expect(compiled.textContent).toContain('Sin asignar y Listo para entregar: 0');
+    expect(compiled.textContent).toContain('Transferencia bancaria');
   });
 
-  it('debe describir correctamente qué personal falta asignar en cada notificación', () => {
-    const basePedido = resumenMock.pedidos_para_asignar[0];
-    expect(component.descripcionFaltante(basePedido)).toBe('Falta asignar cocinero y repartidor');
-    expect(
-      component.descripcionFaltante({
-        ...basePedido,
-        cocinero: { id: 2, name: 'Felipe Martinez' },
-        repartidor: null,
-      }),
-    ).toBe('Falta asignar repartidor');
-    expect(
-      component.descripcionFaltante({
-        ...basePedido,
-        cocinero: null,
-        repartidor: { id: 3, name: 'Sebastián Gómez' },
-      }),
-    ).toBe('Falta asignar cocinero');
+  it('debe calcular correctamente las iniciales y el detalle de pedidos del personal', () => {
+    expect(component.iniciales('Benjamín Valdez')).toBe('BV');
+    expect(component.iniciales('Admin')).toBe('AD');
+    expect(component.detalleStaff(resumenMock.staff.cocineros[0])).toBe('Pedidos #2, #3');
+    expect(component.detalleStaff(resumenMock.staff.repartidores[0])).toBe('Pedido #3');
+    expect(component.detalleStaff(resumenMock.staff.cocineros[1])).toBe('Sin pedidos');
   });
 
-  it('debe alternar el filtro de solo personal disponible con toggleSoloDisponibles()', () => {
+  it('debe alternar el filtro de solo disponibles en la lista del equipo', () => {
     expect(component.soloDisponibles).toBe(false);
-    expect(component.personalFiltrado.length).toBe(3);
+    expect(component.personalFiltrado.length).toBe(4);
 
     component.toggleSoloDisponibles();
     fixture.detectChanges();
@@ -169,23 +198,8 @@ describe('Dashboard', () => {
     expect(component.soloDisponibles).toBe(true);
     expect(component.personalFiltrado.length).toBe(2);
     const compiled = fixture.nativeElement as HTMLElement;
-    expect(compiled.textContent).not.toContain('En: #110');
-    expect(compiled.textContent).toContain('Ver todo el personal');
-  });
-
-  it('debe mostrar y ocultar los gráficos de barras con toggleDesglose()', () => {
-    const compiled = fixture.nativeElement as HTMLElement;
-    expect(component.mostrarDesglose).toBe(false);
-    expect(compiled.querySelector('.bar-chart-list')).toBeNull();
-
-    component.toggleDesglose();
-    fixture.detectChanges();
-
-    expect(component.mostrarDesglose).toBe(true);
-    expect(compiled.querySelectorAll('.bar-chart-list').length).toBe(2);
-    expect(compiled.querySelectorAll('.bar-fill').length).toBe(5);
-    expect(compiled.textContent).toContain('Transferencia bancaria');
-    expect(compiled.textContent).toContain('$52,000');
+    expect(compiled.textContent).not.toContain('Pedidos #2, #3');
+    expect(compiled.textContent).toContain('Benjamín Valdez');
   });
 
   it('debe cambiar el período seleccionado y volver a consultar el servicio', () => {
@@ -204,7 +218,7 @@ describe('Dashboard', () => {
     fixture.detectChanges();
 
     expect(component.error).toBe('Error interno del servidor.');
-    const alert = (fixture.nativeElement as HTMLElement).querySelector('.dashboard-alert-error');
+    const alert = (fixture.nativeElement as HTMLElement).querySelector('.dash-alert');
     expect(alert?.textContent).toContain('Error interno del servidor.');
   });
 });

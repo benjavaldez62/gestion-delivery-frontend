@@ -36,6 +36,7 @@ export class AuthService {
     private googleScript?: Promise<void>;
     private readonly token = signal<string | null>(localStorage.getItem('token'));
     private readonly rolUsuario = signal<string | null>(localStorage.getItem('rol_usuario'));
+    private readonly nombreUsuario = signal<string | null>(localStorage.getItem('nombre_usuario'));
 
     constructor(private http: HttpClient) { }
     
@@ -106,6 +107,10 @@ export class AuthService {
         return this.rolUsuario();
     }
 
+    obtenerNombre(): string | null {
+        return this.nombreUsuario();
+    }
+
     rutaInicial(): string {
         const rol = this.obtenerRol()?.trim().toLocaleLowerCase();
 
@@ -131,13 +136,22 @@ export class AuthService {
     limpiarSesion(): void {
         localStorage.removeItem('token');
         localStorage.removeItem('rol_usuario');
+        localStorage.removeItem('nombre_usuario');
         this.token.set(null);
         this.rolUsuario.set(null);
+        this.nombreUsuario.set(null);
     }
 
     private guardarSesion(token: string, usuario: Usuario): void {
         localStorage.setItem('token', token);
         this.token.set(token);
+        if (usuario.name) {
+            localStorage.setItem('nombre_usuario', usuario.name);
+            this.nombreUsuario.set(usuario.name);
+        } else {
+            localStorage.removeItem('nombre_usuario');
+            this.nombreUsuario.set(null);
+        }
         if (usuario.role?.nombre) {
             localStorage.setItem('rol_usuario', usuario.role.nombre);
             this.rolUsuario.set(usuario.role.nombre);

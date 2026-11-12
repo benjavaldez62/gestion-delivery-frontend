@@ -3,7 +3,9 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { TimeoutError, finalize, timeout } from 'rxjs';
+import { AuthService } from '../../services/auth';
 import {
+  DashboardEstadoItem,
   DashboardPedidoParaAsignar,
   DashboardResumen,
   DashboardService,
@@ -20,6 +22,7 @@ import {
 })
 export class Dashboard implements OnInit {
   private readonly dashboardService = inject(DashboardService);
+  private readonly authService = inject(AuthService);
   private readonly changeDetector = inject(ChangeDetectorRef);
 
   resumen: DashboardResumen | null = null;
@@ -27,14 +30,27 @@ export class Dashboard implements OnInit {
   cargando = true;
   error = '';
   soloDisponibles = false;
-  mostrarDesglose = false;
 
   readonly periodos: { valor: PeriodoDashboard; etiqueta: string }[] = [
-    { valor: 'historico', etiqueta: 'Todo el historial' },
     { valor: 'hoy', etiqueta: 'Hoy' },
-    { valor: '7d', etiqueta: 'Últimos 7 días' },
-    { valor: '30d', etiqueta: 'Últimos 30 días' },
+    { valor: '7d', etiqueta: '7 días' },
+    { valor: '30d', etiqueta: '30 días' },
+    { valor: 'historico', etiqueta: 'Todo' },
   ];
+
+  readonly fechaActualTexto = this.formatearFechaActual();
+
+  get saludoEncabezado(): string {
+    const hora = new Date().getHours();
+    const saludo = hora < 12 ? 'Buen día' : hora < 20 ? 'Buenas tardes' : 'Buenas noches';
+    const nombreCompleto = (
+      this.resumen?.admin_nombre ||
+      this.authService.obtenerNombre() ||
+      'Admin'
+    ).trim();
+    const primerNombre = nombreCompleto.split(/\s+/)[0] || 'Admin';
+    return `${saludo}, ${primerNombre}`;
+  }
 
   get cocineros(): DashboardStaffMiembro[] {
     return this.resumen?.staff.cocineros ?? [];
@@ -55,12 +71,44 @@ export class Dashboard implements OnInit {
     return this.todoElPersonal;
   }
 
-  get cocinerosDisponiblesCount(): number {
-    return this.cocineros.filter((c) => c.disponible).length;
+  get totalDisponibles(): number {
+    return this.todoElPersonal.filter((miembro) => miembro.disponible).length;
   }
 
-  get repartidoresDisponiblesCount(): number {
-    return this.repartidores.filter((r) => r.disponible).length;
+  get porcentajeEntregados(): number {
+    if (!this.resumen || this.resumen.kpis.total_pedidos <= 0) {
+      return 0;
+    }
+    return Math.round(
+      (this.resumen.kpis.pedidos_entregados / this.resumen.kpis.total_pedidos) * 100,
+    );
+  }
+
+  get estadosConPedidos(): DashboardEstadoItem[] {
+    return (this.resumen?.por_estado ?? []).filter((e) => e.cantidad > 0);
+  }
+
+  get resumenEstadosEnCero(): string {
+    const enCero = (this.resumen?.por_estado ?? []).filter((e) => e.cantidad === 0);
+    if (enCero.length === 0) {
+      return '';
+    }
+    if (enCero.length === 1) {
+      return `${enCero[0].nombre}: 0`;
+    }
+    const ultimo = enCero[enCero.length - 1].nombre;
+    const previos = enCero
+      .slice(0, -1)
+      .map((e) => e.nombre)
+      .join(', ');
+    return `${previos} y ${ultimo}: 0`;
+  }
+
+  get ariaLabelEstados(): string {
+    return (this.resumen?.por_estado ?? [])
+      .filter((e) => e.cantidad > 0)
+      .map((e) => `${e.nombre} ${e.cantidad}`)
+      .join(', ');
   }
 
   ngOnInit(): void {
@@ -84,30 +132,78 @@ export class Dashboard implements OnInit {
     this.changeDetector.markForCheck();
   }
 
-  toggleDesglose(): void {
-    this.mostrarDesglose = !this.mostrarDesglose;
-    this.changeDetector.markForCheck();
+  iniciales(nombre: string): string {
+    const partes = nombre.trim().split(/\s+/).filter(Boolean);
+    if (partes.length === 0) {
+      return 'ST';
+    }
+    if (partes.length === 1) {
+      return partes[0].slice(0, 2).toUpperCase();
+    }
+    return `${partes[0][0]}${partes[partes.length - 1][0]}`.toUpperCase();
   }
 
-  listaPedidosActivos(miembro: DashboardStaffMiembro): string {
-    return miembro.pedidos_activos.map((pedido) => `#${pedido.id}`).join(', ');
+  detalleStaff(miembro: DashboardStaffMiembro): string {
+    if (miembro.disponible || miembro.pedidos_activos.length === 0) {
+      return 'Sin pedidos';
+    }
+    const ids = miembro.pedidos_activos.map((p) => `#${p.id}`).join(', ');
+    return miembro.pedidos_activos.length === 1 ? `Pedido ${ids}` : `Pedidos ${ids}`;
+  }
+
+  estadoStaffTexto(miembro: DashboardStaffMiembro): string {
+    if (miembro.disponible) {
+      return 'Libre';
+    }
+    const n = miembro.pedidos_activos_count;
+    return n === 1 ? '1 activo' : `${n} activos`;
   }
 
   descripcionFaltante(pedido: DashboardPedidoParaAsignar): string {
     if (!pedido.cocinero && !pedido.repartidor) {
-      return 'Falta asignar cocinero y repartidor';
+      return 'cocinero y repartidor';
     }
     if (!pedido.cocinero) {
-      return 'Falta asignar cocinero';
+      return 'cocinero';
     }
     if (!pedido.repartidor) {
-      return 'Falta asignar repartidor';
+      return 'repartidor';
     }
-    return 'Pendiente de asignación';
+    return 'personal';
   }
 
-  claseEstado(nombre: string): string {
-    return nombre
+  colorEstado(nombre: string): string {
+    const clave = this.normalizarClave(nombre);
+    switch (clave) {
+      case 'pendiente':
+        return '#F59E0B';
+      case 'en_preparacion':
+      case 'sin_asignar':
+        return '#EA580C';
+      case 'listo_para_entregar':
+      case 'listo':
+        return '#0D9488';
+      case 'en_camino':
+        return '#2563EB';
+      case 'entregado':
+        return '#16A34A';
+      case 'cancelado':
+        return '#A8A29E';
+      default:
+        return '#57534E';
+    }
+  }
+
+  claseChipEstado(nombre?: string): string {
+    const clave = this.normalizarClave(nombre ?? '');
+    if (clave === 'pendiente') {
+      return 'chip-amber';
+    }
+    return 'chip-orange';
+  }
+
+  private normalizarClave(texto: string): string {
+    return texto
       .trim()
       .toLocaleLowerCase()
       .normalize('NFD')
@@ -115,13 +211,13 @@ export class Dashboard implements OnInit {
       .replace(/\s+/g, '_');
   }
 
-  claseMetodoPago(nombre: string): string {
-    return nombre
-      .trim()
-      .toLocaleLowerCase()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/\s+/g, '_');
+  private formatearFechaActual(): string {
+    const texto = new Intl.DateTimeFormat('es-AR', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'long',
+    }).format(new Date());
+    return texto.charAt(0).toUpperCase() + texto.slice(1);
   }
 
   private cargarDashboard(): void {

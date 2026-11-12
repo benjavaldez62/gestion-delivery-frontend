@@ -1,21 +1,19 @@
-<main class="admin-dashboard-page">
-  <div class="admin-eyebrow">
-    <p>PANEL ADMINISTRATIVO - LA POSTA PIZZAS Y PASTAS</p>
-    <span aria-hidden="true"></span>
-  </div>
+<main class="dash-page">
+  <div class="dash-container">
 
-  <section class="dashboard-content" aria-labelledby="dashboard-title">
-    <header class="dashboard-header">
-      <div class="dashboard-title-block">
-        <h1 id="dashboard-title">Dashboard General</h1>
+    <!-- Header -->
+    <header class="dash-header">
+      <div class="dash-heading">
+        <span class="dash-date">{{ fechaActualTexto }}</span>
+        <h1 id="dashboard-title">{{ saludoEncabezado }}</h1>
       </div>
 
-      <div class="dashboard-controls">
-        <div class="periodo-pills" role="group" aria-label="Filtrar período del dashboard">
+      <div class="dash-actions">
+        <div role="group" aria-label="Período" class="period-segmented">
           @for (item of periodos; track item.valor) {
             <button
               type="button"
-              class="periodo-pill"
+              class="period-btn"
               [class.active]="periodoActual === item.valor"
               [attr.aria-pressed]="periodoActual === item.valor"
               (click)="cambiarPeriodo(item.valor)">
@@ -26,202 +24,204 @@
 
         <button
           type="button"
-          class="btn-refresh"
+          class="btn-icon-refresh"
+          aria-label="Actualizar datos"
           [disabled]="cargando"
           (click)="recargar()">
-          Actualizar
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+            <path d="M21 12a9 9 0 1 1-3-6.7L21 8M21 3v5h-5"></path>
+          </svg>
         </button>
       </div>
     </header>
 
     @if (error) {
-      <div class="dashboard-alert dashboard-alert-error" role="alert">{{ error }}</div>
+      <div class="dash-alert" role="alert">{{ error }}</div>
     }
 
     @if (cargando && !resumen) {
-      <p class="dashboard-loading" role="status">Cargando métricas del sistema...</p>
+      <p class="dash-loading" role="status">Cargando métricas del sistema...</p>
     } @else if (resumen; as data) {
-      <!-- 4 Minimalist Painted KPI Blocks -->
-      <section class="kpi-grid" aria-label="Indicadores clave del sistema">
-        <article class="kpi-card kpi-emerald">
+
+      <!-- KPIs -->
+      <section aria-label="Indicadores" class="kpi-grid">
+        <div class="surface-card kpi-card">
           <span class="kpi-label">Ingresos</span>
-          <p class="kpi-value">${{ data.kpis.ingresos_totales | number:'1.0-0' }}</p>
-          <p class="kpi-meta">{{ data.kpis.pedidos_validos }} cobrados</p>
-        </article>
+          <span class="kpi-number">${{ data.kpis.ingresos_totales | number:'1.0-0' }}</span>
+          <span class="kpi-sub">{{ data.kpis.pedidos_validos }} {{ data.kpis.pedidos_validos === 1 ? 'pedido cobrado' : 'pedidos cobrados' }}</span>
+        </div>
 
-        <article class="kpi-card kpi-blue">
-          <span class="kpi-label">Ticket Promedio</span>
-          <p class="kpi-value">${{ data.kpis.ticket_promedio | number:'1.0-0' }}</p>
-          <p class="kpi-meta">Por pedido válido</p>
-        </article>
+        <div class="surface-card kpi-card">
+          <span class="kpi-label">Ticket promedio</span>
+          <span class="kpi-number">${{ data.kpis.ticket_promedio | number:'1.0-0' }}</span>
+          <span class="kpi-sub">por pedido válido</span>
+        </div>
 
-        <article class="kpi-card kpi-orange">
-          <span class="kpi-label">En Curso</span>
-          <p class="kpi-value">{{ data.kpis.pedidos_en_curso }}</p>
-          <p class="kpi-meta">
-            {{ data.kpis.pedidos_sin_asignar > 0 ? data.kpis.pedidos_sin_asignar + ' sin asignar' : 'Todo asignado' }}
-          </p>
-        </article>
+        <div class="surface-card kpi-card">
+          <span class="kpi-label">En curso</span>
+          <span class="kpi-number">{{ data.kpis.pedidos_en_curso }}</span>
+          @if (data.kpis.pedidos_sin_asignar > 0) {
+            <span class="kpi-pill-warn">
+              <span class="dot-warn"></span>{{ data.kpis.pedidos_sin_asignar }} sin asignar
+            </span>
+          } @else {
+            <span class="kpi-pill-ok">
+              <span class="dot-ok"></span>Todo asignado
+            </span>
+          }
+        </div>
 
-        <article class="kpi-card kpi-purple">
+        <div class="surface-card kpi-card">
           <span class="kpi-label">Entregados</span>
-          <p class="kpi-value">
+          <span class="kpi-number">
             {{ data.kpis.pedidos_entregados }}
-            <span class="kpi-value-total">/ {{ data.kpis.total_pedidos }}</span>
-          </p>
-          <p class="kpi-meta">{{ data.kpis.pedidos_cancelados }} cancelado{{ data.kpis.pedidos_cancelados === 1 ? '' : 's' }}</p>
-        </article>
+            <span class="kpi-number-of">de {{ data.kpis.total_pedidos }}</span>
+          </span>
+          <div class="kpi-progress-row">
+            <div class="kpi-progress-track">
+              <div class="kpi-progress-fill" [style.width.%]="porcentajeEntregados"></div>
+            </div>
+            <span class="kpi-progress-pct">{{ porcentajeEntregados }}%</span>
+          </div>
+        </div>
       </section>
 
-      <!-- Operations Grid: Notificaciones de Pedidos por Asignar & Estado del Personal -->
-      <section class="operations-grid" aria-label="Notificaciones de pedidos por asignar y disponibilidad del personal">
-        <!-- Left Panel: Notificaciones de Pedidos por Asignar (Read-only alerts) -->
-        <article class="panel-card panel-assign">
-          <div class="panel-header">
-            <h2>Pedidos por Asignar ({{ data.pedidos_para_asignar.length }})</h2>
-            <a class="link-orders" routerLink="/pedidos">Ir a Pedidos →</a>
+      <!-- Attention + Team -->
+      <section class="mid-grid" aria-label="Pedidos pendientes de asignación y estado del equipo">
+
+        <!-- Requieren asignación -->
+        <div class="surface-card list-panel">
+          <div class="panel-head">
+            <div class="panel-head-titles">
+              <h2>Requieren asignación</h2>
+              <span class="panel-subtitle">
+                {{ data.pedidos_para_asignar.length }} {{ data.pedidos_para_asignar.length === 1 ? 'pedido esperando personal' : 'pedidos esperando personal' }}
+              </span>
+            </div>
+            <a routerLink="/pedidos" class="link-action">Ver pedidos</a>
           </div>
 
           @if (data.pedidos_para_asignar.length === 0) {
-            <div class="empty-assign-banner" role="status">
-              <p>Todos los pedidos activos tienen personal asignado.</p>
-            </div>
+            <p class="empty-state" role="status">Todos los pedidos en curso tienen personal asignado.</p>
           } @else {
-            <div class="assign-list">
-              @for (pedido of data.pedidos_para_asignar; track pedido.id) {
-                <div class="assign-item" role="status">
-                  <div class="assign-item-top">
-                    <span class="assign-code">
-                      Pedido #{{ pedido.id }} · {{ pedido.cliente?.username || '—' }}
-                    </span>
-                    <span class="assign-amount">${{ pedido.monto_total | number:'1.0-0' }}</span>
+            @for (pedido of data.pedidos_para_asignar; track pedido.id) {
+              <div class="order-row">
+                <div class="order-badge-id">#{{ pedido.id }}</div>
+                <div class="order-info">
+                  <div class="order-info-top">
+                    <span class="order-client">{{ pedido.cliente?.username || '—' }}</span>
+                    @if (pedido.estado; as est) {
+                      <span class="state-chip" [ngClass]="claseChipEstado(est.nombre)">{{ est.nombre }}</span>
+                    }
                   </div>
-
-                  <div class="assign-item-bottom">
-                    <div class="assign-notice">
-                      <span class="assign-state">{{ pedido.estado?.nombre || 'En curso' }}</span>
-                      <span class="assign-missing">{{ descripcionFaltante(pedido) }}</span>
-                    </div>
-                    <a
-                      class="btn-go-assign"
-                      routerLink="/pedidos"
-                      [attr.aria-label]="'Ir a pedidos para asignar el pedido ' + pedido.id">
-                      Asignar en Pedidos →
-                    </a>
-                  </div>
+                  <span class="order-missing">Falta: {{ descripcionFaltante(pedido) }}</span>
                 </div>
-              }
-            </div>
+                <span class="order-amount">${{ pedido.monto_total | number:'1.0-0' }}</span>
+                <a routerLink="/pedidos" class="btn-assign">Asignar</a>
+              </div>
+            }
           }
-        </article>
+        </div>
 
-        <!-- Right Panel: Estado del Personal -->
-        <article class="panel-card panel-staff">
-          <div class="panel-header">
-            <h2>Estado del Personal</h2>
-            <button
-              type="button"
-              class="btn-toggle-staff"
-              (click)="toggleSoloDisponibles()">
-              {{ soloDisponibles ? 'Ver todo el personal' : 'Mostrar solo disponibles' }}
-            </button>
+        <!-- Equipo -->
+        <div class="surface-card list-panel">
+          <div class="panel-head">
+            <div class="panel-head-titles">
+              <h2>Equipo</h2>
+              <span class="panel-subtitle">{{ totalDisponibles }} de {{ todoElPersonal.length }} disponibles</span>
+            </div>
+            <label class="filter-check">
+              <input
+                type="checkbox"
+                [checked]="soloDisponibles"
+                (change)="toggleSoloDisponibles()">
+              Solo disponibles
+            </label>
           </div>
 
           @if (personalFiltrado.length === 0) {
-            <p class="empty-text">No hay personal disponible para mostrar.</p>
+            <p class="empty-state">No hay personal disponible en este momento.</p>
           } @else {
-            <div class="staff-grid">
-              @for (miembro of personalFiltrado; track miembro.id) {
-                <div
-                  class="staff-member-card"
-                  [class.staff-available]="miembro.disponible"
-                  [class.staff-busy]="!miembro.disponible">
-                  <div class="staff-member-header">
-                    <div class="staff-identity">
-                      <span class="staff-name">{{ miembro.name }}</span>
-                      <span class="staff-role">{{ miembro.rol }}</span>
-                    </div>
-                    <span class="staff-workload">
-                      {{ miembro.disponible ? 'Libre' : miembro.pedidos_activos_count + ' act.' }}
-                    </span>
-                  </div>
-
-                  <p class="staff-orders-line">
-                    {{ miembro.disponible ? 'Disponible para asignar' : 'En: ' + listaPedidosActivos(miembro) }}
-                  </p>
+            @for (miembro of personalFiltrado; track miembro.id) {
+              <div class="staff-row">
+                <div class="staff-avatar">{{ iniciales(miembro.name) }}</div>
+                <div class="staff-meta">
+                  <span class="staff-name">{{ miembro.name }}</span>
+                  <span class="staff-role">{{ miembro.rol }}</span>
                 </div>
-              }
+                <div class="staff-status-col">
+                  <span class="staff-status" [class.is-free]="miembro.disponible" [class.is-busy]="!miembro.disponible">
+                    <span class="status-dot"></span>{{ estadoStaffTexto(miembro) }}
+                  </span>
+                  <span class="staff-detail">{{ detalleStaff(miembro) }}</span>
+                </div>
+              </div>
+            }
+          }
+        </div>
+      </section>
+
+      <!-- Summary: Pedidos por estado & Medios de pago -->
+      <section aria-label="Resumen del período" class="surface-card summary-grid">
+
+        <div class="summary-col">
+          <div class="summary-head">
+            <h2>Pedidos por estado</h2>
+            <span class="panel-subtitle">{{ data.kpis.total_pedidos }} en total</span>
+          </div>
+
+          <div
+            role="img"
+            [attr.aria-label]="ariaLabelEstados"
+            class="stacked-bar">
+            @for (item of estadosConPedidos; track item.id) {
+              <div
+                class="stacked-segment"
+                [style.flex]="item.cantidad + ' 1 0'"
+                [style.background]="colorEstado(item.nombre)">
+              </div>
+            }
+          </div>
+
+          <div class="legend-grid">
+            @for (item of estadosConPedidos; track item.id) {
+              <div class="legend-item">
+                <span class="legend-dot" [style.background]="colorEstado(item.nombre)"></span>
+                <span class="legend-name">{{ item.nombre }}</span>
+                <span class="legend-count">{{ item.cantidad }}</span>
+              </div>
+            }
+          </div>
+
+          @if (resumenEstadosEnCero) {
+            <span class="zero-footnote">{{ resumenEstadosEnCero }}</span>
+          }
+        </div>
+
+        <div class="summary-col">
+          <div class="summary-head">
+            <h2>Medios de pago</h2>
+            <span class="panel-subtitle">${{ data.kpis.ingresos_totales | number:'1.0-0' }} recaudado</span>
+          </div>
+
+          @for (metodo of data.por_metodo_pago; track metodo.id) {
+            <div class="payment-item">
+              <div class="payment-top">
+                <span class="payment-name">{{ metodo.nombre }}</span>
+                <span class="payment-stats">
+                  <strong>${{ metodo.monto_total | number:'1.0-0' }}</strong>
+                  <span class="payment-meta"> · {{ metodo.cantidad }} {{ metodo.cantidad === 1 ? 'pedido' : 'pedidos' }} · {{ metodo.porcentaje | number:'1.0-0' }}%</span>
+                </span>
+              </div>
+              <div class="payment-track">
+                <div class="payment-fill" [style.width.%]="metodo.porcentaje"></div>
+              </div>
             </div>
           }
-        </article>
-      </section>
+        </div>
 
-      <!-- Collapsible Secondary Section: Gráficos de Barras por Estado y Medio de Pago -->
-      <section class="secondary-breakdown" aria-label="Desglose gráfico por estado y medios de pago">
-        <button
-          type="button"
-          class="btn-toggle-desglose"
-          [attr.aria-expanded]="mostrarDesglose"
-          (click)="toggleDesglose()">
-          {{ mostrarDesglose ? 'Ocultar gráficos por estados y medios de pago ▲' : 'Mostrar gráficos por estados y medios de pago ▼' }}
-        </button>
-
-        @if (mostrarDesglose) {
-          <div class="analytics-grid">
-            <article class="panel-card">
-              <div class="panel-header">
-                <h2>Pedidos por Estado</h2>
-              </div>
-
-              <div class="bar-chart-list" role="list" aria-label="Gráfico de barras de pedidos por estado">
-                @for (item of data.por_estado; track item.id) {
-                  <div class="bar-row" role="listitem">
-                    <div class="bar-row-meta">
-                      <span class="bar-label">{{ item.nombre }}</span>
-                      <span class="bar-stats">
-                        <strong>{{ item.cantidad }}</strong> ({{ item.porcentaje | number:'1.0-0' }}%)
-                      </span>
-                    </div>
-                    <div class="bar-track" aria-hidden="true">
-                      <div
-                        class="bar-fill"
-                        [class]="'bar-fill fill-' + claseEstado(item.nombre)"
-                        [style.width.%]="item.porcentaje > 0 ? (item.porcentaje < 8 ? 8 : item.porcentaje) : 0">
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
-            </article>
-
-            <article class="panel-card">
-              <div class="panel-header">
-                <h2>Recaudación por Medio de Pago</h2>
-              </div>
-
-              <div class="bar-chart-list" role="list" aria-label="Gráfico de barras por medio de pago">
-                @for (metodo of data.por_metodo_pago; track metodo.id) {
-                  <div class="bar-row" role="listitem">
-                    <div class="bar-row-meta">
-                      <span class="bar-label">{{ metodo.nombre }}</span>
-                      <span class="bar-stats">
-                        <strong>${{ metodo.monto_total | number:'1.0-0' }}</strong> · {{ metodo.cantidad }} ped. ({{ metodo.porcentaje | number:'1.0-0' }}%)
-                      </span>
-                    </div>
-                    <div class="bar-track" aria-hidden="true">
-                      <div
-                        class="bar-fill"
-                        [class]="'bar-fill fill-pay-' + claseMetodoPago(metodo.nombre)"
-                        [style.width.%]="metodo.porcentaje > 0 ? (metodo.porcentaje < 8 ? 8 : metodo.porcentaje) : 0">
-                      </div>
-                    </div>
-                  </div>
-                }
-              </div>
-            </article>
-          </div>
-        }
       </section>
     }
-  </section>
+
+  </div>
 </main>

@@ -66,6 +66,7 @@ export interface DashboardPedidoParaAsignar {
 
 export interface DashboardResumen {
   periodo: PeriodoDashboard;
+  admin_nombre?: string | null;
   kpis: DashboardKpis;
   por_estado: DashboardEstadoItem[];
   por_metodo_pago: DashboardMetodoPagoItem[];
