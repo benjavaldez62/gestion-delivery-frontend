@@ -15,18 +15,18 @@
                         placeholder="Ingresá tu contraseña" autocomplete="current-password" required />
                 </div>
                 <p><a routerLink="/recuperar-contrasena">¿Olvidaste tu contraseña?</a></p>
-                @if (error) {
+                @if (error()) {
                 <div class="alert error">
-                    {{ error }}
+                    {{ error() }}
                 </div>
                 }
-                @if (mensaje) {
+                @if (mensaje()) {
                 <div class="alert success">
-                    {{ mensaje }}
+                    {{ mensaje() }}
                 </div>
                 }
-                <button type="submit" [disabled]="cargando || formLogin.invalid">
-                    @if (cargando) {
+                <button type="submit" [disabled]="cargando() || formLogin.invalid">
+                    @if (cargando()) {
                     Ingresando...
                     } @else {
                     Ingresar
