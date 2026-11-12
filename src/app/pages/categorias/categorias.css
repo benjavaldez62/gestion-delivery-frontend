@@ -1,0 +1,17 @@
+div>.card {
+    border-radius: 15px;
+}
+
+.card-header {
+    font-weight: 700;
+}
+
+.formCrearBtn {
+    margin-top: 20px;
+    padding-top: 14px;
+}
+
+/* [class^="bi-"]::before, [class*=" bi-"]::before {
+    margin-right: 1px;
+    margin-bottom: 1px;
+} */

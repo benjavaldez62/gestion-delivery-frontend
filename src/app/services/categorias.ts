@@ -1,4 +1,3 @@
-import { Service } from '@angular/core';
 import { Injectable, inject } from '@angular/core'; // 
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
@@ -12,19 +11,47 @@ export interface Categoria {
     nombre: string;
     descripcion: string;
     activo: boolean;
+    deleted_at?: string | null;
+}
+
+export interface nuevaCategoria {
+    nombre: string;
+    descripcion: string;
+    activo: boolean;
 }
 
 interface RespuestaCategorias {
     message: string;
     categorias: Categoria[];
 }
+
+interface RespuestaCategoriasDesactivadas {
+    message: string;
+    categoriasDesactivadas: Categoria[];
+}
+
+interface RespuestaCategoria {
+    message: string;
+    categoria: Categoria;
+}
+
 @Injectable({
     providedIn: 'root'
 })
 export class CategoriasService {
     private http = inject(HttpClient);
     private apiUrl = `${apiUrl}/categorias`;
+    
     obtenerCategorias(): Observable<RespuestaCategorias> {
         return this.http.get<RespuestaCategorias>(this.apiUrl);
+    }
+    
+    obtenerCategoriasDesactivadas(): Observable<RespuestaCategoriasDesactivadas> {
+        return this.http.get<RespuestaCategoriasDesactivadas>(`${apiUrl}/categorias-desactivadas`);
+    }
+
+    // ABM Categorias
+    crearCategoria(datos: nuevaCategoria): Observable<RespuestaCategoria> {
+        return this.http.post<RespuestaCategoria>(this.apiUrl, datos);
     }
 }
