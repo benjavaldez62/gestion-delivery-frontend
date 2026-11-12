@@ -14,6 +14,7 @@
                     <input type="password" id="password" name="password" [(ngModel)]="password"
                         placeholder="Ingresá tu contraseña" autocomplete="current-password" required />
                 </div>
+                <p><a routerLink="/recuperar-contrasena">¿Olvidaste tu contraseña?</a></p>
                 @if (error) {
                 <div class="alert error">
                     {{ error }}

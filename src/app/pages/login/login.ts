@@ -1,12 +1,12 @@
 import { Component, AfterViewInit, ElementRef, NgZone, viewChild, inject } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { AuthService } from '../../services/auth';
 import { googleClientId } from '../../config/api';
 
 @Component({
-  imports: [FormsModule],
+  imports: [FormsModule, RouterLink],
   selector: 'app-login',
   standalone: true,
   styleUrl: './login.css',

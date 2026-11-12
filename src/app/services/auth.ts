@@ -28,6 +28,14 @@ export interface Credenciales {
     password: string;
 }
 
+export interface PasswordResponse {
+    message: string;
+}
+
+export interface SolicitudRecuperacionResponse extends PasswordResponse {
+    action: 'enlace_enviado' | 'contactar_administrador';
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -66,6 +74,19 @@ export class AuthService {
                     this.guardarSesion(respuesta.data.access_token, respuesta.data.user);
                 })
             );
+    }
+
+    solicitarRecuperacion(email: string): Observable<SolicitudRecuperacionResponse> {
+        return this.http.post<SolicitudRecuperacionResponse>(`${apiUrl}/forgot-password`, { email });
+    }
+
+    restablecerContrasena(email: string, token: string, password: string, passwordConfirmation: string): Observable<PasswordResponse> {
+        return this.http.post<PasswordResponse>(`${apiUrl}/reset-password`, {
+            email,
+            token,
+            password,
+            password_confirmation: passwordConfirmation,
+        });
     }
 
     // Cargamos el script de Google Identity Services
