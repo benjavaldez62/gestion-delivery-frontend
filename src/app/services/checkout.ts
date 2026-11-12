@@ -26,6 +26,8 @@ export interface ItemBorrador {
 
 export interface BorradorCheckout {
   id: string;
+  pedido_id?: number;
+  estado?: string;
   message: string;
   subtotal: number;
   costo_envio: number;

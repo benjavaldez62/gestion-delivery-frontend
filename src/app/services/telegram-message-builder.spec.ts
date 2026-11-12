@@ -18,7 +18,17 @@ describe('TelegramMessageBuilder', () => {
     const texto = builder.construir(datos);
     expect(texto).toContain('Transferencia (pendiente de pago)');
     expect(texto).not.toContain('Abona con');
+    expect(texto).not.toContain('Pedido #');
     expect(new URL(builder.enlace(texto)).searchParams.get('text')).toBe(texto);
+  });
+
+  it('incluye el identificador del pedido en el encabezado cuando pedido_id está definido', () => {
+    const texto = builder.construir({
+      ...datos,
+      borrador: { ...datos.borrador, pedido_id: 42, estado: 'Pre-pedido' },
+    });
+    expect(texto).toContain('Pedido #42');
+    expect(texto.indexOf('Pedido #42')).toBeLessThan(texto.indexOf('Referencia: ref'));
   });
 
   it('rechaza mensajes que Telegram truncaría', () => {

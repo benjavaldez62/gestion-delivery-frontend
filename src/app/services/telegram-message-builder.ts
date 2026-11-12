@@ -21,6 +21,7 @@ export class TelegramMessageBuilder {
     };
     const lineas = [
       '🍽️ La Posta - Borrador de pedido',
+      ...(datos.borrador.pedido_id !== undefined ? [`Pedido #${datos.borrador.pedido_id}`] : []),
       `Referencia: ${datos.borrador.id}`,
       '',
       '🛒 Productos:',
