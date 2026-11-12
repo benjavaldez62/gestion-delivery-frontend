@@ -17,7 +17,14 @@ describe('Cocina', () => {
     cocinero: { id: 7 },
     estado: estados[0],
     cliente: { username: 'Cliente de prueba' },
-    items: [],
+    items: [
+      {
+        id: 1,
+        cantidad: 1,
+        producto: { nombre: 'Hamburguesa' },
+        adicionales: [{ nombre: 'Panceta' }, { nombre: 'Cheddar extra' }],
+      },
+    ],
     created_at: null,
   };
   const pedidos = [pedido, { ...pedido, id: 43, cocinero: { id: 8 } }];
@@ -47,6 +54,13 @@ describe('Cocina', () => {
     expect(component.estados.length).toBe(3);
     expect(component.pedidos.length).toBe(1);
     expect(component.pedidos[0].id).toBe(42);
+  });
+
+  it('should show the names of the additionals on each order item', () => {
+    const additionals = fixture.nativeElement.querySelector('.order-items small');
+
+    expect(additionals.textContent).toContain('Panceta');
+    expect(additionals.textContent).toContain('Cheddar extra');
   });
 
   it('should move an order to the next backend status', () => {
