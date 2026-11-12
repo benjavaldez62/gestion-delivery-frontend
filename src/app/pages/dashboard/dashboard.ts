@@ -61,7 +61,9 @@ export class Dashboard implements OnInit {
   }
 
   get todoElPersonal(): DashboardStaffMiembro[] {
-    return [...this.cocineros, ...this.repartidores];
+    return [...this.cocineros, ...this.repartidores].sort(
+      (a, b) => Number(b.disponible) - Number(a.disponible),
+    );
   }
 
   get personalFiltrado(): DashboardStaffMiembro[] {
@@ -175,10 +177,11 @@ export class Dashboard implements OnInit {
   colorEstado(nombre: string): string {
     const clave = this.normalizarClave(nombre);
     switch (clave) {
-      case 'pendiente':
-        return '#F59E0B';
-      case 'en_preparacion':
       case 'sin_asignar':
+        return '#F59E0B';
+      case 'pendiente':
+        return '#D97706';
+      case 'en_preparacion':
         return '#EA580C';
       case 'listo_para_entregar':
       case 'listo':
@@ -196,7 +199,7 @@ export class Dashboard implements OnInit {
 
   claseChipEstado(nombre?: string): string {
     const clave = this.normalizarClave(nombre ?? '');
-    if (clave === 'pendiente') {
+    if (clave === 'pendiente' || clave === 'sin_asignar') {
       return 'chip-amber';
     }
     return 'chip-orange';
