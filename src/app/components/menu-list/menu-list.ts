@@ -27,12 +27,27 @@ export class MenuListComponent implements OnInit, OnDestroy {
 
   readonly products = signal<MenuProduct[]>([]);
   readonly categories = signal<Categoria[]>([]);
+  readonly searchTerm = signal('');
   readonly selectedCategoryId = signal<number | null>(null);
   readonly allProductsSelected = signal(false);
-  readonly hasProductSelection = computed(() => this.selectedCategoryId() !== null || this.allProductsSelected());
+  readonly hasProductSelection = computed(
+    () =>
+      this.selectedCategoryId() !== null ||
+      this.allProductsSelected() ||
+      this.searchTerm().trim().length > 0,
+  );
   readonly categoriesLoading = signal(true);
   readonly categoriesError = signal('');
   readonly filteredProducts = computed(() => {
+    const searchTerm = this.normalizarTexto(this.searchTerm());
+    if (searchTerm) {
+      return this.products().filter(
+        (product) =>
+          product.activo &&
+          this.normalizarTexto(product.nombre).includes(searchTerm),
+      );
+    }
+
     const categoryId = this.selectedCategoryId();
     if (categoryId !== null) {
       return this.products().filter((product) => product.categoria?.id === categoryId);
@@ -92,15 +107,31 @@ export class MenuListComponent implements OnInit, OnDestroy {
   }
 
   seleccionarCategoria(categoryId: number): void {
+    this.searchTerm.set('');
     this.selectedCategoryId.set(categoryId);
     this.allProductsSelected.set(false);
     this.resetAdditionals();
   }
 
   mostrarTodosLosProductos(): void {
+    this.searchTerm.set('');
     this.selectedCategoryId.set(null);
     this.allProductsSelected.set(true);
     this.resetAdditionals();
+  }
+
+  buscarProductos(term: string): void {
+    this.searchTerm.set(term);
+    this.selectedCategoryId.set(null);
+    this.allProductsSelected.set(false);
+    this.resetAdditionals();
+  }
+
+  buscarDesdeEvento(event: Event): void {
+    const input = event.target;
+    if (input instanceof HTMLInputElement) {
+      this.buscarProductos(input.value);
+    }
   }
 
   toggleAdditionals(product: MenuProduct, expanded: boolean): void {
@@ -227,6 +258,14 @@ export class MenuListComponent implements OnInit, OnDestroy {
     if (value === null || !/^[1-9]\d*$/.test(value)) return null;
     const categoryId = Number(value);
     return Number.isSafeInteger(categoryId) ? categoryId : null;
+  }
+
+  private normalizarTexto(value: string): string {
+    return value
+      .trim()
+      .toLocaleLowerCase()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '');
   }
 
   private applyRequestedCategory(): void {

@@ -1,7 +1,34 @@
 <section class="menu-page py-5">
   <div class="container">
     <div class="menu-heading text-center mb-4 mb-lg-5">
-      <p class="menu-eyebrow heading-font mb-2">La Posta Pizzas y Pasas</p>
+      <div class="menu-search" role="search">
+        <label class="visually-hidden" for="menu-search-input">Buscar productos</label>
+        <div class="menu-search-control">
+          <input
+            id="menu-search-input"
+            type="search"
+            placeholder="Buscar productos"
+            autocomplete="off"
+            [value]="searchTerm()"
+            (input)="buscarDesdeEvento($event)"
+          >
+          <svg
+            class="menu-search-icon"
+            xmlns="http://www.w3.org/2000/svg"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+            stroke-linejoin="round"
+            aria-hidden="true"
+          >
+            <circle cx="11" cy="11" r="7"></circle>
+            <path d="m20 20-4-4"></path>
+          </svg>
+        </div>
+      </div>
+      <p class="menu-eyebrow heading-font mb-2">La Posta Pizzas y Pastas </p>
       <h1 class="heading-font fw-bold mb-2">Nuestro Menú</h1>
       <p class="body-font mb-0">Elegí tus platos favoritos y armá tu pedido.</p>
     </div>
@@ -56,9 +83,13 @@
         <div class="alert alert-danger text-center" role="alert">{{ error() }}</div>
       } @else if (filteredProducts().length === 0) {
         <div class="menu-state">
-          {{ allProductsSelected()
-            ? 'En este momento no hay platos disponibles en el menú.'
-            : 'No hay productos disponibles en esta categoría.' }}
+          @if (searchTerm().trim()) {
+            No se encontraron productos que coincidan con "{{ searchTerm().trim() }}".
+          } @else {
+            {{ allProductsSelected()
+              ? 'En este momento no hay platos disponibles en el menú.'
+              : 'No hay productos disponibles en esta categoría.' }}
+          }
         </div>
       } @else {
         <div class="row g-3">
