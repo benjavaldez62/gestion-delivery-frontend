@@ -18,6 +18,7 @@ export class ProductCardComponent {
   readonly additionalsLoading = input(false);
   readonly additionalsError = input('');
   readonly selectedAdditionalIds = input<number[]>([]);
+  readonly additionalsPrice = input(0);
   readonly quantity = input(1);
   readonly addRequested = output<{ product: MenuProduct; quantity: number }>();
   readonly additionalsToggled = output<boolean>();
@@ -25,10 +26,7 @@ export class ProductCardComponent {
   readonly quantityChanged = output<number>();
   readonly retryAdditionals = output<void>();
   readonly total = computed(() => {
-    const additionalTotal = this.additionals()
-      .filter((additional) => this.selectedAdditionalIds().includes(additional.id))
-      .reduce((sum, additional) => sum + additional.precio, 0);
-    return (this.product().precio + additionalTotal) * this.quantity();
+    return (this.product().precio + this.additionalsPrice()) * this.quantity();
   });
 
   agregarAlCarrito(): void {

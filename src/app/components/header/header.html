@@ -15,6 +15,7 @@
 
             <div class="navbar-nav ms-auto flex-row align-items-center gap-3 gap-lg-4">
                 @if (esAdministrador) {
+                    <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/dashboard" routerLinkActive="active">Dashboard</a>
                     <span class="nav-link mozzo-nav-link heading-font px-2 admin-nav-disabled" aria-disabled="true"
                         title="Sección aún no disponible">Productos</span>
                     <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/pedidos" routerLinkActive="active">Pedidos</a>
@@ -36,8 +37,6 @@
                     <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/inicio" routerLinkActive="active"
                         [routerLinkActiveOptions]="{ exact: true }">Inicio</a>
                     <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/menu" routerLinkActive="active">Menú</a>
-                    <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/categorias" routerLinkActive="active">Categorías</a>
-                    <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/cocina" routerLinkActive="active">Cocina</a>
                     <div class="mozzo-cart-wrapper position-relative">
                         <a routerLink="/carrito"
                             class="btn mozzo-cart-btn heading-font rounded-pill position-relative d-inline-flex align-items-center gap-2 px-3 py-2 text-decoration-none"

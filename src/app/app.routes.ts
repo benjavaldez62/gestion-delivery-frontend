@@ -11,8 +11,16 @@ import { guardRole } from './guards/role-guard';
 import { Pedidos } from './pages/pedidos/pedidos';
 import { RecuperarContrasena } from './pages/recuperacion/recuperar-contrasena';
 import { RestablecerContrasena } from './pages/recuperacion/restablecer-contrasena';
+import { Dashboard } from './pages/dashboard/dashboard';
+import { Repartos } from './pages/repartos/repartos';
 
 export const routes: Routes = [
+    {
+        path: 'dashboard',
+        component: Dashboard,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
     {
         path: 'categorias',
         component: Categorias,
@@ -69,7 +77,7 @@ export const routes: Routes = [
     },
     {
         path: 'repartos',
-        children: [],
+        component: Repartos,
         canActivate: [authGuard, guardRole],
         data: { roles: ['Repartidor'] }
     },

@@ -5,10 +5,14 @@
 
     @if (borrador(); as guardado) {
       <div class="card border-0 shadow-sm rounded-4 p-4">
-        <h2 class="fs-4">Borrador guardado</h2>
+        @if (guardado.pedido_id) {
+          <h2 class="fs-4">Pre-pedido #{{ guardado.pedido_id }} registrado</h2>
+        } @else {
+          <h2 class="fs-4">Borrador guardado</h2>
+        }
         <p>El total actualizado es <strong>${{ guardado.monto_total | number:'1.2-2' }}</strong>.</p>
         <p>Referencia del borrador: <code>{{ guardado.id }}</code></p>
-        <p class="alert alert-warning">Tu pedido todavía no fue confirmado ni enviado al restaurante. Abrí Telegram y enviá el mensaje para continuar.</p>
+        <p class="alert alert-warning">Tu pedido fue guardado en estado Pre-pedido y todavía no fue confirmado ni enviado al restaurante. Abre Telegram y envía el mensaje al bot para confirmar el pedido e iniciar su preparación.</p>
         @if (error()) {
           <p class="alert alert-danger" role="alert">{{ error() }}</p>
         }

@@ -1,0 +1,113 @@
+<section class="delivery-page">
+  <header class="delivery-heading">
+    <div>
+      <p class="delivery-eyebrow">La Posta · Operaciones</p>
+      <h1>Tablero de repartos</h1>
+      <p class="delivery-subtitle">Seguimiento de tus pedidos asignados.</p>
+    </div>
+    <button class="refresh-button" type="button" (click)="recargar()" [disabled]="cargando">
+      <span aria-hidden="true">↻</span>
+      Actualizar tablero
+    </button>
+  </header>
+
+  @if (error) {
+    <div class="board-alert board-alert-error" role="alert">{{ error }}</div>
+  }
+
+  @if (cargando && pedidos.length === 0) {
+    <div class="board-message" role="status">Cargando pedidos asignados...</div>
+  } @else {
+    <div class="kanban-board">
+      @for (estado of estados; track estado.id) {
+        <section
+          class="kanban-column"
+          [class.column-ready]="estado.nombre === 'Listo para entregar'"
+          [class.column-transit]="estado.nombre === 'En camino'"
+          [class.column-delivered]="estado.nombre === 'Entregado'"
+          (dragover)="permitirSoltar($event, estado)"
+          (drop)="moverPedido($event, estado)"
+          [attr.aria-label]="estado.nombre"
+        >
+          <header class="column-heading">
+            <h2>{{ estado.nombre }}</h2>
+            <span class="order-count">{{ pedidosPorEstado(estado.id).length }}</span>
+          </header>
+
+          <div class="column-cards">
+            @for (pedido of pedidosPorEstado(estado.id); track pedido.id) {
+              <article
+                class="order-card"
+                draggable="true"
+                (dragstart)="iniciarArrastre($event, pedido)"
+                (dragend)="finalizarArrastre()"
+              >
+                <div class="order-card-top">
+                  <h3>Pedido #{{ pedido.id }}</h3>
+                  @if (pedido.created_at) {
+                    <time>{{ pedido.created_at | date: 'HH:mm' }}</time>
+                  }
+                </div>
+
+                <p class="delivery-address">
+                  <svg viewBox="0 0 16 16" aria-hidden="true">
+                    <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10Zm0-7.5A2.5 2.5 0 1 1 8 3.5a2.5 2.5 0 0 1 0 5Z" />
+                  </svg>
+                  <span>{{ pedido.cliente?.direccion || 'Dirección no informada' }}</span>
+                </p>
+
+                <dl class="order-totals">
+                  <div>
+                    <dt>Pedido</dt>
+                    <dd>{{ (pedido.subtotal ?? pedido.monto_total) | currency:'ARS':'symbol-narrow':'1.2-2' }}</dd>
+                  </div>
+                  <div>
+                    <dt>Envío</dt>
+                    <dd>{{ costoEnvio | currency:'ARS':'symbol-narrow':'1.2-2' }}</dd>
+                  </div>
+                  <div class="grand-total">
+                    <dt>Total</dt>
+                    <dd>{{ ((pedido.subtotal ?? pedido.monto_total) + costoEnvio) | currency:'ARS':'symbol-narrow':'1.2-2' }}</dd>
+                  </div>
+                </dl>
+
+                <div class="payment-status-row">
+                  <span>Estado del pago</span>
+                  <strong
+                    class="payment-status"
+                    [class]="'payment-status payment-status-' + claseEstadoPago(estadoPago(pedido))"
+                  >
+                    {{ estadoPago(pedido) }}
+                  </strong>
+                </div>
+
+                @if (siguienteEstado(pedido); as siguiente) {
+                  <button
+                    class="move-button"
+                    type="button"
+                    [disabled]="actualizandoPedidoId !== null"
+                    (click)="avanzarPedido(pedido)"
+                  >
+                    {{ actualizandoPedidoId === pedido.id ? 'Actualizando...' : siguiente.nombre === 'En camino' ? 'Iniciar entrega' : 'Marcar como entregado' }}
+                  </button>
+                } @else {
+                  <p class="delivered-note">Pedido entregado</p>
+                }
+              </article>
+            } @empty {
+              <p class="empty-column">No hay pedidos en este estado.</p>
+            }
+          </div>
+        </section>
+      }
+    </div>
+  }
+
+  <p class="auto-refresh-note" aria-live="polite">El tablero se actualiza automáticamente cada 20 segundos.</p>
+
+  @if (mensaje) {
+    <div class="order-toast" role="status" aria-live="polite">
+      <span>{{ mensaje }}</span>
+    </div>
+  }
+</section>

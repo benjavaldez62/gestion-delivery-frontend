@@ -120,11 +120,13 @@ describe('Checkout', () => {
     const request = http.expectOne(`${apiUrl}/checkout/borradores`);
     expect(request.request.body.monto_recibido).toBe(5000);
     request.flush({
-      id: 'ref-1', message: 'Guardado', subtotal: 2500, costo_envio: 1500, monto_total: 4000,
+      id: 'ref-1', pedido_id: 12, estado: 'Pre-pedido', message: 'Guardado', subtotal: 2500, costo_envio: 1500, monto_total: 4000,
       items: [{ producto_id: 10, nombre: 'Hamburguesa', precio_unitario: 1050, cantidad: 2,
         adicionales: [{ id: 3, nombre: 'Queso', precio: 200 }], subtotal: 2500 }],
     });
     fixture.detectChanges();
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('Pre-pedido #12 registrado');
+    expect((fixture.nativeElement as HTMLElement).textContent).toContain('estado Pre-pedido');
     expect((fixture.nativeElement as HTMLElement).querySelector('a[href*="t.me"]')).toBeNull();
     component.prepararTelegram();
     fixture.detectChanges();
@@ -133,6 +135,7 @@ describe('Checkout', () => {
     const url = new URL(enlace!.href);
     expect(url.hostname).toBe('t.me');
     expect(url.pathname).toBe('/Restauransbot');
+    expect(url.searchParams.get('text')).toContain('Pedido #12');
     expect(url.searchParams.get('text')).toContain('Total: $4000.00');
     expect(url.searchParams.get('text')).toContain('Vuelto: $1000.00');
     expect(url.searchParams.get('text')).toContain('Calle & 123');
