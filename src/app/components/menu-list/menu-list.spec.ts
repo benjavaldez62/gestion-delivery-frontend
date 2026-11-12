@@ -110,6 +110,72 @@ describe('MenuListComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Pizza muzzarella');
   });
 
+  it('busca por coincidencia parcial del nombre sin distinguir mayúsculas ni acentos', () => {
+    const products: MenuProduct[] = [
+      product,
+      { ...product, id: 8, nombre: 'Empanada de carne', categoria: { id: 3, nombre: 'Empanadas' } },
+      { ...product, id: 9, nombre: 'Pizza napolitana', activo: false },
+    ];
+    const component = fixture.componentInstance;
+    component.products.set(products);
+    component.seleccionarCategoria(2);
+    component.buscarProductos('  PÍZZA  ');
+    fixture.detectChanges();
+
+    expect(component.selectedCategoryId()).toBeNull();
+    expect(component.allProductsSelected()).toBe(false);
+    expect(component.filteredProducts().map(({ id }) => id)).toEqual([7]);
+    expect(fixture.nativeElement.textContent).toContain('Pizza muzzarella');
+    expect(fixture.nativeElement.textContent).not.toContain('Pizza napolitana');
+  });
+
+  it('informa cuando la búsqueda no encuentra productos por nombre', () => {
+    const input = fixture.nativeElement.querySelector('#menu-search-input') as HTMLInputElement;
+    input.value = 'Producto inexistente';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(fixture.nativeElement.textContent).toContain(
+      'No se encontraron productos que coincidan con "Producto inexistente".',
+    );
+    expect(fixture.nativeElement.querySelector('app-product-card')).toBeNull();
+  });
+
+  it('al borrar la búsqueda oculta los productos hasta elegir una categoría o ver todos', () => {
+    const anotherProduct: MenuProduct = {
+      ...product,
+      id: 8,
+      nombre: 'Empanada de carne',
+      categoria: { id: 3, nombre: 'Empanadas' },
+    };
+    const component = fixture.componentInstance;
+    component.products.set([product, anotherProduct]);
+    component.buscarProductos('pizza');
+    fixture.detectChanges();
+
+    const input = fixture.nativeElement.querySelector('#menu-search-input') as HTMLInputElement;
+    input.value = '';
+    input.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+
+    expect(component.searchTerm()).toBe('');
+    expect(component.allProductsSelected()).toBe(false);
+    expect(component.hasProductSelection()).toBe(false);
+    expect(component.filteredProducts()).toEqual([]);
+    expect(fixture.nativeElement.querySelector('app-product-card')).toBeNull();
+
+    const allProductsButton = Array.from(
+      fixture.nativeElement.querySelectorAll('button') as NodeListOf<HTMLButtonElement>
+    )
+      .find((button) => button.textContent.includes('Ver todos los productos')) as HTMLButtonElement;
+    allProductsButton.click();
+    fixture.detectChanges();
+
+    expect(component.filteredProducts()).toEqual([product, anotherProduct]);
+    expect(fixture.nativeElement.textContent).toContain('Pizza muzzarella');
+    expect(fixture.nativeElement.textContent).toContain('Empanada de carne');
+  });
+
   it('muestra botones para las categorías activas provenientes del servicio', () => {
     const component = fixture.componentInstance;
 
