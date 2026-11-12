@@ -10,6 +10,11 @@
     margin: 6px 0 0;
 }
 
+.info {
+    background: #e0f2fe;
+    color: #075985;
+}
+
 .back-link {
     margin: 20px 0 0;
     text-align: center;

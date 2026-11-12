@@ -99,4 +99,13 @@ describe('RestablecerContrasena', () => {
     component.formulario.setValue({ password: '😀'.repeat(8), confirmacion: '😀'.repeat(8) });
     expect(component.formulario.valid).toBe(true);
   });
+
+  it('informa que las cuentas de prueba deben contactar al administrador', () => {
+    vi.spyOn(location, 'path').mockReturnValue(`/restablecer-contrasena#${fragmento('persona@test.com', 'abc')}`);
+    const component = TestBed.createComponent(RestablecerContrasena).componentInstance;
+    component.formulario.setValue({ password: 'nueva12345', confirmacion: 'nueva12345' });
+    component.restablecer();
+    http.expectOne(`${apiUrl}/reset-password`).flush({}, { status: 403, statusText: 'Forbidden' });
+    expect(component.error()).toContain('contactate con el administrador');
+  });
 });

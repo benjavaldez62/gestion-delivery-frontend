@@ -61,7 +61,9 @@ export class RestablecerContrasena {
           this.mensaje.set(respuesta.message);
         },
         error: (error: HttpErrorResponse) => this.error.set(
-          error.status === 422 && error.error?.errors?.password
+          error.status === 403
+            ? 'Para cambiar la contraseña de esta cuenta, contactate con el administrador.'
+            : error.status === 422 && error.error?.errors?.password
             ? 'La contraseña no es válida. Revisá el largo y la confirmación.'
             : error.status === 422
             ? 'El enlace no es válido o venció. Solicitá uno nuevo.'

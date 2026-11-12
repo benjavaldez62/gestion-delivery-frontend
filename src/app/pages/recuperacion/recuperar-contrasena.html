@@ -3,7 +3,7 @@
     <h1>Recuperar contraseña</h1>
     <p>Ingresá el correo asociado a tu cuenta.</p>
     @if (mensaje()) {
-      <div class="alert success" role="status">{{ mensaje() }}</div>
+      <div class="alert" [class.info]="contactarAdministrador()" [class.success]="!contactarAdministrador()" role="status">{{ mensaje() }}</div>
     } @else {
       <form [formGroup]="formulario" (ngSubmit)="solicitar()" novalidate>
         <div class="form-group">
