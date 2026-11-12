@@ -20,6 +20,11 @@ export interface PedidoAdministracion {
 
 export type CampoAsignacion = 'cocinero_id' | 'repartidor_id';
 
+export interface AsignacionesPersonalPedido {
+  cocinero_id: number;
+  repartidor_id: number;
+}
+
 interface RespuestaPedidos {
   pedidos: PedidoAdministracion[];
 }
@@ -60,9 +65,9 @@ export class PedidosService {
     );
   }
 
-  asignar(pedidoId: number, campo: CampoAsignacion, usuarioId: number): Observable<PedidoAdministracion> {
+  asignar(pedidoId: number, asignaciones: AsignacionesPersonalPedido): Observable<PedidoAdministracion> {
     return this.http
-      .put<RespuestaPedido>(`${apiUrl}/pedidos/${pedidoId}/asignaciones`, { [campo]: usuarioId })
+      .put<RespuestaPedido>(`${apiUrl}/pedidos/${pedidoId}/asignaciones`, asignaciones)
       .pipe(map((respuesta) => respuesta.pedido));
   }
 }

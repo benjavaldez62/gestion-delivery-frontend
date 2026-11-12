@@ -60,9 +60,9 @@
 
 .order-card {
   min-width: 0;
-  padding: 1.05rem 1.2rem;
+  padding: 20px 18px;
   border: 1px solid #e8e6e5;
-  border-radius: 0.85rem;
+  border-radius: 0.95rem;
   background: #fff;
   box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
 }
@@ -169,6 +169,30 @@
 
 .order-field select:disabled {
   color: #777;
+}
+
+.order-assignment-actions {
+  display: flex;
+  justify-content: flex-end;
+  margin-top: 1rem;
+}
+
+.order-assignment-actions button {
+  padding: 8px 16px;
+  border: 0;
+  border-radius: 10px;
+  background: #ff5200;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 700;
+}
+.order-assignment-actions button:hover {
+  background: #e04e0b;
+}
+
+.order-assignment-actions button:disabled {
+  background: #b7b7b7;
+  cursor: not-allowed;
 }
 
 .orders-alert,

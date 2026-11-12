@@ -45,11 +45,11 @@
                 </dt>
                 <dd>
                   @if (esSinAsignar(pedido)) {
-                    <select [value]="pedido.cocinero?.id ?? ''"
+                    <select [value]="valorSeleccionado(pedido, 'cocinero_id')"
                       [disabled]="asignandoPedidoId !== null || cocineros.length === 0"
                       [attr.aria-label]="'Asignar cocinero al pedido ' + pedido.id"
-                      (change)="asignar(pedido, 'cocinero_id', $event)">
-                      <option value="">{{ cocineros.length ? 'Seleccionar cocinero...' : 'No hay cocineros activos' }}</option>
+                      (change)="seleccionarPersonal(pedido, 'cocinero_id', $event)">
+                      <option value="">{{ cocineros.length ? 'Seleccionar' : 'No hay cocineros activos' }}</option>
                       @for (cocinero of cocineros; track cocinero.id) {
                         <option [value]="cocinero.id">{{ cocinero.name }}</option>
                       }
@@ -66,11 +66,11 @@
                 </dt>
                 <dd>
                   @if (esSinAsignar(pedido)) {
-                    <select [value]="pedido.repartidor?.id ?? ''"
+                    <select [value]="valorSeleccionado(pedido, 'repartidor_id')"
                       [disabled]="asignandoPedidoId !== null || repartidores.length === 0"
                       [attr.aria-label]="'Asignar repartidor al pedido ' + pedido.id"
-                      (change)="asignar(pedido, 'repartidor_id', $event)">
-                      <option value="">{{ repartidores.length ? 'Seleccionar repartidor...' : 'No hay repartidores activos' }}</option>
+                      (change)="seleccionarPersonal(pedido, 'repartidor_id', $event)">
+                      <option value="">{{ repartidores.length ? 'Seleccionar' : 'No hay repartidores activos' }}</option>
                       @for (repartidor of repartidores; track repartidor.id) {
                         <option [value]="repartidor.id">{{ repartidor.name }}</option>
                       }
@@ -81,6 +81,15 @@
                 </dd>
               </div>
             </dl>
+
+            @if (esSinAsignar(pedido)) {
+              <div class="order-assignment-actions">
+                <button type="button" [disabled]="asignandoPedidoId !== null || !puedeGuardarAsignaciones(pedido)"
+                  (click)="asignar(pedido)">
+                  {{ asignandoPedidoId === pedido.id ? 'Asignando...' : 'Asignar' }}
+                </button>
+              </div>
+            }
           </article>
         }
       </div>
