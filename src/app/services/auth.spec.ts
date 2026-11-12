@@ -52,7 +52,7 @@ describe('AuthService', () => {
     expect(service.estaAutenticado()).toBe(true);
     expect(sesionActiva()).toBe(true);
     expect(rolActual()).toBe('Administrador');
-    expect(service.rutaInicial()).toBe('/pedidos');
+    expect(service.rutaInicial()).toBe('/dashboard');
   });
 
   it('selects the landing route for cook and delivery roles', () => {

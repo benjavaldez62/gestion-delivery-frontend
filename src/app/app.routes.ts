@@ -9,8 +9,15 @@ import { Cocina } from './pages/cocina/cocina';
 import { authGuard } from './guards/auth-guard';
 import { guardRole } from './guards/role-guard';
 import { Pedidos } from './pages/pedidos/pedidos';
+import { Dashboard } from './pages/dashboard/dashboard';
 
 export const routes: Routes = [
+    {
+        path: 'dashboard',
+        component: Dashboard,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
     {
         path: 'categorias',
         component: Categorias,

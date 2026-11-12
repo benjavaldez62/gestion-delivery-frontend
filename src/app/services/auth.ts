@@ -110,7 +110,7 @@ export class AuthService {
         const rol = this.obtenerRol()?.trim().toLocaleLowerCase();
 
         if (rol === 'administrador' || rol === 'superadmin') {
-            return '/pedidos';
+            return '/dashboard';
         }
         if (rol === 'cocinero') {
             return '/cocina';
