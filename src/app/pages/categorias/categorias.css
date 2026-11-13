@@ -4,14 +4,26 @@ div>.card {
 
 .card-header {
     font-weight: 700;
+    font-size: 16px;
 }
 
-.formCrearBtn {
-    margin-top: 20px;
-    padding-top: 14px;
+div>.modal-dialog {
+    min-width: 700px;
 }
 
-/* [class^="bi-"]::before, [class*=" bi-"]::before {
-    margin-right: 1px;
-    margin-bottom: 1px;
-} */
+/* MODAL */
+.modal-content {
+    border-radius: 16px;
+    border-color: none;
+}
+label {
+    font-weight: 500;
+    padding-bottom: 4px;
+}
+label.form-label {
+    font-size: 18px;
+}
+.input-categoria:focus {
+    border-color: var(--theme4);
+    box-shadow: none;
+}

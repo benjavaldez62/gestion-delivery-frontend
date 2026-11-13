@@ -69,11 +69,6 @@ export class Categorias implements OnInit {
         this.categoriasDesactivadas.set(respuesta.categoriasDesactivadas);
         this.cargando.set(false);
       },
-      error: (err) => {
-        console.error('Error al obtener las cateogiras desactivadas', err);
-        this.error.set('No hay ninguna categoría desactivada en el momento.');
-        this.cargando.set(false);
-      }
     })
   }
 
@@ -93,10 +88,7 @@ export class Categorias implements OnInit {
     } else if(datos.nombre.length > 50) {
       this.errorGuardar.set('El nombre no debe superar los 50 caracteres.');
       return;
-    } else if (datos.nombre.trim()) {
-      this.errorGuardar.set('El nombre debe ser una cadena de texto.');
-      return;
-    }
+    } 
 
     this.guardando.set(true);
 

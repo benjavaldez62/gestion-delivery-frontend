@@ -4,7 +4,7 @@
 
         <button type="button" class="btn btn-primary" (click)="abrirModal()">
             <span class="mr-1 px-1"><i class="bi bi-plus-lg"></i></span>
-            Nueva Categoría
+            Nueva categoría
         </button>
     </div>
 
@@ -14,13 +14,12 @@
         <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set('')"></button>
     </div>
     }
-    @if (errorGuardar() && !modalAbierto()) {
+    @if (error() && !modalAbierto()) {
     <div class="alert alert-danger alert-dismissible">
-        {{ errorGuardar() }}
+        {{ error() }}
         <!-- <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set('')"></button> -->
     </div>
     }
-
 
 
     <!-- Listado de categorias activas-->
@@ -82,7 +81,11 @@
             Listado de categorias desactivadas
         </div>
         <div class="card-body">
-            @if (categoriasDesactivadas().length === 0) {
+            @if (cargando()) {
+            <div class="alert alert-info">
+                Cargando categorías desactivadas...
+            </div>
+            } @else if (categoriasDesactivadas().length === 0) {
             <p class="text-muted mb-0">
                 No hay categorías inactivas en este momento.
             </p>
@@ -124,4 +127,57 @@
             }
         </div>
     </div>
+
+    <!-- Modal para crear categoria -->
+    @if(modalAbierto()) {
+
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="TituloModal"
+        (click)="cerrarModal()">
+        <div class="modal-dialog modal-dialog-centered" role="document" (click)="$event.stopPropagation()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="TituloModal">Nueva categoría</h2>
+                    <button type="button" class="btn-close" aria-label="Cerrar" [disabled]="guardando()"
+                        (click)="cerrarModal()"></button>
+                </div>
+                <form (ngSubmit)="guardarCategoria()">
+                    <div class="modal-body">
+                        @if (errorGuardar()) {
+                        <div class="alert alert-danger alert-dismissible">
+                            {{ errorGuardar() }}
+                            <!-- <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set('')"></button> -->
+                        </div>
+                        }
+                        <div class="mt-2 mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input id="nombre" type="text" class="form-control input-categoria" name="nombre"
+                                [(ngModel)]="nombre" required minlength="2" maxlength="50" placeholder="Ej.: Carnes">
+                        </div>
+                        <div class="mb-4">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea name="descripcion" id="descripcion" class="form-control input-categoria" rows="3"
+                                maxlength="255" [(ngModel)]="descripcion"
+                                placeholder="Descripción de la categoría"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger" (click)="cerrarModal()">
+                            <span><i class="bi bi-x-circle"></i></span>
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+                            <span><i class="bi bi-check-circle"></i></span>
+                            @if (guardando()) {
+                            Guardando...
+                            } @else {
+                            Guardar categoría
+                            }
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+    }
 </div>
