@@ -1,34 +1,55 @@
 <div class="container py-4">
-    <h1 class="mb-4">Categorías</h1>
-    @if (cargando()) {
-    <div class="alert alert-info">
-        Cargando categorías...
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Categorías</h1>
+
+        <button type="button" class="btn btn-primary btn-icono-hover" (click)="abrirModal()">
+            <span class="mr-1 px-1">
+                <i class="bi bi-plus-lg icono-normal"></i>
+                <i class="bi bi-plus-circle-dotted icono-hover"></i>
+            </span>
+            Nueva categoría
+        </button>
+    </div>
+
+    @if (mensaje()) {
+    <div class="alert alert-success alert-dismissible">
+        {{ mensaje() }}
+        <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set('')"></button>
     </div>
     }
-    @if (error()) {
-    <div class="alert alert-danger">
+    @if (error() && !modalAbierto()) {
+    <div class="alert alert-danger alert-dismissible">
         {{ error() }}
+        <!-- <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set('')"></button> -->
     </div>
     }
-    @if (!cargando() && !error()) {
-    <div class="card shadow-sm">
+
+
+    <!-- Listado de categorias activas-->
+    <div class="card show-sm mb-4">
         <div class="card-header">
-            Listado de categorías
+            Listado de categorias disponibles
         </div>
         <div class="card-body">
-            @if (categorias().length === 0) {
+            @if (cargando()) {
+            <div class="alert alert-info">
+                Cargando categorías...
+            </div>
+            } @else if (categorias().length === 0) {
             <p class="text-muted mb-0">
                 No hay categorías registradas.
             </p>
             } @else {
             <div class="table-responsive">
-                <table class="table table-striped table-hover">
+                <table class="table table-striped table-hover align-middle">
                     <thead>
                         <tr>
                             <th>ID</th>
                             <th>Nombre</th>
                             <th>Descripción</th>
-                            <th>Activo</th>
+                            <th class="text-end pe-5">
+                                Acciones
+                            </th>
                         </tr>
                     </thead>
                     <tbody>
@@ -37,16 +58,11 @@
                             <td>{{ categoria.id }}</td>
                             <td>{{ categoria.nombre }}</td>
                             <td>{{ categoria.descripcion }}</td>
-                            <td>
-                                @if (categoria.activo === true) {
-                                <span class="badge text-bg-success">
-                                    Activa
+                            <td class="text-end">
+                                <span class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-md btn-outline-primary me-4" title="editar" (click)="editarCategoria(categoria)"><i class="bi bi-pencil-square"></i></button>
+                                    <button type="button" class="btn btn-md btn-danger me-4" title="desactivar" (click)="eliminarCategoria(categoria)"><i class="bi bi-dash-circle"></i></button>
                                 </span>
-                                } @else {
-                                <span class="badge text-bg-secondary">
-                                    Inactiva
-                                </span>
-                                }
                             </td>
                         </tr>
                         }
@@ -56,5 +72,106 @@
             }
         </div>
     </div>
+
+    <!-- Listado de categorias desactivadas-->
+    <div class="card show-sm mb-4">
+        <div class="card-header">
+            Listado de categorias desactivadas
+        </div>
+        <div class="card-body">
+            @if (cargando()) {
+            <div class="alert alert-info">
+                Cargando categorías desactivadas...
+            </div>
+            } @else if (categoriasDesactivadas().length === 0) {
+            <p class="text-muted mb-0">
+                No hay categorías inactivas en este momento.
+            </p>
+            } @else {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th class="text-end pe-3">
+                                Acciones
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (categoria of categoriasDesactivadas(); track categoria.id) {
+                        <tr>
+                            <td>{{ categoria.id }}</td>
+                            <td>{{ categoria.nombre }}</td>
+                            <td>{{ categoria.descripcion }}</td>
+                            <td class="text-end">
+                                <span class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-md btn-outline-secondary me-4" title="restaurar" (click)="restaurarCategoria(categoria)">
+                                        <i class="bi bi-arrow-clockwise text-dark-secondary"></i>
+                                    </button>
+                                </span>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- Modal para crear categoria -->
+    @if(modalAbierto()) {
+
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="TituloModal"
+        (click)="cerrarModal()">
+        <div class="modal-dialog modal-dialog-centered" role="document" (click)="$event.stopPropagation()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="TituloModal">{{ categoriaEditando() !== null ? 'Editar Categoría' : 'Nueva categoría' }}</h2>
+                    <button type="button" class="btn-close" aria-label="Cerrar" [disabled]="guardando()"
+                        (click)="cerrarModal()"></button>
+                </div>
+                <form (ngSubmit)="guardarCategoria()">
+                    <div class="modal-body">
+                        @if (errorGuardar()) {
+                        <div class="alert alert-danger alert-dismissible">
+                            {{ errorGuardar() }}
+                            <!-- <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set('')"></button> -->
+                        </div>
+                        }
+                        <div class="mt-2 mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input id="nombre" type="text" class="form-control input-categoria" name="nombre"
+                                [(ngModel)]="nombre" required minlength="2" maxlength="50" placeholder="Ej.: Carnes">
+                        </div>
+                        <div class="mb-4">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea name="descripcion" id="descripcion" class="form-control input-categoria" rows="3"
+                                maxlength="255" [(ngModel)]="descripcion"
+                                placeholder="Descripción de la categoría"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger" (click)="cerrarModal()">
+                            <span><i class="bi bi-x-circle"></i></span>
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-primary" [disabled]="guardando()">
+                            <span><i class="bi bi-check-circle"></i></span>
+                            @if (guardando()) {
+                            Guardando...
+                            } @else {
+                             {{ categoriaEditando() !== null ? 'Actualizar categoría' : 'Guardar categoría'}}
+                            }
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
     }
 </div>
