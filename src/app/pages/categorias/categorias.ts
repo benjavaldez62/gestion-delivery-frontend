@@ -152,5 +152,30 @@ export class Categorias implements OnInit {
     });
   }
 
-   categoriaEditando = signal<number | null>(null);
+  categoriaEditando = signal<number | null>(null);
+
+  // eliminar
+  eliminarCategoria(categoria: Categoria): void {
+    const confirmar = confirm(`¿Estás seguro que querés eliminar la categoría "${categoria.nombre}?"`);
+
+    // Caso 'Cancelar'
+    if (!confirmar) {
+      return;
+    }
+    
+    // Caso 'Eliminar'
+    this.error.set('');
+    this.mensaje.set('');
+    this.categoriasService.eliminarCategoria(categoria.id).subscribe({
+      next: (respuesta) => {
+        this.mensaje.set(respuesta.message);
+        this.cargarCategorias();
+      },
+      error: (err) => {
+        console.error('Error al eliminar la categoría:', err);
+
+        this.error.set(err.error?.message ?? 'No se pudo eliminar la categoría');
+      }
+    })
+  }
 }

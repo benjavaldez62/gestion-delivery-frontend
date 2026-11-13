@@ -58,4 +58,8 @@ export class CategoriasService {
     actualizarCategoria(id: number, datos: nuevaCategoria): Observable<RespuestaCategoria> {
         return this.http.put<RespuestaCategoria>(`${this.apiUrl}/${id}`, datos);
     }
+
+    eliminarCategoria(id:number): Observable<{ message:string }> {
+        return this.http.delete<{ message:string }>(`${this.apiUrl}/${id}`);
+    }
 }

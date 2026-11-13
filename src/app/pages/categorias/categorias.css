@@ -1,3 +1,13 @@
+.btn-icono-hover .icono-hover {
+    display: none;
+}
+.btn-icono-hover:hover .icono-normal {
+    display: none;
+}
+.btn-icono-hover:hover .icono-hover {
+    display: inline-block;
+}
+
 div>.card {
     border-radius: 15px;
 }
