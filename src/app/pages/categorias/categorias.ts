@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CategoriasService, Categoria, nuevaCategoria } from '../../services/categorias';
+import { subscribeOn } from 'rxjs';
 
 @Component({
   selector: 'app-categorias',
@@ -156,7 +157,7 @@ export class Categorias implements OnInit {
 
   // eliminar
   eliminarCategoria(categoria: Categoria): void {
-    const confirmar = confirm(`¿Estás seguro que querés eliminar la categoría "${categoria.nombre}?"`);
+    const confirmar = confirm(`¿Estás seguro que querés eliminar la categoría "${categoria.nombre}"?`);
 
     // Caso 'Cancelar'
     if (!confirmar) {
@@ -177,5 +178,28 @@ export class Categorias implements OnInit {
         this.error.set(err.error?.message ?? 'No se pudo eliminar la categoría');
       }
     })
+  }
+
+  // restaurar
+  restaurarCategoria(categoria: Categoria): void {
+    const conrfirmar = confirm(`¿Querés restaurar la categoría "${categoria.nombre}"?`);
+
+    // caso 'Cancelar'
+    if(!conrfirmar) {
+      return;
+    }
+
+    // caso 'Restaurar'
+    this.categoriasService.restaurarCategoria(categoria.id).subscribe({
+      next: (respuesta) => {
+        this.mensaje.set(respuesta.message);
+
+        // Actualizar listas de categorias (activas y desactivadas)
+        this.cargarCategorias();
+      },
+      error: (err) => {
+        this.error.set( err.error?.message || 'No se pudo restaurar la categoría.' );
+      }
+    });
   }
 }

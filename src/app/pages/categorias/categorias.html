@@ -70,8 +70,8 @@
                             </td>
                             <td class="text-end">
                                 <span class="d-flex justify-content-evenly">
-                                    <button type="button" class="btn btn-md btn-outline-primary px-2 py-1" (click)="editarCategoria(categoria)"><i class="bi bi-pencil-square"></i></button>
-                                    <button type="button" class="btn btn-md btn-danger px-2 py-1" (click)="eliminarCategoria(categoria)"><i class="bi bi-trash3-fill"></i></button>
+                                    <button type="button" class="btn btn-md btn-outline-primary" (click)="editarCategoria(categoria)"><i class="bi bi-pencil-square"></i></button>
+                                    <button type="button" class="btn btn-md btn-danger" (click)="eliminarCategoria(categoria)"><i class="bi bi-trash3-fill"></i></button>
                                 </span>
                             </td>
                         </tr>
@@ -106,7 +106,7 @@
                             <th>Nombre</th>
                             <th>Descripción</th>
                             <th>Estado</th>
-                            <th>Acciones</th>
+                            <th class="text-end mx-3">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -126,7 +126,11 @@
                                 </span>
                                 }
                             </td>
-                            <td></td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-md btn-outline-secondary mx-3" (click)="restaurarCategoria(categoria)">
+                                    <i class="bi bi-arrow-clockwise text-dark-secondary"></i>
+                                </button>
+                            </td>
                         </tr>
                         }
                     </tbody>

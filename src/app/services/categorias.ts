@@ -62,4 +62,8 @@ export class CategoriasService {
     eliminarCategoria(id:number): Observable<{ message:string }> {
         return this.http.delete<{ message:string }>(`${this.apiUrl}/${id}`);
     }
+
+    restaurarCategoria(id:number): Observable<{ message: string }> {
+        return this.http.put<{ message: string }>(`${this.apiUrl}/${id}/restore`, { });
+    }
 }
