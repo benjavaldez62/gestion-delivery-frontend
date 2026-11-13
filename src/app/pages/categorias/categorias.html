@@ -60,8 +60,8 @@
                             <td>{{ categoria.descripcion }}</td>
                             <td class="text-end">
                                 <span class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-md btn-outline-primary me-4" (click)="editarCategoria(categoria)"><i class="bi bi-pencil-square"></i></button>
-                                    <button type="button" class="btn btn-md btn-danger me-4" (click)="eliminarCategoria(categoria)"><i class="bi bi-trash3-fill"></i></button>
+                                    <button type="button" class="btn btn-md btn-outline-primary me-4" title="editar" (click)="editarCategoria(categoria)"><i class="bi bi-pencil-square"></i></button>
+                                    <button type="button" class="btn btn-md btn-danger me-4" title="desactivar" (click)="eliminarCategoria(categoria)"><i class="bi bi-dash-circle"></i></button>
                                 </span>
                             </td>
                         </tr>
@@ -108,7 +108,7 @@
                             <td>{{ categoria.descripcion }}</td>
                             <td class="text-end">
                                 <span class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-md btn-outline-secondary me-4" (click)="restaurarCategoria(categoria)">
+                                    <button type="button" class="btn btn-md btn-outline-secondary me-4" title="restaurar" (click)="restaurarCategoria(categoria)">
                                         <i class="bi bi-arrow-clockwise text-dark-secondary"></i>
                                     </button>
                                 </span>
