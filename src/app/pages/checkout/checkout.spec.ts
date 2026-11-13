@@ -2,8 +2,10 @@ import { provideHttpClient } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
+import { vi } from 'vitest';
 import { apiUrl } from '../../config/api';
 import { CartService } from '../../services/cart';
+import { TelegramMessageBuilder } from '../../services/telegram-message-builder';
 import { Checkout } from './checkout';
 
 describe('Checkout', () => {
@@ -129,12 +131,16 @@ describe('Checkout', () => {
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('estado Pre-pedido');
     expect((fixture.nativeElement as HTMLElement).querySelector('a[href*="t.me"]')).toBeNull();
     component.prepararTelegram();
+    component.prepararTelegram();
+    const configRequest = http.expectOne(`${apiUrl}/configuracion-publica`);
+    expect(component.cargandoTelegram()).toBe(true);
+    configRequest.flush({ telegram_bot_username: 'BotDePrueba_bot' });
     fixture.detectChanges();
     const enlace = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('a[href*="t.me"]');
     expect(enlace).not.toBeNull();
     const url = new URL(enlace!.href);
     expect(url.hostname).toBe('t.me');
-    expect(url.pathname).toBe('/Restauransbot');
+    expect(url.pathname).toBe('/BotDePrueba_bot');
     expect(url.searchParams.get('text')).toContain('Pedido #12');
     expect(url.searchParams.get('text')).toContain('Total: $4000.00');
     expect(url.searchParams.get('text')).toContain('Vuelto: $1000.00');
@@ -144,5 +150,87 @@ describe('Checkout', () => {
     component.confirmandoTelegram.set(false);
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).querySelector('a[href*="t.me"]')).toBeNull();
+  });
+
+  it('conserva el pre-pedido y permite reintentar si la configuración falla o es inválida', () => {
+    agregarProducto();
+    component.formulario.setValue({ direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'tarjeta', montoRecibido: null });
+    component.guardar();
+    http.expectOne(`${apiUrl}/checkout/borradores`).flush({
+      id: 'ref', pedido_id: 12, message: 'Guardado', subtotal: 2400, costo_envio: 1500, monto_total: 3900,
+      items: [{ producto_id: 10, nombre: 'Hamburguesa', precio_unitario: 1000, cantidad: 2, adicionales: [], subtotal: 2000 }],
+    });
+
+    component.prepararTelegram();
+    http.expectOne(`${apiUrl}/configuracion-publica`).flush({}, { status: 503, statusText: 'Unavailable' });
+    expect(component.error()).toContain('No se pudo obtener');
+    expect(component.confirmandoTelegram()).toBe(false);
+    expect(component.cargandoTelegram()).toBe(false);
+
+    component.prepararTelegram();
+    http.expectOne(`${apiUrl}/configuracion-publica`).flush({ telegram_bot_username: 'bot/otro' });
+    expect(component.error()).toContain('No se pudo obtener');
+    expect(component.enlaceTelegram()).toBe('');
+    expect(component.borrador()?.pedido_id).toBe(12);
+
+    component.prepararTelegram();
+    http.expectOne(`${apiUrl}/configuracion-publica`).flush({ telegram_bot_username: 'OtroBotPrueba_bot' });
+    expect(component.confirmandoTelegram()).toBe(true);
+    expect(new URL(component.enlaceTelegram()).pathname).toBe('/OtroBotPrueba_bot');
+    http.expectNone(`${apiUrl}/checkout/borradores`);
+  });
+
+  it('informa errores de red, respuestas incompletas y tiempo de espera sin perder el pre-pedido', () => {
+    agregarProducto();
+    component.formulario.setValue({ direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'tarjeta', montoRecibido: null });
+    component.guardar();
+    http.expectOne(`${apiUrl}/checkout/borradores`).flush({
+      id: 'ref', pedido_id: 12, message: 'Guardado', subtotal: 2400, costo_envio: 1500, monto_total: 3900,
+      items: [{ producto_id: 10, nombre: 'Hamburguesa', precio_unitario: 1000, cantidad: 2, adicionales: [], subtotal: 2000 }],
+    });
+
+    component.prepararTelegram();
+    fixture.detectChanges();
+    const boton = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('button'))
+      .find(elemento => elemento.textContent?.includes('Preparando Telegram'));
+    expect(boton?.disabled).toBe(true);
+    http.expectOne(`${apiUrl}/configuracion-publica`).error(new ProgressEvent('error'));
+    expect(component.error()).toContain('No se pudo obtener');
+
+    component.prepararTelegram();
+    http.expectOne(`${apiUrl}/configuracion-publica`).flush({});
+    expect(component.error()).toContain('No se pudo obtener');
+
+    vi.useFakeTimers();
+    try {
+      component.prepararTelegram();
+      const solicitud = http.expectOne(`${apiUrl}/configuracion-publica`);
+      vi.advanceTimersByTime(15000);
+      expect(solicitud.cancelled).toBe(true);
+      expect(component.error()).toContain('No se pudo obtener');
+      expect(component.cargandoTelegram()).toBe(false);
+    } finally {
+      vi.useRealTimers();
+    }
+    expect(component.borrador()?.pedido_id).toBe(12);
+    expect(component.enlaceTelegram()).toBe('');
+    expect(component.confirmandoTelegram()).toBe(false);
+    http.expectNone(`${apiUrl}/checkout/borradores`);
+  });
+
+  it('rechaza un mensaje largo antes de consultar la configuración', () => {
+    agregarProducto();
+    component.formulario.setValue({ direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'tarjeta', montoRecibido: null });
+    component.guardar();
+    http.expectOne(`${apiUrl}/checkout/borradores`).flush({
+      id: 'ref', pedido_id: 12, message: 'Guardado', subtotal: 2400, costo_envio: 1500, monto_total: 3900,
+      items: [{ producto_id: 10, nombre: 'Hamburguesa', precio_unitario: 1000, cantidad: 2, adicionales: [], subtotal: 2000 }],
+    });
+    vi.spyOn(TestBed.inject(TelegramMessageBuilder), 'construir').mockReturnValue('a'.repeat(4097));
+    component.prepararTelegram();
+    expect(component.error()).toContain('supera el límite');
+    expect(component.borrador()?.pedido_id).toBe(12);
+    expect(component.confirmandoTelegram()).toBe(false);
+    http.expectNone(`${apiUrl}/configuracion-publica`);
   });
 });

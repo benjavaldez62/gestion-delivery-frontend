@@ -1,5 +1,6 @@
 import { Injectable } from '@angular/core';
 import { BorradorCheckout, MetodoPago } from './checkout';
+import { esUsernameTelegramValido } from './telegram-username';
 
 export interface DatosMensajeTelegram {
   direccion: string;
@@ -53,10 +54,17 @@ export class TelegramMessageBuilder {
     return lineas.join('\n');
   }
 
-  enlace(mensaje: string): string {
+  validarMensaje(mensaje: string): void {
     if (Array.from(mensaje).length > 4096) {
       throw new RangeError('El resumen supera el límite de Telegram. Reducí la cantidad de productos o aclaraciones.');
     }
-    return `https://t.me/Restauransbot?text=${encodeURIComponent(mensaje)}`;
+  }
+
+  enlace(mensaje: string, username: string): string {
+    this.validarMensaje(mensaje);
+    if (!esUsernameTelegramValido(username)) {
+      throw new Error('La configuración de Telegram es inválida.');
+    }
+    return `https://t.me/${username}?text=${encodeURIComponent(mensaje)}`;
   }
 }
