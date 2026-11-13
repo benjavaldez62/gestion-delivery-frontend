@@ -1,12 +1,13 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, timeout } from 'rxjs';
 import { CartService } from '../../services/cart';
 import { BorradorCheckout, CheckoutService, MetodoPago } from '../../services/checkout';
+import { ConfiguracionPublicaService } from '../../services/configuracion-publica';
 import { DatosMensajeTelegram, TelegramMessageBuilder } from '../../services/telegram-message-builder';
 import { PaymentSelectorComponent } from './payment-selector';
 
@@ -28,8 +29,11 @@ export class Checkout {
   private readonly checkout = inject(CheckoutService);
   private readonly fb = inject(FormBuilder);
   private readonly telegram = inject(TelegramMessageBuilder);
+  private readonly configuracion = inject(ConfiguracionPublicaService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly guardando = signal(false);
+  readonly cargandoTelegram = signal(false);
   readonly error = signal('');
   readonly borrador = signal<BorradorCheckout | null>(null);
   readonly datosTelegram = signal<DatosMensajeTelegram | null>(null);
@@ -105,18 +109,34 @@ export class Checkout {
   }
 
   prepararTelegram(): void {
+    if (this.cargandoTelegram()) return;
     const datos = this.datosTelegram();
     if (!datos) {
       this.error.set('No se encontró el resumen del borrador para Telegram.');
       return;
     }
+    let mensaje: string;
     try {
-      this.enlaceTelegram.set(this.telegram.enlace(this.telegram.construir(datos)));
-      this.error.set('');
-      this.confirmandoTelegram.set(true);
+      mensaje = this.telegram.construir(datos);
+      this.telegram.validarMensaje(mensaje);
     } catch (error) {
       if (!(error instanceof RangeError)) throw error;
       this.error.set(error.message);
+      return;
     }
+    this.error.set('');
+    this.enlaceTelegram.set('');
+    this.cargandoTelegram.set(true);
+    this.configuracion.obtenerBotTelegram().pipe(
+      timeout({ first: 15000 }),
+      finalize(() => this.cargandoTelegram.set(false)),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: username => {
+        this.enlaceTelegram.set(this.telegram.enlace(mensaje, username));
+        this.confirmandoTelegram.set(true);
+      },
+      error: () => this.error.set('No se pudo obtener la configuración de Telegram. Intentá nuevamente.'),
+    });
   }
 }

@@ -16,7 +16,9 @@
         @if (error()) {
           <p class="alert alert-danger" role="alert">{{ error() }}</p>
         }
-        <button type="button" class="theme-btn border-0 rounded-pill py-3 mb-3" (click)="prepararTelegram()">Continuar con Telegram</button>
+        <button type="button" class="theme-btn border-0 rounded-pill py-3 mb-3" (click)="prepararTelegram()" [disabled]="cargandoTelegram()">
+          {{ cargandoTelegram() ? 'Preparando Telegram...' : 'Continuar con Telegram' }}
+        </button>
         <a routerLink="/carrito">Volver al carrito</a>
       </div>
     } @else if (cart.items().length === 0) {
