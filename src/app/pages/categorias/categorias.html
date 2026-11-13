@@ -45,7 +45,7 @@
                             <th>Nombre</th>
                             <th>Descripción</th>
                             <th>Estado</th>
-                            <th>Acciones</th>
+                            <th class="text-end">Acciones</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -65,7 +65,9 @@
                                 </span>
                                 }
                             </td>
-                            <td></td>
+                            <td class="text-end">
+                                <button type="button" class="btn btn-sm btn-outline-primary px-2 py-1" (click)="editarCategoria(categoria)"><i class="bi bi-pencil-square"></i></button>
+                            </td>
                         </tr>
                         }
                     </tbody>
@@ -136,7 +138,7 @@
         <div class="modal-dialog modal-dialog-centered" role="document" (click)="$event.stopPropagation()">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h2 class="modal-title fs-5" id="TituloModal">Nueva categoría</h2>
+                    <h2 class="modal-title fs-5" id="TituloModal">{{ categoriaEditando() !== null ? 'Editar Categoría' : 'Nueva categoría' }}</h2>
                     <button type="button" class="btn-close" aria-label="Cerrar" [disabled]="guardando()"
                         (click)="cerrarModal()"></button>
                 </div>
@@ -170,7 +172,7 @@
                             @if (guardando()) {
                             Guardando...
                             } @else {
-                            Guardar categoría
+                             {{ categoriaEditando() !== null ? 'Actualizar categoría' : 'Guardar categoría'}}
                             }
                         </button>
                     </div>

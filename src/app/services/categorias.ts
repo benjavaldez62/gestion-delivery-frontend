@@ -9,7 +9,7 @@ export class Categorias {} */
 export interface Categoria {
     id: number;
     nombre: string;
-    descripcion: string;
+    descripcion: string | null;
     activo: boolean;
     deleted_at?: string | null;
 }
@@ -17,7 +17,7 @@ export interface Categoria {
 export interface nuevaCategoria {
     nombre: string;
     descripcion: string;
-    activo: boolean;
+    activo?: boolean;
 }
 
 interface RespuestaCategorias {
@@ -53,5 +53,9 @@ export class CategoriasService {
     // ABM Categorias
     crearCategoria(datos: nuevaCategoria): Observable<RespuestaCategoria> {
         return this.http.post<RespuestaCategoria>(this.apiUrl, datos);
+    }
+
+    actualizarCategoria(id: number, datos: nuevaCategoria): Observable<RespuestaCategoria> {
+        return this.http.put<RespuestaCategoria>(`${this.apiUrl}/${id}`, datos);
     }
 }

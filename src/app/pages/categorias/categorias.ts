@@ -14,18 +14,35 @@ export class Categorias implements OnInit {
 
   // MODAL
   modalAbierto = signal(false);
+  estadoCategoria = true;
 
   abrirModal(): void {
+    this.categoriaEditando.set(null);
+    this.nombre = '';
+    this.descripcion = '';
     this.error.set('');
     this.mensaje.set('');
     this.modalAbierto.set(true);
   }
+
+  // editar categoria
+  editarCategoria(categoria: Categoria): void {
+    this.categoriaEditando.set(categoria.id);
+    this.nombre = categoria.nombre;
+    this.descripcion = categoria.descripcion ?? '';
+    this.estadoCategoria = categoria.activo;
+    this.error.set('');
+    this.mensaje.set('');
+    this.modalAbierto.set(true);
+  }
+
   cerrarModal(): void {
-    if(this.guardando()) {
+    if (this.guardando()) {
       return;
     }
 
     this.modalAbierto.set(false);
+    this.categoriaEditando.set(null);
   }
 
   private categoriasService = inject(CategoriasService);
@@ -79,20 +96,29 @@ export class Categorias implements OnInit {
     const datos: nuevaCategoria = {
       nombre: this.nombre.trim(),
       descripcion: this.descripcion.trim(),
-      activo: this.activo
+      ...(this.categoriaEditando() !== null ? { activo: this.estadoCategoria } : {}),
     };
 
-    if(datos.nombre.length < 2) {
+    if (datos.nombre.length < 2) {
       this.errorGuardar.set('El nombre debe tener al menos 2 caracteres.');
       return;
-    } else if(datos.nombre.length > 50) {
+    } else if (datos.nombre.length > 50) {
       this.errorGuardar.set('El nombre no debe superar los 50 caracteres.');
       return;
-    } 
+    }
 
     this.guardando.set(true);
 
-    this.categoriasService.crearCategoria(datos).subscribe({
+    const id = this.categoriaEditando();
+
+    const solicitud =
+      id === null
+        ? this.categoriasService.crearCategoria(datos)
+        : this.categoriasService.actualizarCategoria(id, datos);
+
+    this.guardando.set(true);
+
+    solicitud.subscribe({
       next: (respuesta) => {
         this.mensaje.set(respuesta.message);
 
@@ -103,12 +129,14 @@ export class Categorias implements OnInit {
 
         this.modalAbierto.set(false);
 
+        this.categoriaEditando.set(null);
+
         this.cargarCategorias();
       },
       error: (err) => {
-        console.error('Error al crear categoría:', err);
+        console.error('Error al guardar categoría:', err);
 
-        if(err.status === 422) {
+        if (err.status === 422) {
           this.errorGuardar.set(
             err.error?.errors?.nombre?.[0] ??
             err.error?.errors?.descripcion?.[0] ??
@@ -116,11 +144,13 @@ export class Categorias implements OnInit {
             'Revisá los datos ingresados.'
           );
         } else {
-          this.errorGuardar.set('No se pudo creal la categoría. Verificá la conexión con Laravel.');
+          this.errorGuardar.set('No se pudo guardar la categoría. Verificá la conexión con Laravel.');
         }
 
         this.guardando.set(false);
       },
     });
   }
+
+   categoriaEditando = signal<number | null>(null);
 }
