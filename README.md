@@ -60,6 +60,9 @@ Ubicación: `src/app/services/categorias.ts`, `src/app/pages/categorias/`, `src/
 - El enlace recibido abre `/restablecer-contrasena` con el token y correo en el fragmento. El frontend elimina el fragmento de la barra y permite establecer una nueva contraseña; al hacerlo se cierra la sesión local.
 - El envío real requiere configurar SMTP y `FRONTEND_URL` en Laravel. La confirmación indica aceptación por el servidor SMTP, no entrega garantizada en la bandeja. Esta recuperación afecta a la contraseña local, no a la cuenta de Google.
 
+### 2.7. Tablero de cocina
+- Los pedidos asignados al cocinero se actualizan automáticamente cada 20 segundos. También se puede actualizar el tablero manualmente; si falla la actualización automática se conserva la información visible y se reintenta.
+
 ---
 
 ## 3. Estructura del Proyecto
