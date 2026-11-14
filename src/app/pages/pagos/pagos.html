@@ -1,0 +1,192 @@
+<main class="payments-page">
+  <div class="payments-content">
+    <header class="payments-heading">
+      <p class="payments-eyebrow">PANEL ADMINISTRATIVO · LA POSTA</p>
+      <h1>Pagos</h1>
+      <p>Consultá los cobros y los métodos de pago del restaurante.</p>
+    </header>
+
+    @if (error) { <div class="payments-alert" role="alert">{{ error }}</div> }
+
+    <section aria-labelledby="income-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="income-title">Ingresos cobrados</h2>
+          <p>Solo pagos cobrados; los filtros del listado no afectan estos totales.</p>
+        </div>
+        <button class="refresh-button" type="button" (click)="cargarResumen()" [disabled]="cargandoResumen">Actualizar totales</button>
+      </div>
+      @if (errorResumen) { <div class="payments-alert" role="alert">{{ errorResumen }}</div> }
+      <div class="income-grid">
+        <article class="payments-card income-card">
+          <h3>Hoy</h3>
+          <strong>{{ resumen ? (resumen.ingreso_diario | currency:'ARS':'symbol-narrow':'1.2-2') : '—' }}</strong>
+        </article>
+        <article class="payments-card income-card">
+          <h3>Este mes</h3>
+          <strong>{{ resumen ? (resumen.ingreso_mensual | currency:'ARS':'symbol-narrow':'1.2-2') : '—' }}</strong>
+        </article>
+      </div>
+      @if (cargandoResumen) { <p class="payments-message" role="status">Cargando ingresos...</p> }
+      @if (resumen) { <p class="income-note">Fecha de cobro: {{ resumen.fecha }} · Zona horaria: {{ resumen.zona_horaria }}. Los cobros anteriores al cambio pueden conservar fecha UTC.</p> }
+    </section>
+
+    <section class="payments-card" aria-labelledby="deliveries-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="deliveries-title">Envíos cobrados por repartidor</h2>
+          <p>Pedidos entregados y cobrados en la fecha seleccionada.</p>
+        </div>
+        <form class="delivery-date" (ngSubmit)="cargarEnvios()">
+          <div class="filter-field">
+            <label for="fecha-envios">Fecha de cobro</label>
+            <input id="fecha-envios" name="fechaEnvios" type="date" [(ngModel)]="fechaEnvios">
+          </div>
+          <button class="refresh-button" type="submit" [disabled]="cargandoEnvios">Consultar</button>
+        </form>
+      </div>
+      <p class="income-note">Importe de envío estimado como total del pedido menos subtotal. No registra pagos al repartidor ni incluye el sueldo; solo equivale a su adicional si le corresponde el 100 % del envío.</p>
+      @if (errorEnvios) { <div class="payments-alert" role="alert">{{ errorEnvios }}</div> }
+      @if (cargandoEnvios) { <p class="payments-message" role="status">Cargando envíos...</p> }
+      @if (resumenEnvios; as envios) {
+        <p class="payments-message"><strong>Total de envíos calculables: {{ envios.total_envios | currency:'ARS':'symbol-narrow':'1.2-2' }}</strong> · {{ envios.fecha }} · {{ envios.zona_horaria }}</p>
+        @for (repartidor of envios.repartidores; track repartidor.id) {
+          <div class="delivery-group">
+            <div class="delivery-group-heading"><strong>{{ repartidor.nombre }}</strong><strong>{{ repartidor.total | currency:'ARS':'symbol-narrow':'1.2-2' }}</strong></div>
+            <ul class="delivery-list">
+              @for (envio of repartidor.envios; track envio.pedido_id) {
+                <li><span>Pedido #{{ envio.pedido_id }}</span><span>{{ envio.importe | currency:'ARS':'symbol-narrow':'1.2-2' }}</span></li>
+              }
+            </ul>
+          </div>
+        } @empty {
+          <p class="payments-message">No hay envíos calculables para esta fecha.</p>
+        }
+        @if (envios.pendientes_revision.length) {
+          <div class="delivery-warning" role="alert">
+            <strong>Pedidos excluidos que requieren revisión:</strong>
+            <ul>
+              @for (pendiente of envios.pendientes_revision; track pendiente.pedido_id) {
+                <li>Pedido #{{ pendiente.pedido_id }}: {{ pendiente.motivo }}</li>
+              }
+            </ul>
+          </div>
+        }
+      }
+    </section>
+
+    <section class="payments-card methods-card" aria-labelledby="methods-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="methods-title">Métodos de pago</h2>
+          <p>Por ahora solo está habilitado el efectivo en el checkout.</p>
+        </div>
+      </div>
+      <ul class="methods-list">
+        @for (item of metodos; track item.id) {
+          <li class="method-item">
+            <span class="method-name">{{ item.nombre }} <span aria-hidden="true">—</span></span>
+            <span class="method-status" [class.method-available]="esOperativo(item)">{{ esOperativo(item) ? 'Efectivo operativo' : 'No disponible' }}</span>
+          </li>
+        } @empty {
+          <li class="payments-message">No hay métodos para mostrar.</li>
+        }
+      </ul>
+    </section>
+
+    <section class="payments-card filters-card" aria-labelledby="filters-title">
+      <div class="section-heading">
+        <div>
+          <h2 id="filters-title">Buscar pagos</h2>
+          <p>Buscá por número, nombre o teléfono y combiná los filtros que necesites.</p>
+        </div>
+      </div>
+      <form class="filters-form" (ngSubmit)="buscar()">
+        <div class="filter-field">
+          <label for="filtro-busqueda">Pago, pedido, cliente, nombre o teléfono</label>
+          <input id="filtro-busqueda" name="busqueda" [(ngModel)]="busqueda" maxlength="100" placeholder="Ej. 123, Ana o 3511234567">
+        </div>
+        <div class="filter-field">
+          <label for="filtro-estado">Estado</label>
+          <select id="filtro-estado" name="estado" [(ngModel)]="estado">
+            <option value="">Todos</option>
+            @for (item of estados; track item.id) { <option [value]="item.id">{{ item.nombre }}</option> }
+          </select>
+        </div>
+        <div class="filter-field">
+          <label for="filtro-metodo">Método</label>
+          <select id="filtro-metodo" name="metodo" [(ngModel)]="metodo">
+            <option value="">Todos</option>
+            @for (item of metodos; track item.id) { <option [value]="item.id">{{ item.nombre }}</option> }
+          </select>
+        </div>
+        <button class="search-button" type="submit" [disabled]="cargando">Buscar</button>
+      </form>
+    </section>
+
+    <section class="payments-card records-card" aria-labelledby="records-title">
+      <div class="section-heading records-heading">
+        <div>
+          <h2 id="records-title">Listado de pagos</h2>
+          <p>Detalle de los pagos registrados.</p>
+        </div>
+        @if (!cargando && !error) {
+          <span class="records-count">{{ pagos.length }} {{ pagos.length === 1 ? 'pago' : 'pagos' }}</span>
+        }
+      </div>
+      @if (cargando) {
+        <p class="payments-message" role="status">Cargando pagos...</p>
+      } @else if (pagos.length === 0 && !error) {
+        <p class="payments-message">No hay pagos para los filtros seleccionados.</p>
+      } @else if (pagos.length > 0) {
+        <div class="table-scroll" role="region" aria-label="Listado de pagos" tabindex="0">
+          <table class="payments-table">
+            <thead><tr><th>Pago</th><th>Pedido</th><th>Cliente</th><th>Método</th><th>Estado</th><th>Total</th><th>Fecha</th><th>Comprobante</th></tr></thead>
+            <tbody>
+              @for (pago of pagos; track pago.id) {
+                <tr>
+                  <td class="payment-id">#{{ pago.id }}</td><td>#{{ pago.pedido_id }}</td>
+                  <td>
+                    <div>{{ pago.pedido?.nombre_cliente || pago.pedido?.usuario_cliente || 'Sin nombre' }}</div>
+                    @if (pago.pedido?.cliente_id) { <div class="muted">Cliente #{{ pago.pedido?.cliente_id }}</div> }
+                    <div class="muted">{{ pago.pedido?.telefono_cliente || 'Sin teléfono' }}</div>
+                  </td>
+                  <td>{{ pago.metodo_pago.nombre }}</td>
+                  <td><span class="payment-status"
+                    [class.status-paid]="pago.estado_pago.nombre.trim().toLocaleLowerCase() === 'pagado'"
+                    [class.status-pending]="pago.estado_pago.nombre.trim().toLocaleLowerCase() === 'pendiente'"
+                    [class.status-failed]="pago.estado_pago.nombre.trim().toLocaleLowerCase() === 'fallido'">{{ pago.estado_pago.nombre }}</span></td>
+                  <td class="payment-total">{{ pago.monto | currency:'ARS':'symbol-narrow':'1.2-2' }}</td>
+                  <td>{{ pago.fecha_pago ? (pago.fecha_pago.slice(0, 10) | date:'dd/MM/yyyy') : 'Pendiente' }}</td>
+                  <td>
+                    @for (comprobante of pago.comprobantes; track comprobante.id) {
+                      <div class="receipt">{{ comprobante.tipo_comprobante }}:
+                        <button class="receipt-link" type="button" (click)="verTicket(comprobante.id, comprobante.numero_comprobante)">{{ comprobante.numero_comprobante }}</button>
+                        — {{ comprobante.titular }}
+                      </div>
+                    } @empty { <span class="muted">Sin comprobante</span> }
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  </div>
+</main>
+<dialog #ticketDialog class="ticket-dialog" aria-labelledby="ticket-title" (cancel)="cancelarSolicitudTicket()">
+  <div class="section-heading">
+    <div><h2 id="ticket-title">Comprobante {{ numeroTicket }}</h2><p>Contenido original guardado</p></div>
+    <button class="refresh-button" type="button" (click)="cerrarTicket()" autofocus>Cerrar</button>
+  </div>
+  @if (cargandoTicket) {
+    <p class="payments-message" role="status">Cargando comprobante...</p>
+  } @else if (errorTicket) {
+    <div class="payments-alert" role="alert">{{ errorTicket }}</div>
+  } @else if (contenidoTicket) {
+    <div class="ticket-content" [innerHTML]="contenidoTicket"></div>
+  } @else {
+    <p class="payments-message">Este comprobante no tiene un ticket guardado y requiere revisión.</p>
+  }
+</dialog>
