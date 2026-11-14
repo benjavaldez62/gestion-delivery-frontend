@@ -5,7 +5,7 @@
       <h1>Tablero de cocina</h1>
       <p class="kitchen-subtitle">Arrastrá los pedidos entre columnas para actualizar su estado.</p>
     </div>
-    <button class="refresh-button" type="button" (click)="recargar()" [disabled]="cargando">
+    <button class="refresh-button" type="button" (click)="recargar()" [disabled]="cargando || actualizandoPedidoId !== null">
         <span class="i-refresh"><i class="bi bi-arrow-clockwise"></i></span>
         Actualizar tablero
     </button>
@@ -13,6 +13,9 @@
 
   @if (error) {
     <div class="board-alert board-alert-error" role="alert">{{ error }}</div>
+  }
+  @if (errorActualizacion) {
+    <div class="board-alert board-alert-error" role="alert">{{ errorActualizacion }}</div>
   }
   @if (cargando) {
     <div class="board-message" role="status">Cargando pedidos...</div>
@@ -93,6 +96,8 @@
       }
     </div>
   }
+
+  <p class="auto-refresh-note" aria-live="polite">El tablero se actualiza automáticamente cada 20 segundos.</p>
 
   @if (mensaje) {
     <div class="order-toast" role="status" aria-live="polite">

@@ -48,6 +48,7 @@ describe('Carrito Page', () => {
     fixture.detectChanges();
     const compiled = fixture.nativeElement as HTMLElement;
     expect(compiled.textContent).toContain('Tu carrito está vacío');
+    expect(compiled.textContent).not.toContain('Cargar productos de prueba');
   });
 
   it('debe listar los productos y mostrar el total cuando hay items', () => {

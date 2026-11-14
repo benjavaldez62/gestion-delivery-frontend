@@ -40,6 +40,13 @@
   color: #141314;
 }
 
+.auto-refresh-note {
+  margin: 1.2rem auto 0;
+  color: #888;
+  font-size: 0.75rem;
+  text-align: center;
+}
+
 .refresh-button,
 .move-button {
   border: 1px solid #ff5200;

@@ -92,10 +92,6 @@ export class Carrito {
     }
   }
 
-  cargarDemo(): void {
-    this.cart.cargarDatosPrueba();
-  }
-
   increment(idTemporal: string): void {
     this.cart.updateQuantity(idTemporal, 1);
   }
