@@ -40,10 +40,10 @@ export class Checkout {
   readonly enlaceTelegram = signal('');
   readonly confirmandoTelegram = signal(false);
   readonly formulario = this.fb.nonNullable.group({
-    nombreCliente: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/\S/)]],
-    direccion: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/\S/)]],
-    telefono: ['', [Validators.required, Validators.maxLength(30), Validators.pattern(/^(?=(?:[^0-9]*[0-9]){6})[0-9+() \-]{6,30}$/)]],
-    notas: ['', [Validators.maxLength(500)]],
+    nombreCliente: ['', [Validators.required, Validators.maxLength(25), Validators.pattern(/\S/)]],
+    direccion: ['', [Validators.required, Validators.maxLength(25), Validators.pattern(/\S/)]],
+    telefono: ['', [Validators.required, Validators.pattern(/^\+?[0-9]{1,25}$/)]],
+    notas: ['', [Validators.maxLength(255)]],
     metodoPago: this.fb.nonNullable.control<MetodoPago | ''>('', [Validators.required, Validators.pattern(/^efectivo$/)]),
     montoRecibido: this.fb.control<number | null>(null, [Validators.min(0), importeValido]),
   });
@@ -61,6 +61,20 @@ export class Checkout {
 
   vueltoEstimado(): number {
     return Math.round(((this.formulario.controls.montoRecibido.value ?? 0) - this.cart.montoTotal()) * 100) / 100;
+  }
+
+  filtrarTelefono(event: Event): void {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) return;
+    const original = input.value;
+    const limpiar = (valor: string) => (valor.startsWith('+') ? '+' : '') + valor.replace(/[^0-9]/g, '');
+    const telefono = limpiar(original);
+    if (original !== telefono) {
+      const posicion = limpiar(original.slice(0, input.selectionStart ?? original.length)).length;
+      input.value = telefono;
+      this.formulario.controls.telefono.setValue(telefono);
+      input.setSelectionRange(posicion, posicion);
+    }
   }
 
   guardar(): void {

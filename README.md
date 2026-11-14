@@ -45,7 +45,7 @@ Ubicación: `src/app/services/categorias.ts`, `src/app/pages/categorias/`, `src/
 - Consumo de endpoints de categorías y productos activos desde la API REST.
 
 ### 2.5. Checkout
-- La ruta `/checkout` permite completar nombre completo, dirección, teléfono, aclaraciones y método de pago, y consultar el resumen del carrito.
+- La ruta `/checkout` permite completar nombre y dirección (hasta 25 caracteres cada uno), teléfono (hasta 25 dígitos y + opcional al inicio), aclaraciones (hasta 255 caracteres) y método de pago, y consultar el resumen del carrito.
 - Al continuar se guarda un borrador mediante `POST /api/checkout/borradores`. El servidor valida los productos y recalcula los precios; los importes del carrito son estimados.
 - Por ahora solo se puede elegir efectivo. Tarjeta y transferencia se muestran deshabilitadas. Es posible indicar el importe para calcular el vuelto estimado; el pago no se confirma automáticamente al guardar el pre-pedido.
 - Luego de guardar, se consulta `GET /api/configuracion-publica` para abrir el bot configurado en el backend con un texto preparado con los precios calculados por el servidor. El cliente debe revisarlo y enviarlo. Si la configuración no está disponible se informa el error y se permite reintentar sin crear otro pre-pedido. Se conserva el carrito.

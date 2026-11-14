@@ -63,6 +63,71 @@ describe('Checkout', () => {
     http.expectNone(`${apiUrl}/checkout/borradores`);
   });
 
+  it('admite hasta 25 dígitos con + inicial y filtra letras al escribir o pegar', () => {
+    agregarProducto();
+    fixture.detectChanges();
+    const pagina = fixture.nativeElement as HTMLElement;
+    const telefono = pagina.querySelector<HTMLInputElement>('#telefono')!;
+    expect(telefono.type).toBe('tel');
+    expect(pagina.textContent).toContain('Sugerencia: ingrese su número telefónico sin +54, 0 ni 15.');
+
+    telefono.value = '345a400 0000';
+    telefono.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(telefono.value).toBe('3454000000');
+    expect(component.formulario.controls.telefono.value).toBe('3454000000');
+    expect(component.formulario.controls.telefono.valid).toBe(true);
+
+    for (const valido of ['0345400000', '+543454000000', '1'.repeat(25), '+' + '1'.repeat(25)]) {
+      component.formulario.controls.telefono.setValue(valido);
+      expect(component.formulario.controls.telefono.valid).toBe(true);
+    }
+    for (const invalido of ['+', '1'.repeat(26), '+' + '1'.repeat(26), '345400000a', '12+34']) {
+      component.formulario.controls.telefono.setValue(invalido);
+      expect(component.formulario.controls.telefono.invalid).toBe(true);
+    }
+    telefono.value = '+54 0345 154 000000';
+    telefono.dispatchEvent(new Event('input'));
+    expect(component.formulario.controls.telefono.value).toBe('+540345154000000');
+    expect(component.formulario.controls.telefono.valid).toBe(true);
+    telefono.value = '+' + '1'.repeat(26);
+    telefono.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(component.formulario.controls.telefono.invalid).toBe(true);
+    expect(pagina.textContent).toContain('Ingresá un teléfono de hasta 25 dígitos');
+  });
+
+  it('limita nombre y dirección, y muestra solo el contador de aclaraciones', () => {
+    agregarProducto();
+    component.formulario.controls.direccion.setValue('Calle 123');
+    component.formulario.controls.notas.setValue('Timbre');
+    fixture.detectChanges();
+    const pagina = fixture.nativeElement as HTMLElement;
+    expect(pagina.querySelector('#direccion-contador')).toBeNull();
+    expect(pagina.querySelector('#notas-contador')?.textContent).toContain('6 / 255');
+    for (const clase of ['btn', 'btn-outline-secondary', 'rounded-pill', 'px-4']) {
+      expect(pagina.querySelector('a[href="/carrito"]')?.classList.contains(clase)).toBe(true);
+    }
+    const direccion = pagina.querySelector<HTMLInputElement>('#direccion')!;
+    const nombre = pagina.querySelector<HTMLInputElement>('#nombreCliente')!;
+    const notas = pagina.querySelector<HTMLTextAreaElement>('#notas')!;
+    expect(nombre.maxLength).toBe(25);
+    expect(direccion.maxLength).toBe(25);
+    expect(notas.maxLength).toBe(255);
+    direccion.value = 'a'.repeat(25);
+    direccion.dispatchEvent(new Event('input'));
+    notas.value = 'b'.repeat(255);
+    notas.dispatchEvent(new Event('input'));
+    fixture.detectChanges();
+    expect(pagina.querySelector('#notas-contador')?.textContent).toContain('255 / 255');
+    component.formulario.controls.nombreCliente.setValue('a'.repeat(26));
+    component.formulario.controls.direccion.setValue('a'.repeat(26));
+    component.formulario.controls.notas.setValue('b'.repeat(256));
+    expect(component.formulario.controls.nombreCliente.invalid).toBe(true);
+    expect(component.formulario.controls.direccion.invalid).toBe(true);
+    expect(component.formulario.controls.notas.invalid).toBe(true);
+  });
+
   it('solo permite seleccionar efectivo en checkout', () => {
     agregarProducto();
     fixture.detectChanges();
@@ -70,7 +135,7 @@ describe('Checkout', () => {
     expect(pagina.querySelector<HTMLInputElement>('#efectivo')?.disabled).toBe(false);
     expect(pagina.querySelector<HTMLInputElement>('#tarjeta')?.disabled).toBe(true);
     expect(pagina.querySelector<HTMLInputElement>('#transferencia')?.disabled).toBe(true);
-    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'tarjeta', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '3454000000', notas: '', metodoPago: 'tarjeta', montoRecibido: null });
     component.guardar();
     expect(component.formulario.controls.metodoPago.invalid).toBe(true);
     http.expectNone(`${apiUrl}/checkout/borradores`);
@@ -78,7 +143,7 @@ describe('Checkout', () => {
 
   it('muestra el resumen y envia un solo borrador con los datos del carrito', () => {
     agregarProducto();
-    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: ' Calle 123 ', telefono: '123456789', notas: 'Timbre', metodoPago: 'efectivo', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: ' Calle 123 ', telefono: '3454000000', notas: 'Timbre', metodoPago: 'efectivo', montoRecibido: null });
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Hamburguesa');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Queso');
@@ -90,7 +155,7 @@ describe('Checkout', () => {
     expect(request.request.body).toEqual({
       nombre_cliente: 'Nombre Apellido',
       direccion: 'Calle 123',
-      telefono: '123456789',
+      telefono: '3454000000',
       notas: 'Timbre',
       metodo_pago: 'efectivo',
       items: [{ producto_id: 10, cantidad: 2, adicionales: [3] }],
@@ -103,7 +168,7 @@ describe('Checkout', () => {
 
   it('muestra el error del servidor y conserva el carrito para reintentar', () => {
     agregarProducto();
-    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '3454000000', notas: '', metodoPago: 'efectivo', montoRecibido: null });
     component.guardar();
     http.expectOne(`${apiUrl}/checkout/borradores`).flush({}, { status: 422, statusText: 'Unprocessable Entity' });
     fixture.detectChanges();
@@ -114,7 +179,7 @@ describe('Checkout', () => {
 
   it('valida el monto en efectivo y muestra el vuelto estimado', () => {
     agregarProducto();
-    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: 3800 });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '3454000000', notas: '', metodoPago: 'efectivo', montoRecibido: 3800 });
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('debe cubrir el total estimado');
     component.guardar();
@@ -134,7 +199,7 @@ describe('Checkout', () => {
 
   it('prepara Telegram con los precios del servidor y requiere confirmación', () => {
     agregarProducto();
-    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle & 123', telefono: '123456789', notas: 'Sin cebolla', metodoPago: 'efectivo', montoRecibido: 5000 });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle & 123', telefono: '3454000000', notas: 'Sin cebolla', metodoPago: 'efectivo', montoRecibido: 5000 });
     component.guardar();
     const request = http.expectOne(`${apiUrl}/checkout/borradores`);
     expect(request.request.body.monto_recibido).toBe(5000);
@@ -145,7 +210,13 @@ describe('Checkout', () => {
     });
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Pre-pedido #12 registrado');
-    expect((fixture.nativeElement as HTMLElement).textContent).toContain('estado Pre-pedido');
+    const pagina = fixture.nativeElement as HTMLElement;
+    expect(pagina.textContent).toContain('Tu pedido fue guardado, todavía no fue confirmado ni enviado al restaurante. Abre Telegram y envía el mensaje para confirmar el pedido e iniciar su preparación.');
+    expect(pagina.textContent).not.toContain('Referencia del borrador');
+    expect(pagina.textContent).not.toContain('ref-1');
+    for (const clase of ['btn', 'btn-outline-secondary', 'rounded-pill', 'px-4']) {
+      expect(pagina.querySelector('a[href="/carrito"]')?.classList.contains(clase)).toBe(true);
+    }
     expect((fixture.nativeElement as HTMLElement).querySelector('a[href*="t.me"]')).toBeNull();
     component.prepararTelegram();
     component.prepararTelegram();
@@ -153,6 +224,8 @@ describe('Checkout', () => {
     expect(component.cargandoTelegram()).toBe(true);
     configRequest.flush({ telegram_bot_username: 'BotDePrueba_bot' });
     fixture.detectChanges();
+    expect(pagina.textContent).toContain('Se abrirá un chat con su pedido precargado, que incluye productos, dirección, teléfono, nombre del cliente y método de pago. Revisalo y envíalo.');
+    expect(pagina.textContent).toContain('Esta acción no confirma el pedido ni registra un pago.');
     const enlace = (fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('a[href*="t.me"]');
     expect(enlace).not.toBeNull();
     const url = new URL(enlace!.href);
@@ -173,7 +246,7 @@ describe('Checkout', () => {
 
   it('conserva el pre-pedido y permite reintentar si la configuración falla o es inválida', () => {
     agregarProducto();
-    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '3454000000', notas: '', metodoPago: 'efectivo', montoRecibido: null });
     component.guardar();
     http.expectOne(`${apiUrl}/checkout/borradores`).flush({
       id: 'ref', pedido_id: 12, message: 'Guardado', subtotal: 2400, costo_envio: 1500, monto_total: 3900,
@@ -201,7 +274,7 @@ describe('Checkout', () => {
 
   it('informa errores de red, respuestas incompletas y tiempo de espera sin perder el pre-pedido', () => {
     agregarProducto();
-    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '3454000000', notas: '', metodoPago: 'efectivo', montoRecibido: null });
     component.guardar();
     http.expectOne(`${apiUrl}/checkout/borradores`).flush({
       id: 'ref', pedido_id: 12, message: 'Guardado', subtotal: 2400, costo_envio: 1500, monto_total: 3900,
@@ -239,7 +312,7 @@ describe('Checkout', () => {
 
   it('rechaza un mensaje largo antes de consultar la configuración', () => {
     agregarProducto();
-    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '3454000000', notas: '', metodoPago: 'efectivo', montoRecibido: null });
     component.guardar();
     http.expectOne(`${apiUrl}/checkout/borradores`).flush({
       id: 'ref', pedido_id: 12, message: 'Guardado', subtotal: 2400, costo_envio: 1500, monto_total: 3900,
