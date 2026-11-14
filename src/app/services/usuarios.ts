@@ -1,7 +1,6 @@
 import { Injectable, inject } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, forkJoin } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 import { apiUrl } from '../config/api';
 
 
@@ -16,13 +15,29 @@ export interface Usuario {
     name: string;
     email: string;
     activo: boolean;
-    role_id: number;
+    role_id?: number;
     role?: Rol;
     deleted_at?: string | null;
 
-    // datos extras para el /me
-    telefono: number | null;
+    telefono: string | null;
     direccion: string | null;
+}
+
+export interface nuevoUsuario {
+    name: string;
+    email: string;
+    password: string;
+    role_id: number;
+    activo: true;
+}
+
+export interface UsuarioActualizado {
+    name: string;
+    email: string;
+    password?: string;
+    role_id: number;
+    telefono: string;
+    direccion: string;
 }
 
 interface RespuestaUsuarios {
@@ -37,7 +52,7 @@ interface RespuestaUsuariosDesactivados {
 
 interface RespuestaUsuario {
     message: string;
-    usuario: Usuario;
+    user: Usuario;
 }
 
 interface RespuestaRoles {
@@ -59,5 +74,26 @@ export class UsuariosService {
     // Listado de usuarios desactivados
     obtenerUsuariosDesactivados(): Observable<RespuestaUsuariosDesactivados> {
         return this.http.get<RespuestaUsuariosDesactivados>(`${this.apiUrl}-desactivados`)
+    }
+
+    obtenerRoles(): Observable<RespuestaRoles> {
+        return this.http.get<RespuestaRoles>(`${apiUrl}/roles`);
+    }
+
+    // ABM Usuarios
+    crearUsuario(datos: nuevoUsuario): Observable<RespuestaUsuario> {
+        return this.http.post<RespuestaUsuario>(this.apiUrl, datos);
+    }
+
+    actualizarUsuario(id: number, datos: UsuarioActualizado): Observable<RespuestaUsuario> {
+        return this.http.put<RespuestaUsuario>(`${this.apiUrl}/${id}`, datos);
+    }
+
+    eliminarUsuario(id: number): Observable<{ message: string }> {
+        return this.http.delete<{ message: string }>(`${this.apiUrl}/${id}`);
+    }
+
+    restaurarUsuario(id: number): Observable<{ message: string }> {
+        return this.http.put<{ message: string }>(`${this.apiUrl}/${id}/restore`, {});
     }
 }
