@@ -7,6 +7,7 @@ import { CheckoutPayloadItem } from '../models/cart';
 export type MetodoPago = 'efectivo' | 'tarjeta' | 'transferencia';
 
 export interface DatosCheckout {
+  nombre_cliente: string;
   direccion: string;
   telefono: string;
   notas: string;

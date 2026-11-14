@@ -53,7 +53,9 @@ describe('Checkout', () => {
     agregarProducto();
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).querySelector('button[type=submit]')?.hasAttribute('disabled')).toBe(true);
-    component.formulario.setValue({ direccion: '   ', telefono: 'abc', notas: '', metodoPago: 'efectivo', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: '   ', telefono: 'abc', notas: '', metodoPago: 'efectivo', montoRecibido: null });
+    component.formulario.controls.nombreCliente.setValue('   ');
+    expect(component.formulario.controls.nombreCliente.invalid).toBe(true);
     expect(component.formulario.invalid).toBe(true);
     component.formulario.controls.telefono.setValue('+---1-');
     expect(component.formulario.controls.telefono.invalid).toBe(true);
@@ -61,9 +63,22 @@ describe('Checkout', () => {
     http.expectNone(`${apiUrl}/checkout/borradores`);
   });
 
+  it('solo permite seleccionar efectivo en checkout', () => {
+    agregarProducto();
+    fixture.detectChanges();
+    const pagina = fixture.nativeElement as HTMLElement;
+    expect(pagina.querySelector<HTMLInputElement>('#efectivo')?.disabled).toBe(false);
+    expect(pagina.querySelector<HTMLInputElement>('#tarjeta')?.disabled).toBe(true);
+    expect(pagina.querySelector<HTMLInputElement>('#transferencia')?.disabled).toBe(true);
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'tarjeta', montoRecibido: null });
+    component.guardar();
+    expect(component.formulario.controls.metodoPago.invalid).toBe(true);
+    http.expectNone(`${apiUrl}/checkout/borradores`);
+  });
+
   it('muestra el resumen y envia un solo borrador con los datos del carrito', () => {
     agregarProducto();
-    component.formulario.setValue({ direccion: ' Calle 123 ', telefono: '123456789', notas: 'Timbre', metodoPago: 'tarjeta', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: ' Calle 123 ', telefono: '123456789', notas: 'Timbre', metodoPago: 'efectivo', montoRecibido: null });
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Hamburguesa');
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('Queso');
@@ -73,10 +88,11 @@ describe('Checkout', () => {
     const request = http.expectOne(`${apiUrl}/checkout/borradores`);
     expect(request.request.method).toBe('POST');
     expect(request.request.body).toEqual({
+      nombre_cliente: 'Nombre Apellido',
       direccion: 'Calle 123',
       telefono: '123456789',
       notas: 'Timbre',
-      metodo_pago: 'tarjeta',
+      metodo_pago: 'efectivo',
       items: [{ producto_id: 10, cantidad: 2, adicionales: [3] }],
     });
     request.flush({ id: 'borrador', message: 'Guardado', subtotal: 2400, costo_envio: 1500, monto_total: 3900 });
@@ -87,7 +103,7 @@ describe('Checkout', () => {
 
   it('muestra el error del servidor y conserva el carrito para reintentar', () => {
     agregarProducto();
-    component.formulario.setValue({ direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: null });
     component.guardar();
     http.expectOne(`${apiUrl}/checkout/borradores`).flush({}, { status: 422, statusText: 'Unprocessable Entity' });
     fixture.detectChanges();
@@ -98,7 +114,7 @@ describe('Checkout', () => {
 
   it('valida el monto en efectivo y muestra el vuelto estimado', () => {
     agregarProducto();
-    component.formulario.setValue({ direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: 3800 });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: 3800 });
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('debe cubrir el total estimado');
     component.guardar();
@@ -111,13 +127,14 @@ describe('Checkout', () => {
     expect(component.formulario.invalid).toBe(true);
     component.formulario.controls.metodoPago.setValue('transferencia');
     expect(component.formulario.controls.montoRecibido.value).toBeNull();
+    expect(component.formulario.controls.metodoPago.invalid).toBe(true);
     fixture.detectChanges();
     expect((fixture.nativeElement as HTMLElement).textContent).toContain('pago digital todavía no está habilitado');
   });
 
   it('prepara Telegram con los precios del servidor y requiere confirmación', () => {
     agregarProducto();
-    component.formulario.setValue({ direccion: 'Calle & 123', telefono: '123456789', notas: 'Sin cebolla', metodoPago: 'efectivo', montoRecibido: 5000 });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle & 123', telefono: '123456789', notas: 'Sin cebolla', metodoPago: 'efectivo', montoRecibido: 5000 });
     component.guardar();
     const request = http.expectOne(`${apiUrl}/checkout/borradores`);
     expect(request.request.body.monto_recibido).toBe(5000);
@@ -142,6 +159,8 @@ describe('Checkout', () => {
     expect(url.hostname).toBe('t.me');
     expect(url.pathname).toBe('/BotDePrueba_bot');
     expect(url.searchParams.get('text')).toContain('Pedido #12');
+    expect(url.searchParams.get('text')).toContain('Nombre Apellido');
+    expect(url.searchParams.get('text')).not.toContain('Borrador de pedido');
     expect(url.searchParams.get('text')).toContain('Total: $4000.00');
     expect(url.searchParams.get('text')).toContain('Vuelto: $1000.00');
     expect(url.searchParams.get('text')).toContain('Calle & 123');
@@ -154,7 +173,7 @@ describe('Checkout', () => {
 
   it('conserva el pre-pedido y permite reintentar si la configuración falla o es inválida', () => {
     agregarProducto();
-    component.formulario.setValue({ direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'tarjeta', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: null });
     component.guardar();
     http.expectOne(`${apiUrl}/checkout/borradores`).flush({
       id: 'ref', pedido_id: 12, message: 'Guardado', subtotal: 2400, costo_envio: 1500, monto_total: 3900,
@@ -182,7 +201,7 @@ describe('Checkout', () => {
 
   it('informa errores de red, respuestas incompletas y tiempo de espera sin perder el pre-pedido', () => {
     agregarProducto();
-    component.formulario.setValue({ direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'tarjeta', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: null });
     component.guardar();
     http.expectOne(`${apiUrl}/checkout/borradores`).flush({
       id: 'ref', pedido_id: 12, message: 'Guardado', subtotal: 2400, costo_envio: 1500, monto_total: 3900,
@@ -220,7 +239,7 @@ describe('Checkout', () => {
 
   it('rechaza un mensaje largo antes de consultar la configuración', () => {
     agregarProducto();
-    component.formulario.setValue({ direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'tarjeta', montoRecibido: null });
+    component.formulario.setValue({ nombreCliente: 'Nombre Apellido', direccion: 'Calle 123', telefono: '123456789', notas: '', metodoPago: 'efectivo', montoRecibido: null });
     component.guardar();
     http.expectOne(`${apiUrl}/checkout/borradores`).flush({
       id: 'ref', pedido_id: 12, message: 'Guardado', subtotal: 2400, costo_envio: 1500, monto_total: 3900,

@@ -3,6 +3,7 @@ import { TelegramMessageBuilder, DatosMensajeTelegram } from './telegram-message
 describe('TelegramMessageBuilder', () => {
   const builder = new TelegramMessageBuilder();
   const datos: DatosMensajeTelegram = {
+    nombreCliente: 'Nombre Apellido',
     direccion: 'Av. Libertad 123',
     telefono: '123456789',
     notas: '',

@@ -3,6 +3,7 @@ import { BorradorCheckout, MetodoPago } from './checkout';
 import { esUsernameTelegramValido } from './telegram-username';
 
 export interface DatosMensajeTelegram {
+  nombreCliente: string;
   direccion: string;
   telefono: string;
   notas: string;
@@ -21,7 +22,7 @@ export class TelegramMessageBuilder {
       transferencia: 'Transferencia (pendiente de pago)',
     };
     const lineas = [
-      '🍽️ La Posta - Borrador de pedido',
+      '🍽️ La Posta - Pedido',
       ...(datos.borrador.pedido_id !== undefined ? [`Pedido #${datos.borrador.pedido_id}`] : []),
       `Referencia: ${datos.borrador.id}`,
       '',
@@ -46,6 +47,7 @@ export class TelegramMessageBuilder {
     }
     lineas.push(
       '',
+      `👤 Cliente: ${datos.nombreCliente}`,
       `📍 Dirección: ${datos.direccion}`,
       `📞 Teléfono: ${datos.telefono}`,
     );
