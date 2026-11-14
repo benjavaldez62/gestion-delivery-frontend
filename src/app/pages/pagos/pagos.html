@@ -28,7 +28,6 @@
         </article>
       </div>
       @if (cargandoResumen) { <p class="payments-message" role="status">Cargando ingresos...</p> }
-      @if (resumen) { <p class="income-note">Fecha de cobro: {{ resumen.fecha }} · Zona horaria: {{ resumen.zona_horaria }}. Los cobros anteriores al cambio pueden conservar fecha UTC.</p> }
     </section>
 
     <section class="payments-card" aria-labelledby="deliveries-title">
@@ -49,7 +48,7 @@
       @if (errorEnvios) { <div class="payments-alert" role="alert">{{ errorEnvios }}</div> }
       @if (cargandoEnvios) { <p class="payments-message" role="status">Cargando envíos...</p> }
       @if (resumenEnvios; as envios) {
-        <p class="payments-message"><strong>Total de envíos calculables: {{ envios.total_envios | currency:'ARS':'symbol-narrow':'1.2-2' }}</strong> · {{ envios.fecha }} · {{ envios.zona_horaria }}</p>
+        <p class="payments-message"><strong>Total de envíos calculables: {{ envios.total_envios | currency:'ARS':'symbol-narrow':'1.2-2' }}</strong> · {{ envios.fecha }}</p>
         @for (repartidor of envios.repartidores; track repartidor.id) {
           <div class="delivery-group">
             <div class="delivery-group-heading"><strong>{{ repartidor.nombre }}</strong><strong>{{ repartidor.total | currency:'ARS':'symbol-narrow':'1.2-2' }}</strong></div>

@@ -56,9 +56,11 @@ describe('Pagos', () => {
     expect(texto).toContain('Cliente #3');
     expect(texto).toContain('$100.25');
     expect(texto).toContain('$300.75');
-    expect(texto).toContain('Zona horaria: America/Argentina/Buenos_Aires');
+    expect(texto).not.toContain('America/Argentina/Buenos_Aires');
     expect(texto).toContain('15/03/2026');
-    expect(texto).toContain('Los cobros anteriores al cambio pueden conservar fecha UTC');
+    expect(texto).not.toContain('Los cobros anteriores al cambio pueden conservar fecha UTC');
+    expect(texto).toContain('Total de envíos calculables: $250.00');
+    expect(texto).toContain('2026-03-15');
     expect(texto).toContain('Envíos cobrados por repartidor');
     expect(texto).toContain('Ana');
     expect(texto).toContain('Pedido #8');
