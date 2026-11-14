@@ -13,6 +13,7 @@ import { RecuperarContrasena } from './pages/recuperacion/recuperar-contrasena';
 import { RestablecerContrasena } from './pages/recuperacion/restablecer-contrasena';
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Repartos } from './pages/repartos/repartos';
+import { Usuarios } from './pages/usuarios/usuarios';
 
 export const routes: Routes = [
     {
@@ -25,7 +26,13 @@ export const routes: Routes = [
         path: 'categorias',
         component: Categorias,
         canActivate: [authGuard, guardRole],
-        data: { roles: ['Administrador', 'Cliente'] }
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
+    {
+        path: 'usuarios',
+        component: Usuarios,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
     },
     {
         path: 'menu',
