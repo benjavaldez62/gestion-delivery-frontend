@@ -59,15 +59,15 @@
                 <dl class="order-totals">
                   <div>
                     <dt>Pedido</dt>
-                    <dd>{{ (pedido.subtotal ?? pedido.monto_total) | currency:'ARS':'symbol-narrow':'1.2-2' }}</dd>
+                    <dd>{{ pedido.subtotal === null ? 'No informado' : (pedido.subtotal | currency:'ARS':'symbol-narrow':'1.2-2') }}</dd>
                   </div>
                   <div>
                     <dt>Envío</dt>
-                    <dd>{{ costoEnvio | currency:'ARS':'symbol-narrow':'1.2-2' }}</dd>
+                    <dd>{{ pedido.subtotal === null ? 'No informado' : ((pedido.monto_total - pedido.subtotal) | currency:'ARS':'symbol-narrow':'1.2-2') }}</dd>
                   </div>
                   <div class="grand-total">
                     <dt>Total</dt>
-                    <dd>{{ ((pedido.subtotal ?? pedido.monto_total) + costoEnvio) | currency:'ARS':'symbol-narrow':'1.2-2' }}</dd>
+                    <dd>{{ pedido.monto_total | currency:'ARS':'symbol-narrow':'1.2-2' }}</dd>
                   </div>
                 </dl>
 
@@ -82,6 +82,9 @@
                 </div>
 
                 @if (siguienteEstado(pedido); as siguiente) {
+                  @if (siguiente.nombre === 'Entregado') {
+                    <p class="delivered-note">Al marcar entregado se registra el cobro en efectivo.</p>
+                  }
                   <button
                     class="move-button"
                     type="button"
@@ -92,6 +95,9 @@
                   </button>
                 } @else {
                   <p class="delivered-note">Pedido entregado</p>
+                  <button class="move-button" type="button" [disabled]="actualizandoPedidoId !== null" (click)="reenviarTicket(pedido)">
+                    Reenviar ticket
+                  </button>
                 }
               </article>
             } @empty {

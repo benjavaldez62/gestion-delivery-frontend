@@ -40,10 +40,11 @@ export class Checkout {
   readonly enlaceTelegram = signal('');
   readonly confirmandoTelegram = signal(false);
   readonly formulario = this.fb.nonNullable.group({
+    nombreCliente: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/\S/)]],
     direccion: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/\S/)]],
     telefono: ['', [Validators.required, Validators.maxLength(30), Validators.pattern(/^(?=(?:[^0-9]*[0-9]){6})[0-9+() \-]{6,30}$/)]],
     notas: ['', [Validators.maxLength(500)]],
-    metodoPago: this.fb.nonNullable.control<MetodoPago | ''>('', Validators.required),
+    metodoPago: this.fb.nonNullable.control<MetodoPago | ''>('', [Validators.required, Validators.pattern(/^efectivo$/)]),
     montoRecibido: this.fb.control<number | null>(null, [Validators.min(0), importeValido]),
   });
 
@@ -77,6 +78,7 @@ export class Checkout {
     this.error.set('');
     this.guardando.set(true);
     this.checkout.guardarBorrador({
+      nombre_cliente: valores.nombreCliente.trim(),
       direccion: valores.direccion.trim(),
       telefono: valores.telefono.trim(),
       notas: valores.notas.trim(),
@@ -91,6 +93,7 @@ export class Checkout {
     }).pipe(finalize(() => this.guardando.set(false))).subscribe({
       next: (respuesta) => {
         this.datosTelegram.set({
+          nombreCliente: valores.nombreCliente.trim(),
           direccion: valores.direccion.trim(),
           telefono: valores.telefono.trim(),
           notas: valores.notas.trim(),
