@@ -50,8 +50,10 @@ interface RespuestaEstados {
   estadoPedidos: EstadoReparto[];
 }
 
-interface RespuestaPedido {
+export interface RespuestaPedido {
   pedido: PedidoReparto;
+  message?: string;
+  comprobante_enviado?: boolean;
 }
 
 @Injectable({ providedIn: 'root' })
@@ -80,11 +82,14 @@ export class RepartosService {
     );
   }
 
-  actualizarEstado(pedidoId: number, estadoId: number): Observable<PedidoReparto> {
+  actualizarEstado(pedidoId: number, estadoId: number): Observable<RespuestaPedido> {
     return this.http
       .put<RespuestaPedido>(`${apiUrl}/pedidos/${pedidoId}`, {
         estado_pedidos_id: estadoId,
-      })
-      .pipe(map((respuesta) => respuesta.pedido));
+      });
+  }
+
+  reenviarTicket(pedidoId: number): Observable<{ message: string }> {
+    return this.http.post<{ message: string }>(`${apiUrl}/pedidos/${pedidoId}/ticket/enviar`, {});
   }
 }

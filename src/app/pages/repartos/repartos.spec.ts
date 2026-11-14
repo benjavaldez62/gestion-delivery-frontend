@@ -11,6 +11,7 @@ describe('Repartos', () => {
     obtenerEstados: ReturnType<typeof vi.fn>;
     obtenerPedidos: ReturnType<typeof vi.fn>;
     actualizarEstado: ReturnType<typeof vi.fn>;
+    reenviarTicket: ReturnType<typeof vi.fn>;
   };
 
   const states = [
@@ -21,7 +22,7 @@ describe('Repartos', () => {
   const pedido: PedidoReparto = {
     id: 42,
     subtotal: 2500,
-    monto_total: 2500,
+    monto_total: 4000,
     created_at: null,
     estado: states[0],
     repartidor: { id: 7 },
@@ -47,8 +48,9 @@ describe('Repartos', () => {
         { ...pedido, id: 46, estado: { id: 7, nombre: 'Cancelado' } },
       ])),
       actualizarEstado: vi.fn((_pedidoId: number, estadoId: number) =>
-        of({ ...pedido, estado: states.find((estado) => estado.id === estadoId)! }),
+        of({ pedido: { ...pedido, estado: states.find((estado) => estado.id === estadoId)! } }),
       ),
+      reenviarTicket: vi.fn(() => of({ message: 'Ticket enviado por Telegram.' })),
     };
 
     await TestBed.configureTestingModule({
@@ -117,5 +119,21 @@ describe('Repartos', () => {
     expect(cards[0].textContent).toContain('Estado del pago');
     expect(cards[0].textContent).toContain('Pendiente');
     expect(cards[1].textContent).toContain('Pagado');
+  });
+
+  it('informa si el ticket falla sin revertir la entrega y permite reintentarlo', () => {
+    const enCamino = component.pedidos[1];
+    service.actualizarEstado.mockReturnValueOnce(of({
+      pedido: { ...enCamino, estado: states[2] },
+      comprobante_enviado: false,
+      message: 'Entrega y cobro registrados, pero no se pudo enviar el ticket.',
+    }));
+
+    component.avanzarPedido(enCamino);
+    expect(component.pedidos[1].estado?.nombre).toBe('Entregado');
+    expect(component.error).toContain('no se pudo enviar el ticket');
+    component.reenviarTicket(component.pedidos[1]);
+    expect(service.reenviarTicket).toHaveBeenCalledWith(enCamino.id);
+    expect(component.mensaje).toBe('Ticket enviado por Telegram.');
   });
 });
