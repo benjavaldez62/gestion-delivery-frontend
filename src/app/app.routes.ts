@@ -14,8 +14,15 @@ import { RestablecerContrasena } from './pages/recuperacion/restablecer-contrase
 import { Dashboard } from './pages/dashboard/dashboard';
 import { Repartos } from './pages/repartos/repartos';
 import { Usuarios } from './pages/usuarios/usuarios';
+import { Pagos } from './pages/pagos/pagos';
 
 export const routes: Routes = [
+    {
+        path: 'pagos',
+        component: Pagos,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
     {
         path: 'dashboard',
         component: Dashboard,

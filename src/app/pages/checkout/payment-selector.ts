@@ -15,12 +15,12 @@ import { MetodoPago } from '../../services/checkout';
         <label for="efectivo" class="form-check-label">Efectivo al recibir el delivery</label>
       </div>
       <div class="form-check">
-        <input id="tarjeta" type="radio" class="form-check-input" [formControl]="metodo()" value="tarjeta">
-        <label for="tarjeta" class="form-check-label">Tarjeta mediante pasarela</label>
+        <input id="tarjeta" type="radio" class="form-check-input" [formControl]="metodo()" value="tarjeta" [attr.disabled]="true">
+        <label for="tarjeta" class="form-check-label text-muted">Tarjeta mediante pasarela (no disponible)</label>
       </div>
       <div class="form-check">
-        <input id="transferencia" type="radio" class="form-check-input" [formControl]="metodo()" value="transferencia">
-        <label for="transferencia" class="form-check-label">Transferencia</label>
+        <input id="transferencia" type="radio" class="form-check-input" [formControl]="metodo()" value="transferencia" [attr.disabled]="true">
+        <label for="transferencia" class="form-check-label text-muted">Transferencia (no disponible)</label>
       </div>
       @if (metodo().value === 'efectivo') {
         <label for="monto-recibido" class="form-label mt-3">¿Con cuánto vas a pagar? (opcional)</label>

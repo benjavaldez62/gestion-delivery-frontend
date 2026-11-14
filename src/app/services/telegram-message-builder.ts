@@ -1,7 +1,9 @@
 import { Injectable } from '@angular/core';
 import { BorradorCheckout, MetodoPago } from './checkout';
+import { esUsernameTelegramValido } from './telegram-username';
 
 export interface DatosMensajeTelegram {
+  nombreCliente: string;
   direccion: string;
   telefono: string;
   notas: string;
@@ -20,7 +22,7 @@ export class TelegramMessageBuilder {
       transferencia: 'Transferencia (pendiente de pago)',
     };
     const lineas = [
-      '🍽️ La Posta - Borrador de pedido',
+      '🍽️ La Posta - Pedido',
       ...(datos.borrador.pedido_id !== undefined ? [`Pedido #${datos.borrador.pedido_id}`] : []),
       `Referencia: ${datos.borrador.id}`,
       '',
@@ -45,6 +47,7 @@ export class TelegramMessageBuilder {
     }
     lineas.push(
       '',
+      `👤 Cliente: ${datos.nombreCliente}`,
       `📍 Dirección: ${datos.direccion}`,
       `📞 Teléfono: ${datos.telefono}`,
     );
@@ -53,10 +56,17 @@ export class TelegramMessageBuilder {
     return lineas.join('\n');
   }
 
-  enlace(mensaje: string): string {
+  validarMensaje(mensaje: string): void {
     if (Array.from(mensaje).length > 4096) {
       throw new RangeError('El resumen supera el límite de Telegram. Reducí la cantidad de productos o aclaraciones.');
     }
-    return `https://t.me/Restauransbot?text=${encodeURIComponent(mensaje)}`;
+  }
+
+  enlace(mensaje: string, username: string): string {
+    this.validarMensaje(mensaje);
+    if (!esUsernameTelegramValido(username)) {
+      throw new Error('La configuración de Telegram es inválida.');
+    }
+    return `https://t.me/${username}?text=${encodeURIComponent(mensaje)}`;
   }
 }

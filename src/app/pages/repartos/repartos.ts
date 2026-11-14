@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { TimeoutError, catchError, finalize, forkJoin, map, of, switchMap, timeout, timer } from 'rxjs';
-import { CartService } from '../../services/cart';
 import { EstadoReparto, PedidoReparto, RepartosService } from '../../services/repartos';
 
 const ESTADOS_REPARTO = ['Listo para entregar', 'En camino', 'Entregado'];
@@ -18,13 +17,11 @@ const INTERVALO_ACTUALIZACION_MS = 20000;
 })
 export class Repartos implements OnDestroy, OnInit {
   private readonly repartosService = inject(RepartosService);
-  private readonly cartService = inject(CartService);
   private readonly changeDetector = inject(ChangeDetectorRef);
   private readonly destroyRef = inject(DestroyRef);
   private repartidorId: number | null = null;
   private notificacionTimeout: ReturnType<typeof setTimeout> | undefined;
 
-  readonly costoEnvio = this.cartService.COSTO_ENVIO_FIJO;
   estados: EstadoReparto[] = [];
   pedidos: PedidoReparto[] = [];
   cargando = true;
@@ -93,9 +90,7 @@ export class Repartos implements OnDestroy, OnInit {
       (total, pago) => total + Math.round(pago.monto * 100),
       0,
     );
-    const totalPedidoCentavos = Math.round(
-      ((pedido.subtotal ?? pedido.monto_total) + this.costoEnvio) * 100,
-    );
+    const totalPedidoCentavos = Math.round(pedido.monto_total * 100);
 
     if (totalPagadoCentavos >= totalPedidoCentavos) {
       return 'Pagado';
@@ -157,6 +152,26 @@ export class Repartos implements OnDestroy, OnInit {
     if (siguiente) {
       this.actualizarEstado(pedido, siguiente);
     }
+  }
+
+  reenviarTicket(pedido: PedidoReparto): void {
+    if (this.actualizandoPedidoId !== null) return;
+    this.error = '';
+    this.mensaje = '';
+    this.actualizandoPedidoId = pedido.id;
+    this.repartosService.reenviarTicket(pedido.id).pipe(
+      timeout({ first: 15000 }),
+      finalize(() => {
+        this.actualizandoPedidoId = null;
+        this.changeDetector.markForCheck();
+      }),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: respuesta => { this.mensaje = respuesta.message; },
+      error: (error: unknown) => {
+        this.error = this.mensajeError(error, 'No se pudo enviar el ticket.');
+      },
+    });
   }
 
   private escucharPedidos(): void {
@@ -244,11 +259,15 @@ export class Repartos implements OnDestroy, OnInit {
         takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: (pedidoActualizado) => {
+        next: (respuesta) => {
           this.pedidos = this.pedidos.map((actual) =>
-            actual.id === pedido.id ? pedidoActualizado : actual,
+            actual.id === pedido.id ? respuesta.pedido : actual,
           );
-          this.mensaje = `El pedido #${pedido.id} avanzó a ${estadoDestino.nombre} correctamente.`;
+          if (respuesta.comprobante_enviado === false) {
+            this.error = respuesta.message ?? 'El cobro se registró, pero no se pudo enviar el ticket.';
+            return;
+          }
+          this.mensaje = respuesta.message ?? `El pedido #${pedido.id} avanzó a ${estadoDestino.nombre} correctamente.`;
           this.notificacionTimeout = setTimeout(() => {
             this.mensaje = '';
             this.notificacionTimeout = undefined;

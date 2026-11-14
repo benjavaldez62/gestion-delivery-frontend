@@ -45,10 +45,13 @@ Ubicación: `src/app/services/categorias.ts`, `src/app/pages/categorias/`, `src/
 - Consumo de endpoints de categorías y productos activos desde la API REST.
 
 ### 2.5. Checkout
-- La ruta `/checkout` permite completar dirección, teléfono, aclaraciones y método de pago, y consultar el resumen del carrito.
+- La ruta `/checkout` permite completar nombre completo, dirección, teléfono, aclaraciones y método de pago, y consultar el resumen del carrito.
 - Al continuar se guarda un borrador mediante `POST /api/checkout/borradores`. El servidor valida los productos y recalcula los precios; los importes del carrito son estimados.
-- Se puede elegir efectivo, tarjeta o transferencia. En efectivo es posible indicar el importe para calcular el vuelto estimado; los pagos digitales aún no están habilitados ni se confirman automáticamente.
-- Luego de guardar, una confirmación permite abrir el bot de Telegram con un texto preparado con los precios calculados por el servidor. El cliente debe revisarlo y enviarlo; la recepción y procesamiento por el bot, la asociación del cliente y la creación definitiva del pedido siguen pendientes. Se conserva el carrito.
+- Por ahora solo se puede elegir efectivo. Tarjeta y transferencia se muestran deshabilitadas. Es posible indicar el importe para calcular el vuelto estimado; el pago no se confirma automáticamente al guardar el pre-pedido.
+- Luego de guardar, se consulta `GET /api/configuracion-publica` para abrir el bot configurado en el backend con un texto preparado con los precios calculados por el servidor. El cliente debe revisarlo y enviarlo. Si la configuración no está disponible se informa el error y se permite reintentar sin crear otro pre-pedido. Se conserva el carrito.
+- El nombre del bot y su token se configuran solo en el `.env` del backend; el token nunca se expone al frontend. La recepción y confirmación requieren que el bot correspondiente esté funcionando.
+- Al confirmar un pedido se registra el pago en efectivo como pendiente. El repartidor asignado confirma el cobro al marcar la entrega; se envía un ticket no fiscal por Telegram. Si falla el envío, el tablero informa el error y permite reintentarlo sin repetir el cobro.
+- Administradores y SuperAdmin pueden consultar pagos y métodos en `/pagos`, buscar por número de pago, pedido o cliente, nombre o teléfono y filtrar por estado o método. Los ingresos diarios y mensuales suman solo pagos cobrados según la fecha y zona horaria de pagos, independientemente de los filtros. Solo efectivo es operativo; activar otros métodos requiere una implementación posterior.
 - La URL local de la API se configura en `src/app/config/api.ts`. El costo de envío estimado es de $1500 y debe coincidir con el costo calculado por el backend.
 
 ### 2.6. Recuperación de contraseña
@@ -115,6 +118,10 @@ frontend/
 ---
 
 ## 6. Comandos de Ejecución
+
+En **Pagos**, el administrador puede consultar por fecha los envíos cobrados por repartidor, con detalle por pedido y alertas de datos incompletos. El importe es una estimación (total menos subtotal), no una liquidación pagada, y solo representa el adicional si corresponde al repartidor el 100 % del envío. La fecha usa la zona horaria de pagos; los cobros anteriores al cambio pueden conservar fecha UTC.
+
+En el listado de pagos, el número de comprobante abre el ticket original no fiscal, incluida la fecha y hora de emisión en los tickets nuevos. Si no tiene contenido guardado, se indica que requiere revisión.
 
 ### Servidor de Desarrollo
 Para iniciar el servidor local con recarga en caliente:

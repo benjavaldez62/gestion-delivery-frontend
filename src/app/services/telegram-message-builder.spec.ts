@@ -3,6 +3,7 @@ import { TelegramMessageBuilder, DatosMensajeTelegram } from './telegram-message
 describe('TelegramMessageBuilder', () => {
   const builder = new TelegramMessageBuilder();
   const datos: DatosMensajeTelegram = {
+    nombreCliente: 'Nombre Apellido',
     direccion: 'Av. Libertad 123',
     telefono: '123456789',
     notas: '',
@@ -19,7 +20,7 @@ describe('TelegramMessageBuilder', () => {
     expect(texto).toContain('Transferencia (pendiente de pago)');
     expect(texto).not.toContain('Abona con');
     expect(texto).not.toContain('Pedido #');
-    expect(new URL(builder.enlace(texto)).searchParams.get('text')).toBe(texto);
+    expect(new URL(builder.enlace(texto, 'BotDePrueba_bot')).searchParams.get('text')).toBe(texto);
   });
 
   it('incluye el identificador del pedido en el encabezado cuando pedido_id está definido', () => {
@@ -32,7 +33,13 @@ describe('TelegramMessageBuilder', () => {
   });
 
   it('rechaza mensajes que Telegram truncaría', () => {
-    expect(() => builder.enlace('a'.repeat(4096))).not.toThrow();
-    expect(() => builder.enlace('a'.repeat(4097))).toThrow(RangeError);
+    expect(() => builder.enlace('a'.repeat(4096), 'BotDePrueba_bot')).not.toThrow();
+    expect(() => builder.enlace('a'.repeat(4097), 'BotDePrueba_bot')).toThrow(RangeError);
+  });
+
+  it('rechaza nombres que alterarían la URL del bot', () => {
+    for (const username of ['', 'abc', '@bot', 'bot/path', 'bot?url=otra', 'botvalido\n', 'a'.repeat(33)]) {
+      expect(() => builder.enlace('hola', username)).toThrow();
+    }
   });
 });

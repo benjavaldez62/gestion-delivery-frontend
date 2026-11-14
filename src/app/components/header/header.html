@@ -19,6 +19,7 @@
                     <span class="nav-link mozzo-nav-link heading-font px-2 admin-nav-disabled" aria-disabled="true"
                         title="Sección aún no disponible">Productos</span>
                     <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/pedidos" routerLinkActive="active">Pedidos</a>
+                    <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/pagos" routerLinkActive="active">Pagos</a>
                     <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/menu" routerLinkActive="active">Menú</a>
                     <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/categorias" routerLinkActive="active">Categorías</a>
                     <span class="nav-link mozzo-nav-link heading-font px-2 admin-nav-disabled" aria-disabled="true"
@@ -27,8 +28,6 @@
                         title="Usuarios">Usuarios</span>
                     <span class="nav-link mozzo-nav-link heading-font px-2 admin-nav-disabled" aria-disabled="true"
                         title="Sección aún no disponible">Roles</span>
-                    <span class="nav-link mozzo-nav-link heading-font px-2 admin-nav-disabled" aria-disabled="true"
-                        title="Sección aún no disponible">Métodos de Pago</span>
                 } @else if (esCocinero) {
                     <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/cocina" routerLinkActive="active">Cocina</a>
                 } @else if (esRepartidor) {
