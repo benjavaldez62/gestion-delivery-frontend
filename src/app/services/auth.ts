@@ -13,6 +13,21 @@ export interface Usuario {
     } | null;
 }
 
+export interface PerfilUsuario {
+    id: number;
+    name: string;
+    email: string;
+    telefono: string | null;
+    direccion: string | null;
+}
+
+export interface DatosPerfil {
+    name: string;
+    email: string;
+    telefono: string | null;
+    direccion: string | null;
+}
+
 export interface LoginResponse {
     success: boolean;
     message: string;
@@ -130,6 +145,19 @@ export class AuthService {
 
     obtenerNombre(): string | null {
         return this.nombreUsuario();
+    }
+
+    obtenerPerfil(): Observable<PerfilUsuario> {
+        return this.http.get<PerfilUsuario>(`${apiUrl}/user`);
+    }
+
+    actualizarPerfil(datos: DatosPerfil): Observable<{ message: string; user: PerfilUsuario }> {
+        return this.http.put<{ message: string; user: PerfilUsuario }>(`${apiUrl}/profile`, datos).pipe(
+            tap(respuesta => {
+                localStorage.setItem('nombre_usuario', respuesta.user.name);
+                this.nombreUsuario.set(respuesta.user.name);
+            })
+        );
     }
 
     rutaInicial(): string {
