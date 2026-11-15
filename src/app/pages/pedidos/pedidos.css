@@ -173,18 +173,19 @@
 
 .order-assignment-actions {
   display: flex;
-  justify-content: flex-end;
+  justify-content:center;
   margin-top: 1rem;
 }
 
 .order-assignment-actions button {
-  padding: 8px 16px;
+  padding: 10px 20px;
   border: 0;
-  border-radius: 10px;
+  border-radius: 20px;
   background: #ff5200;
   color: #fff;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 700;
+  width: 180px;
 }
 .order-assignment-actions button:hover {
   background: #e04e0b;
