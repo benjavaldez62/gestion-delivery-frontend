@@ -121,6 +121,85 @@
 .icono {
   padding-right: 3px;
 }
+
+.profile-menu {
+  position: relative;
+}
+
+.profile-menu-toggle {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  max-width: 220px;
+  padding: 0.55rem 0.8rem;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  border-radius: 999px;
+  color: #fff;
+  cursor: pointer;
+  list-style: none;
+}
+
+.profile-menu-toggle::-webkit-details-marker {
+  display: none;
+}
+
+.profile-menu-toggle span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-menu-chevron {
+  font-size: 0.7rem;
+}
+
+.profile-menu-panel {
+  position: absolute;
+  z-index: 1060;
+  top: calc(100% + 0.5rem);
+  right: 0;
+  width: 220px;
+  padding: 0.6rem;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+  border-radius: 0.8rem;
+  background: #fff;
+  box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.18);
+}
+
+.profile-menu-name {
+  overflow: hidden;
+  margin: 0;
+  padding: 0.55rem 0.7rem;
+  color: #555;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.profile-menu-link {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.6rem 0.7rem;
+  border: 0;
+  border-radius: 0.5rem;
+  background: transparent;
+  color: #242424;
+  text-align: left;
+  text-decoration: none;
+}
+
+.profile-menu-link:hover,
+.profile-menu-link:focus-visible {
+  background: #f3f3f3;
+}
+
+.profile-menu-logout {
+  color: #bd2525;
+}
+
 .btn-cierreSesion {
   color: #ff0000;
 }

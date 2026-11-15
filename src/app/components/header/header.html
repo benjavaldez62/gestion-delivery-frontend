@@ -94,10 +94,22 @@
                 }
 
                 @if (authService.estaAutenticado()) {
-                    <button type="button" class="btn btn-cierreSesion heading-font rounded-pill px-3 py-2" (click)="cerrarSesion()">
-                        <span><i class="bi bi-box-arrow-right icono"></i></span>
-                        Cerrar Sesión
-                    </button>
+                    <details class="profile-menu">
+                        <summary class="profile-menu-toggle heading-font" aria-label="Abrir menú de perfil">
+                            <i class="bi bi-person-circle" aria-hidden="true"></i>
+                            <span>{{ authService.obtenerNombre() || 'Mi perfil' }}</span>
+                            <i class="bi bi-chevron-down profile-menu-chevron" aria-hidden="true"></i>
+                        </summary>
+                        <div class="profile-menu-panel">
+                            <p class="profile-menu-name">{{ authService.obtenerNombre() || 'Mi perfil' }}</p>
+                            <a routerLink="/perfil" class="profile-menu-link">
+                                <i class="bi bi-person-gear" aria-hidden="true"></i> Editar perfil
+                            </a>
+                            <button type="button" class="profile-menu-link profile-menu-logout" (click)="cerrarSesion()">
+                                <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar sesión
+                            </button>
+                        </div>
+                    </details>
                 } @else {
                     <a routerLink="/login" class="btn btn-outline-light heading-font rounded-pill px-3 py-2">LogIn</a>
                 }

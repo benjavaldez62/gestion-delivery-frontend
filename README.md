@@ -63,6 +63,10 @@ Ubicación: `src/app/services/categorias.ts`, `src/app/pages/categorias/`, `src/
 ### 2.7. Tablero de cocina
 - Los pedidos asignados al cocinero se actualizan automáticamente cada 20 segundos. También se puede actualizar el tablero manualmente; si falla la actualización automática se conserva la información visible y se reintenta.
 
+### 2.8. Perfil de usuario
+- El menú de perfil muestra el nombre de la sesión, permite cerrar sesión y enlaza al formulario para actualizar nombre, correo, teléfono y dirección.
+- El nombre actualizado se refleja inmediatamente en el encabezado sin volver a iniciar sesión.
+
 ---
 
 ## 3. Estructura del Proyecto

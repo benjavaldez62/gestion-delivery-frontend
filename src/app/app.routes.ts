@@ -16,8 +16,14 @@ import { Repartos } from './pages/repartos/repartos';
 import { Usuarios } from './pages/usuarios/usuarios';
 import { Pagos } from './pages/pagos/pagos';
 import { Roles } from './pages/roles/roles';
+import { Perfil } from './pages/perfil/perfil';
 
 export const routes: Routes = [
+    {
+        path: 'perfil',
+        component: Perfil,
+        canActivate: [authGuard]
+    },
     {
         path: 'pagos',
         component: Pagos,
