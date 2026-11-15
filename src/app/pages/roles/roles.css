@@ -1,0 +1,45 @@
+/* Botón NUEVO ROL */
+.btn-icono-hover .icono-hover {
+    display: none;
+}
+.btn-icono-hover:hover .icono-normal {
+    display: none;
+}
+.btn-icono-hover:hover .icono-hover {
+    display: inline-block;
+}
+
+.container-cards {
+    padding-left: 0px;
+    padding-right: 0px;
+}
+
+/* Tarjetas de roles */
+div > .card {
+    border-radius: 15px;
+    min-width: 630px;
+}
+.card-header {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* Modal y formulario */
+div > .modal-dialog {
+    min-width: 600px;
+}
+.modal-content {
+    border-radius: 16px;
+    border-color: none;
+}
+label {
+    font-weight: 500;
+    padding-bottom: 4px;
+}
+label.form-label {
+    font-size: 18px;
+}
+.input-role:focus {
+    border-color: var(--theme4);
+    box-shadow: none;
+}

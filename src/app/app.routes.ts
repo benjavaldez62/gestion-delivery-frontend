@@ -15,6 +15,7 @@ import { Dashboard } from './pages/dashboard/dashboard';
 import { Repartos } from './pages/repartos/repartos';
 import { Usuarios } from './pages/usuarios/usuarios';
 import { Pagos } from './pages/pagos/pagos';
+import { Roles } from './pages/roles/roles';
 
 export const routes: Routes = [
     {
@@ -38,6 +39,12 @@ export const routes: Routes = [
     {
         path: 'usuarios',
         component: Usuarios,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
+    {
+        path: 'roles',
+        component: Roles,
         canActivate: [authGuard, guardRole],
         data: { roles: ['Administrador', 'SuperAdmin'] }
     },
