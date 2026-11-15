@@ -45,7 +45,8 @@
     </div>
 
     <div class="menu-product-image-wrap">
-      <img class="menu-product-image" [src]="imageUrl()" [alt]="product().nombre" loading="lazy">
+      <img class="menu-product-image" [src]="imageUrl()" [alt]="product().nombre" loading="lazy"
+        (error)="onImageError($event)">
       <span class="menu-product-status" [class.is-unavailable]="!product().activo">
         {{ product().activo ? 'Disponible' : 'Agotado' }}
       </span>
