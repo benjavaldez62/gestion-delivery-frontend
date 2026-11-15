@@ -1,12 +1,11 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { DatePipe } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { CategoriasService, Categoria, nuevaCategoria } from '../../services/categorias';
 import { subscribeOn } from 'rxjs';
 
 @Component({
   selector: 'app-categorias',
-  imports: [DatePipe, FormsModule],
+  imports: [FormsModule],
   templateUrl: './categorias.html',
   styleUrl: './categorias.css'
 })

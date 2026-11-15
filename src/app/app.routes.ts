@@ -17,6 +17,7 @@ import { Usuarios } from './pages/usuarios/usuarios';
 import { Pagos } from './pages/pagos/pagos';
 import { Roles } from './pages/roles/roles';
 import { Perfil } from './pages/perfil/perfil';
+import { MetodoPagos } from './pages/metodos-pago/metodos-pago';
 
 export const routes: Routes = [
     {
@@ -27,6 +28,12 @@ export const routes: Routes = [
     {
         path: 'pagos',
         component: Pagos,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
+    {
+        path: 'metodos-pago',
+        component: MetodoPagos,
         canActivate: [authGuard, guardRole],
         data: { roles: ['Administrador', 'SuperAdmin'] }
     },
