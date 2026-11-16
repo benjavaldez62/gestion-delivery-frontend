@@ -74,7 +74,14 @@ export class Usuarios implements OnInit {
         this.cargando.set(false);
       },
       error: (err) => {
-        console.error('Error al obtener usuarios desactivados:', err);
+        if (err.status === 404) {
+          this.usuariosDesactivados.set([]);
+        } else {
+          console.error('Error al obtener usuarios desactivados:', err);
+          this.error.set('No se pudieron cargar los usuarios desactivados.');
+        }
+
+        this.cargando.set(false);
       }
     });
   }

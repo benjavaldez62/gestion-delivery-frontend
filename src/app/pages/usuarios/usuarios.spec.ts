@@ -1,5 +1,6 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import { vi } from 'vitest';
 import { Usuarios } from './usuarios';
 import { Usuario, UsuariosService } from '../../services/usuarios';
 
@@ -7,9 +8,10 @@ describe('Usuarios', () => {
   let component: Usuarios;
   let fixture: ComponentFixture<Usuarios>;
   const usuariosServiceMock = {
-    obtenerUsuarios: () => of({ usuarios: [] }),
-    obtenerUsuariosDesactivados: () => of({ usuariosDesactivados: [] }),
+    obtenerUsuarios: vi.fn(() => of({ usuarios: [] as Usuario[] })),
+    obtenerUsuariosDesactivados: vi.fn(() => of({ usuariosDesactivados: [] as Usuario[] })),
     obtenerRoles: () => of({ roles: [] }),
+    restaurarUsuario: vi.fn(() => of({ message: 'Usuario restaurado.' })),
   };
 
   beforeEach(async () => {
@@ -25,6 +27,34 @@ describe('Usuarios', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
+  });
+
+  it('limpia la lista de desactivados si restaurar deja esa lista vacía', () => {
+    const usuario: Usuario = {
+      id: 2,
+      name: 'Usuario 2',
+      email: 'usuario2@test.com',
+      activo: true,
+      role_id: 1,
+      telefono: null,
+      direccion: null,
+    };
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    usuariosServiceMock.restaurarUsuario.mockReturnValue(of({ message: 'Usuario restaurado.' }));
+    usuariosServiceMock.obtenerUsuarios.mockReturnValue(of({ usuarios: [usuario] }));
+    usuariosServiceMock.obtenerUsuariosDesactivados.mockReturnValue(
+      throwError(() => ({ status: 404 }))
+    );
+    component.usuariosDesactivados.set([usuario]);
+
+    component.restaurarUsuario(usuario);
+
+    expect(component.usuarios()).toEqual([usuario]);
+    expect(component.usuariosDesactivados()).toEqual([]);
   });
 
   it('filters active and inactive users by selected roles and clears the filters', () => {
