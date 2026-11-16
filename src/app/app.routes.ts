@@ -18,6 +18,7 @@ import { Pagos } from './pages/pagos/pagos';
 import { Roles } from './pages/roles/roles';
 import { Perfil } from './pages/perfil/perfil';
 import { MetodoPagos } from './pages/metodos-pago/metodos-pago';
+import { Adicionales } from './pages/adicionales/adicionales';
 import { Productos } from './pages/productos/productos';
 
 export const routes: Routes = [
@@ -47,6 +48,12 @@ export const routes: Routes = [
     {
         path: 'categorias',
         component: Categorias,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
+   {
+        path: 'adicionales',
+        component: Adicionales,
         canActivate: [authGuard, guardRole],
         data: { roles: ['Administrador', 'SuperAdmin'] }
     },

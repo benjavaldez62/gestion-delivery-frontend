@@ -19,7 +19,8 @@
                 <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/pedidos" routerLinkActive="active">Pedidos</a>
                 <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/pagos" routerLinkActive="active">Pagos</a>
                 <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/productos" routerLinkActive="active">Productos</a>
-                <span class="nav-link mozzo-nav-link heading-font px-2 admin-nav-disabled" aria-disabled="true" title="Sección aún no disponible">Adicionales</span>
+                <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/adicionales" routerLinkActive="active">Adicionales</a>
+                <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/menu" routerLinkActive="active">Menú</a>
                 <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/categorias" routerLinkActive="active">Categorías</a>
                 <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/roles" routerLinkActive="active">Roles</a>
                 <a class="nav-link mozzo-nav-link heading-font px-2" routerLink="/usuarios" routerLinkActive="active">Usuarios</a>
@@ -103,9 +104,9 @@
                 }
 
                 @if (authService.estaAutenticado()) {
-                    <details class="profile-menu">
-                        <summary class="profile-menu-toggle heading-font" aria-label="Abrir menú de perfil">
-                            <i class="bi bi-person-circle" aria-hidden="true"></i>
+                    <details class="profile-menu ">
+                        <summary class=" profile-menu-toggle heading-font me-border" aria-label="Abrir menú de perfil">
+                            <i class="bi bi-person-circle text-light" aria-hidden="true"></i>
                             <span>{{ authService.obtenerNombre() || 'Mi perfil' }}</span>
                             <i class="bi bi-chevron-down profile-menu-chevron" aria-hidden="true"></i>
                         </summary>
@@ -114,16 +115,16 @@
                             <a routerLink="/perfil" class="profile-menu-link">
                                 <i class="bi bi-person-gear" aria-hidden="true"></i> Editar perfil
                             </a>
-                            <button type="button" class="profile-menu-link profile-menu-logout" (click)="cerrarSesion()">
+                            <button type="button" class="btn-cierreSesion profile-menu-link profile-menu-logout" (click)="cerrarSesion()">
                                 <i class="bi bi-box-arrow-right" aria-hidden="true"></i> Cerrar sesión
                             </button>
                         </div>
                     </details>
-                <button type="button" class="btn btn-cierreSesion heading-font rounded-pill px-3 py-2"
+                <!-- <button type="button" class="btn btn-cierreSesion heading-font rounded-pill px-3 py-2"
                     (click)="cerrarSesion()">
                     <span><i class="bi bi-box-arrow-right icono"></i></span>
                     Cerrar Sesión
-                </button>
+                </button> -->
                 } @else {
                 <a routerLink="/login" class="btn btn-outline-light heading-font rounded-pill px-3 py-2">LogIn</a>
                 }

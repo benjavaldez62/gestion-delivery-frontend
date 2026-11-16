@@ -1,0 +1,261 @@
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Adicionales</h1>
+        <button type="button" class="btn btn-primary btn-icono-hover" (click)="abrirModal()">
+            <span class="mr-1 px-1">
+                <i class="bi bi-plus-lg icono-normal"></i>
+                <i class="bi bi-plus-circle-dotted icono-hover"></i>
+            </span>
+            Nuevo adicional
+        </button>
+    </div>
+
+    <!-- FILTRO-BOX -->
+    <div class="d-flex align-items-center justify-content-between px-3 py-3 filtro-box mb-4">
+        <strong class="filtro-categoria-">Filtrar por Categoria:</strong>
+        <div class="ms-3">
+            @for (categoria of categorias(); track categoria.id) {
+            <label class="form-check form-check-inline me-3">
+                <input type="checkbox" class="form-check-input me-1" [name]="'filtro-categoria-' + categoria.id"
+                    [ngModel]="categoriasSeleccionadas().includes(categoria.id)"
+                    (ngModelChange)="actualizarFiltroCategoria(categoria.id, $event)">
+                {{ categoria.nombre }} ({{ cantidadAdicionalesPorCategoria().get(categoria.id) ?? 0 }})
+            </label>
+            }
+        </div>
+        <button type="button" class="justify-content-end btn btn-md btn-outline-danger"
+            (click)="limpiarFiltrosCategorias()">
+            <i class="bi bi-sliders2"></i> Quitar filtros
+        </button>
+    </div>
+
+    @if (mensaje()) {
+    <div class="alert alert-success alert-dismissible">
+        {{ mensaje() }}
+        <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set('')"></button>
+    </div>
+    }
+    @if (error() && !modalAbierto()) {
+    <div class="alert alert-danger alert-dismissible">
+        {{ error() }}
+        <button type="button" class="btn-close" (click)="error.set('')"></button>
+    </div>
+    }
+
+    <!-- Listado de adicional activos -->
+    <div class="card show-sm mb-4">
+        <div class="card-header">
+            Listado de adicionales disponibles
+        </div>
+        <div class="card-body">
+            @if (cargando()) {
+            <div class="alert alert-info">
+                Cargando adicionales...
+            </div>
+            } @else if (adicionales().length === 0) {
+            <p class="text-muted mb-0">
+                No hay adicionales registrados.
+            </p>
+            } @else if (adicionalesFiltrados().length === 0) {
+            <p class="text-muted mb-0">
+                No hay adicionales que coincidan con las categorias seleccionados.
+            </p>
+            } @else {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Categoría</th>
+                            <th class="text-center">Precio</th>
+                            <th class="text-end pe-5">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (adicional of adicionalesFiltrados(); track adicional.id) {
+                        <tr>
+                            <td>{{ adicional.id }}</td>
+                            <td>{{ adicional.nombre }}</td>
+                            <td>{{ adicional.descripcion }}</td>
+                            <td>{{ obtenerNombreCategoria(adicional) }}</td>
+                            <td>
+                                <div class="grid-precio">
+                                    <span class="text-start text-muted">$</span>
+                                    <span class="text-end">{{ adicional.precio }}</span>
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <span class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-md btn-outline-primary me-4" title="editar"
+                                        (click)="editarAdicional(adicional)"><i
+                                            class="bi bi-pencil-square"></i></button>
+                                    <button type="button" class="btn btn-md btn-danger me-4" title="desactivar"
+                                        (click)="eliminarAdicional(adicional)"><i
+                                            class="bi bi-dash-circle"></i></button>
+                                </span>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- Listado de adicionales desactivados -->
+    <div class="card show-sm mb-4">
+        <div class="card-header">
+            Listado de adicionales desactivados
+        </div>
+        <div class="card-body">
+            @if (cargando()) {
+            <div class="alert alert-info">
+                Cargando adicionales desactivados...
+            </div>
+            } @else if (adicionalesDesactivados().length === 0) {
+            <p class="text-muted mb-0">
+                No hay adicionales inactivos en este momento.
+            </p>
+            } @else if (adicionalesDesactivadosFiltrados().length === 0) {
+            <p class="text-muted mb-0">
+                No hay adicionales inactivos que coincidan con las categorias seleccionadas.
+            </p>
+            } @else {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Categoría</th>
+                            <th class="text-center">Precio</th>
+                            <th class="text-end pe-3">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (adicional of adicionalesDesactivadosFiltrados(); track adicional.id) {
+                        <tr>
+                            <td>{{ adicional.id }}</td>
+                            <td>{{ adicional.nombre }}</td>
+                            <td>{{ adicional.descripcion }}</td>
+                            <td>{{ obtenerNombreCategoria(adicional)}}</td>
+                            <td>
+                                <div class="grid-precio">
+                                    <span class="text-start text-muted">$</span>
+                                    <span class="text-end">{{ adicional.precio }}</span>
+                                </div>
+                            </td>
+                            <td class="text-end">
+                                <span class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-md btn-outline-secondary me-4"
+                                        title="restaurar" (click)="restaurarAdicional(adicional)">
+                                        <i class="bi bi-arrow-clockwise text-dark-secondary"></i>
+                                    </button>
+                                </span>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+        </div>
+    </div>
+
+    @if (modalAbierto()) {
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="TituloModal"
+        (click)="cerrarModal()">
+        <div class="modal-dialog modal-dialog-centered" role="document" (click)="$event.stopPropagation()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="TituloModal">
+                        {{ adicionalEditando() !== null ? 'Editar adicional' : 'Nuevo adicional' }}
+                    </h2>
+                    <button type="button" class="btn-close" aria-label="Cerrar" [disabled]="guardando()"
+                        (click)="cerrarModal()"></button>
+                </div>
+                <form (ngSubmit)="guardarAdicional()">
+                    <div class="modal-body">
+                        @if (errorCategorias()) {
+                        <div class="alert alert-danger alert-dismissible">
+                            {{ errorCategorias() }}
+                            <button type="button" class="text-end btn-close" (click)="errorCategorias.set('')"></button>
+                        </div>
+                        }
+                        @if (errorGuardar()) {
+                        <div class="alert alert-danger alert-dismissible">
+                            {{ errorGuardar() }}
+                            <button type="button" class="btn-close" (click)="errorGuardar.set('')"></button>
+                        </div>
+                        }
+
+                        <!-- Nombre -->
+                        <div class="mt-2 mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            @if (adicionalEditando() === null) {
+                            <input id="nombre" type="text" class="form-control input-adicional" name="nombre"
+                                [(ngModel)]="nombre" required maxlength="50" placeholder="Nombre">
+                            } @else {
+                            <input id="nombre" type="text" class="form-control input-adicional" name="nombre"
+                                [(ngModel)]="nombre" required minlength="8" maxlength="50" placeholder="Nombre">
+                            }
+                        </div>
+
+                        <!-- Descripcion -->
+                        <div class="mb-3">
+                            <label for="text" class="form-label">Descripción</label>
+                            <textarea name="descripcion" id="descripcion" class="form-control input-adicional" rows="3"
+                                maxlength="150" [(ngModel)]="descripcion"
+                                placeholder="Descripción del adicional"></textarea>
+                        </div>
+
+                        <!-- Categoria -->
+                        <div class="mb-3">
+                            <label for="categoriaId" class="form-label">Categoría</label>
+                            <select id="categoriaId" class="form-select input-adicional" name="categoriaId"
+                                [(ngModel)]="categoriaId" required>
+                                <option [ngValue]="null" disabled>Seleccioná una categoría</option>
+                                @for (categoria of categorias(); track categoria.id) {
+                                <option [ngValue]="categoria.id">{{ categoria.nombre }}</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Precio -->
+                        <div class="mb-3">
+                            <label for="precio" class="form-label">Precio</label>
+                            @if (adicionalEditando() === null) {
+                            <input id="precio" type="number" class="form-control input-adicional" name="precio"
+                                [(ngModel)]="precio" required min="0">
+                            } @else {
+                            <input id="precio" type="number" class="form-control input-adicional" name="precio"
+                                [(ngModel)]="precio" required min="0">
+                            }
+                        </div>
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger" (click)="cerrarModal()">
+                            <span><i class="bi bi-x-circle"></i></span>
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success" [disabled]="guardando()">
+                            @if (guardando()) {
+                            Guardando...
+                            } @else {
+                            <span><i class="bi bi-check-circle"></i></span>
+                            {{ adicionalEditando() !== null ? 'Actualizar adicional' : 'Guardar adicional' }}
+                            }
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+    }
+</div>

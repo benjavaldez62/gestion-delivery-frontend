@@ -1,0 +1,71 @@
+/* FILTRO */
+.filtro-box {
+    border-left: solid 5px #ff5200;
+    border-top: solid 1px #e7e7e7;
+    border-bottom: solid 1px #e7e7e7;
+    border-right: solid 1px #e7e7e7;
+    border-radius: 10px;
+    background-color: #f1f1f1;
+    gap: 20px;
+}
+.filtro-categoria- {
+    font-size: 17px;
+}
+input.check {
+    transform: scale(1.3);
+}
+input.check:focus {
+    background-color: #ff5200;
+}
+.form-check-input {
+    padding-bottom: 0px !important;
+}
+/* Botón NUEVO USUARIO */
+.btn-icono-hover .icono-hover {
+    display: none;
+}
+
+.btn-icono-hover:hover .icono-normal {
+    display: none;
+}
+
+.btn-icono-hover:hover .icono-hover {
+    display: inline-block;
+}
+
+/* Tarjetas de adicionales */
+div > .card {
+    border-radius: 15px;
+}
+
+.card-header {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* Modal y formulario */
+div > .modal-dialog {
+    min-width: 800px;
+}
+
+.modal-content {
+    border-radius: 16px;
+    border-color: none;
+}
+
+label.form-label {
+    font-weight: 500;
+    padding-bottom: 4px;
+    margin-top: 4px;
+    font-size: 18px;
+}
+
+.input-usuario:focus {
+    border: solid 1.8px var(--theme4);
+    box-shadow: none;
+}
+
+.grid-precio {
+    display: grid;
+    grid-auto-flow: column;
+}

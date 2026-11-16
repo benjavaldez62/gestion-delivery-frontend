@@ -61,6 +61,11 @@
   animation: rippleOne 1.2s ease-out;
 }
 
+summary.me-border {
+  border-color: var(--theme);
+}
+
+
 /* --------------------------------------------------------------------------
    Popup dropdown en hover para previsualización del carrito
    -------------------------------------------------------------------------- */
@@ -196,19 +201,15 @@
   background: #f3f3f3;
 }
 
-.profile-menu-logout {
-  color: #bd2525;
-}
 
 .btn-cierreSesion {
-  color: #ff0000;
+  color: #bd2525;
 }
 .btn-cierreSesion:hover {
-  background-color: #360309;
-  border-color: #360309;
+  background-color: #e26d7b54;
+  border-color: #bd0016;
 }
 .btn-cierreSesion:focus {
-  color: #360309;
+  color: #fff;
   background-color: #ff0000;
-  border-color: #360309;
 }
