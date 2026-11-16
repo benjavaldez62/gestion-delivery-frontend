@@ -42,7 +42,7 @@
 }
 
 .login-card {
-    min-width: 500px;
+    width: min(500px, calc(100% - 24px));
     padding: 40px;
     background: white;
     border-radius: 12px;
@@ -81,24 +81,26 @@ input {
 }
 
 input:focus {
-    outline: 2px solid #93c5fd;
-    border-color: #2563eb;
+    outline: 2px solid rgba(255, 82, 0, 0.18);
+    border-color: var(--theme);
 }
 
 button {
     width: 100%;
     padding: 12px;
     border: none;
-    border-radius: 6px;
-    background: #ff5200;
+    border-radius: 10px;
+    background: var(--theme);
     color: white;
+    font-family: 'Outfit', sans-serif;
     font-size: 16px;
+    font-weight: 600;
     cursor: pointer;
-   
+    transition: background-color 0.2s ease;
 }
 
 button:hover {
-    background: #000000;
+    background: var(--theme-hover);
 }
 
 button:disabled {

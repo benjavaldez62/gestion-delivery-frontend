@@ -20,7 +20,7 @@
 
 .delivery-eyebrow {
   margin: 0 0 0.4rem;
-  color: #f27b35;
+  color: var(--theme);
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -29,7 +29,7 @@
 
 .delivery-heading h1 {
   margin: 0;
-  color: #fc6107;
+  color: var(--header);
   font-size: clamp(1.8rem, 3vw, 2.5rem);
   font-weight: 700;
 }
@@ -107,15 +107,15 @@
 }
 
 .column-ready .column-heading {
-  background: #788475
+  background: #0D9488;
 }
 
 .column-transit .column-heading {
-  background: #7180AC
+  background: #2563EB;
 }
 
 .column-delivered .column-heading {
-  background: #240B36
+  background: #16A34A;
 }
 
 .order-count {

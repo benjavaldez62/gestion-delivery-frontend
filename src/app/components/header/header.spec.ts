@@ -42,14 +42,15 @@ describe('Header', () => {
     expect(enlace?.getAttribute('href')).toBe('/menu');
   });
 
-  it('muestra Pagos sin un acceso separado a métodos de pago', async () => {
+  it('muestra los accesos administrativos de Pagos y Métodos de Pago sin incluir Menú', async () => {
     vi.spyOn(component.authService, 'obtenerRol').mockReturnValue('Administrador');
     const adminFixture = TestBed.createComponent(Header);
     adminFixture.detectChanges();
     await adminFixture.whenStable();
     const header = adminFixture.nativeElement as HTMLElement;
     expect(header.textContent).toContain('Pagos');
-    expect(header.textContent).not.toContain('Métodos de Pago');
+    expect(header.textContent).toContain('Métodos de Pago');
+    expect(header.textContent).not.toContain('Menú');
   });
 
   it('muestra el nombre y las acciones del usuario autenticado en el menú de perfil', () => {

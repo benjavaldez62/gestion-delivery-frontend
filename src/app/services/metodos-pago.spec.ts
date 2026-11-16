@@ -1,12 +1,15 @@
 import { TestBed } from '@angular/core/testing';
-import { MetodosPago } from './metodos-pago';
+import { provideHttpClient } from '@angular/common/http';
+import { MetodosPagoService } from './metodos-pago';
 
-describe('MetodosPago', () => {
-  let service: MetodosPago;
+describe('MetodosPagoService', () => {
+  let service: MetodosPagoService;
 
   beforeEach(() => {
-    TestBed.configureTestingModule({});
-    service = TestBed.inject(MetodosPago);
+    TestBed.configureTestingModule({
+      providers: [provideHttpClient()],
+    });
+    service = TestBed.inject(MetodosPagoService);
   });
 
   it('should be created', () => {

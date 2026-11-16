@@ -1,5 +1,5 @@
 :host { display: block; }
-.dash-page { min-height: calc(100vh - 80px); padding: 32px clamp(16px, 3vw, 40px) 48px; background: #F7F6F3; color: #1C1917; font-family: 'Plus Jakarta Sans', system-ui, sans-serif; box-sizing: border-box; }
+.dash-page { min-height: calc(100vh - 80px); padding: 32px clamp(16px, 3vw, 40px) 48px; background: #F7F6F3; color: #1C1917; font-family: 'Inter', system-ui, sans-serif; box-sizing: border-box; }
 .dash-container, .dash-heading, .panel-head-titles, .order-info, .staff-meta, .kpi-card, .list-panel, .summary-col, .payment-item { display: flex; flex-direction: column; }
 .dash-container { max-width: 1120px; margin: 0 auto; gap: 24px; }
 .dash-header { display: flex; flex-wrap: wrap; align-items: flex-end; justify-content: space-between; gap: 16px; }

@@ -2,22 +2,6 @@
    Mozzo Design System & Typography — La Posta
    ========================================================================== */
 
-@font-face {
-  font-family: 'Expose';
-  src: url('/assets/fonts/Expose.woff2') format('woff2');
-  font-weight: 400 900;
-  font-display: swap;
-  font-style: normal;
-}
-
-@font-face {
-  font-family: 'Edensor';
-  src: url('/assets/fonts/Edensor-FREE.otf') format('opentype');
-  font-weight: normal;
-  font-display: swap;
-  font-style: normal;
-}
-
 :root {
   /* Paleta original Mozzo */
   --body: #ffffff;
@@ -48,6 +32,19 @@
   --bg7: #FFF3EE;
   --section-bg2: #FEF9F8;
   --box-shadow: 0px 4px 25px 0px rgba(0, 0, 0, 0.06);
+
+  /* Superficies y neutros unificados */
+  --surface-page: #F7F6F3;
+  --surface-card: #FFFFFF;
+  --surface-border: #ECEAE6;
+  --ink-primary: #1C1917;
+  --ink-muted: #6B6862;
+
+  /* Integracion Bootstrap con paleta de marca */
+  --bs-primary: #FF5200;
+  --bs-primary-rgb: 255, 82, 0;
+  --bs-link-color: #C2410C;
+  --bs-link-hover-color: #9A3412;
 
   /* Alias retrocompatibles en el proyecto */
   --mozzo-theme: var(--theme);
@@ -91,23 +88,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .heading-font {
   font-family: 'Outfit', sans-serif !important;
-}
-
-.heading-font-bhalo {
-  font-family: 'Baloo Bhai 2', cursive, sans-serif !important;
-}
-
-.heading-font-edensor {
-  font-family: 'Edensor', serif !important;
-  letter-spacing: 0.5px;
-}
-
-.heading-font-expose {
-  font-family: 'Expose', sans-serif !important;
-}
-
-.heading-font-afasad {
-  font-family: 'Afacad', sans-serif !important;
 }
 
 .body-font {
@@ -400,4 +380,59 @@ h1, h2, h3, h4, h5, h6 {
 
 .delay-4 {
   animation-delay: 0.6s;
+}
+
+/* --------------------------------------------------------------------------
+   Tema Bootstrap La Posta y utilidades compartidas de administracion
+   -------------------------------------------------------------------------- */
+.btn-primary {
+  --bs-btn-bg: var(--theme);
+  --bs-btn-border-color: var(--theme);
+  --bs-btn-hover-bg: var(--theme-hover);
+  --bs-btn-hover-border-color: var(--theme-hover);
+  --bs-btn-active-bg: var(--theme-hover);
+  --bs-btn-active-border-color: var(--theme-hover);
+  --bs-btn-disabled-bg: var(--theme);
+  --bs-btn-disabled-border-color: var(--theme);
+  --bs-btn-focus-shadow-rgb: 255, 82, 0;
+  font-family: 'Outfit', sans-serif;
+  font-weight: 600;
+}
+
+.form-control:focus,
+.form-select:focus {
+  border-color: var(--theme);
+  box-shadow: 0 0 0 0.2rem rgba(255, 82, 0, 0.18);
+}
+
+.form-check-input:checked {
+  background-color: var(--theme);
+  border-color: var(--theme);
+}
+
+.form-check-input:focus {
+  border-color: var(--theme);
+  box-shadow: 0 0 0 0.2rem rgba(255, 82, 0, 0.18);
+}
+
+.btn-icono-hover .icono-hover {
+  display: none;
+}
+
+.btn-icono-hover:hover .icono-normal {
+  display: none;
+}
+
+.btn-icono-hover:hover .icono-hover {
+  display: inline-block;
+}
+
+.filtro-box {
+  border-left: solid 5px var(--theme);
+  border-top: solid 1px var(--surface-border);
+  border-bottom: solid 1px var(--surface-border);
+  border-right: solid 1px var(--surface-border);
+  border-radius: 10px;
+  background-color: var(--surface-page);
+  gap: 20px;
 }
