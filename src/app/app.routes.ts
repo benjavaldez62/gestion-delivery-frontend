@@ -19,6 +19,7 @@ import { Roles } from './pages/roles/roles';
 import { Perfil } from './pages/perfil/perfil';
 import { MetodoPagos } from './pages/metodos-pago/metodos-pago';
 import { Adicionales } from './pages/adicionales/adicionales';
+import { Productos } from './pages/productos/productos';
 
 export const routes: Routes = [
     {
@@ -50,9 +51,15 @@ export const routes: Routes = [
         canActivate: [authGuard, guardRole],
         data: { roles: ['Administrador', 'SuperAdmin'] }
     },
-    {
+   {
         path: 'adicionales',
         component: Adicionales,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
+    {
+        path: 'productos',
+        component: Productos,
         canActivate: [authGuard, guardRole],
         data: { roles: ['Administrador', 'SuperAdmin'] }
     },
@@ -72,7 +79,7 @@ export const routes: Routes = [
         path: 'menu',
         component: Menu,
         canActivate: [guardRole],
-        data: { roles: ['Administrador', 'Cliente'], allowAnonymous: true }
+        data: { roles: ['Cliente'], allowAnonymous: true }
     },
     {
         path: 'inicio',

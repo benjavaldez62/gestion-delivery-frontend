@@ -1,0 +1,213 @@
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center gap-3 flex-wrap mb-4">
+        <h1 class="mb-0">Productos</h1>
+        <button type="button" class="btn btn-primary btn-icono-hover" (click)="abrirModal()">
+            <i class="bi bi-plus-lg me-1"></i>
+            Nuevo Producto
+        </button>
+    </div>
+
+    @if (mensaje()) {
+    <div class="alert alert-success alert-dismissible">
+        {{ mensaje() }}
+        <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set('')"></button>
+    </div>
+    }
+    @if (error() && !modalAbierto()) {
+    <div class="alert alert-danger alert-dismissible">
+        {{ error() }}
+        <button type="button" class="btn-close" aria-label="Cerrar" (click)="error.set('')"></button>
+    </div>
+    }
+
+    <div class="card show-sm mb-4">
+        <div class="card-header">Listado de productos activos</div>
+        <div class="card-body">
+            @if (cargandoProductos()) {
+            <div class="alert alert-info mb-0">Cargando productos...</div>
+            } @else if (productos().length === 0) {
+            <p class="text-muted mb-0">No hay productos activos registrados.</p>
+            } @else {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Imagen</th>
+                            <th>Nombre</th>
+                            <th>Descripción</th>
+                            <th>Categoría</th>
+                            <th>Precio</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (producto of productos(); track producto.id) {
+                        <tr>
+                            <td>{{ producto.id }}</td>
+                            <td>
+                                @if (producto.imagen) {
+                                <img class="producto-imagen" [src]="producto.imagen" [alt]="producto.nombre">
+                                } @else {
+                                <span class="text-muted"></span>
+                                }
+                            </td>
+                            <td>{{ producto.nombre }}</td>
+                            <td>{{ producto.descripcion || '—' }}</td>
+                            <td>{{ producto.categoria?.nombre || '—' }}</td>
+                            <td>${{ producto.precio | number:'1.2-2' }}</td>
+                            <td>
+                                <span class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-outline-primary me-2" title="Editar producto"
+                                        [attr.aria-label]="'Editar ' + producto.nombre"
+                                        (click)="editarProducto(producto)">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </button>
+                                    <button type="button" class="btn btn-danger" title="Desactivar producto"
+                                        [attr.aria-label]="'Desactivar ' + producto.nombre"
+                                        (click)="eliminarProducto(producto)">
+                                        <i class="bi bi-dash-circle"></i>
+                                    </button>
+                                </span>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+        </div>
+    </div>
+
+    <div class="card show-sm mb-4">
+        <div class="card-header">Listado de productos inactivos</div>
+        <div class="card-body">
+            @if (cargandoDesactivados()) {
+            <div class="alert alert-info mb-0">Cargando productos inactivos...</div>
+            } @else if (productosDesactivados().length === 0) {
+            <p class="text-muted mb-0">No hay productos inactivos en este momento.</p>
+            } @else {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Precio</th>
+                            <th class="text-end">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (producto of productosDesactivados(); track producto.id) {
+                        <tr>
+                            <td>{{ producto.id }}</td>
+                            <td>{{ producto.nombre }}</td>
+                            <td>${{ producto.precio | number:'1.2-2' }}</td>
+                            <td>
+                                <span class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-outline-secondary" title="Restaurar producto"
+                                        [attr.aria-label]="'Restaurar ' + producto.nombre"
+                                        (click)="restaurarProducto(producto)">
+                                        <i class="bi bi-arrow-clockwise"></i>
+                                    </button>
+                                </span>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+        </div>
+    </div>
+
+    @if (modalAbierto()) {
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="titulo-modal-producto">
+        <div class="modal-dialog modal-dialog-centered modal-lg" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="titulo-modal-producto">
+                        {{ productoEditando() !== null ? 'Editar producto' : 'Nuevo producto' }}
+                    </h2>
+                    <button type="button" class="btn-close" aria-label="Cerrar" [disabled]="guardando()"
+                        (click)="cerrarModal()"></button>
+                </div>
+                <form (ngSubmit)="guardarProducto()">
+                    <div class="modal-body">
+                        @if (errorCategorias()) {
+                        <div class="alert alert-danger">{{ errorCategorias() }}</div>
+                        }
+                        @if (errorGuardar()) {
+                        <div class="alert alert-danger">{{ errorGuardar() }}</div>
+                        }
+
+                        <div class="mb-3">
+                            <label for="nombre-producto" class="form-label">Nombre producto</label>
+                            <input id="nombre-producto" type="text" class="form-control" name="nombre"
+                                [(ngModel)]="nombre" required minlength="5" maxlength="100"
+                                placeholder="Nombre del producto">
+                        </div>
+                        <div class="mb-3">
+                            <label for="descripcion-producto" class="form-label">Descripción (opcional)</label>
+                            <textarea id="descripcion-producto" class="form-control" name="descripcion" rows="3"
+                                [(ngModel)]="descripcion" maxlength="255"
+                                placeholder="Descripción del producto"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="imagen-producto" class="form-label">Imagen (opcional)</label>
+                            <input id="imagen-producto" type="url" class="form-control" name="imagen"
+                                [(ngModel)]="imagen" maxlength="255"
+                                placeholder="https://ejemplo.com/imagen.jpg">
+                            <div class="form-text">Ingresá la URL de la imagen.</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="precio-producto" class="form-label">Precio</label>
+                            <input id="precio-producto" type="number" class="form-control" name="precio"
+                                [(ngModel)]="precio" required min="1" max="60000" step="0.01"
+                                placeholder="0.00">
+                        </div>
+                        <fieldset class="mb-2">
+                            <legend class="form-label">Categoría</legend>
+                            @if (cargandoCategorias()) {
+                            <p class="text-muted mb-0">Cargando categorías...</p>
+                            } @else if (categorias().length === 0) {
+                            <p class="text-muted mb-0">No hay categorías disponibles.</p>
+                            } @else {
+                            <div class="categoria-lista">
+                                @for (categoria of categorias(); track categoria.id) {
+                                <label class="form-check categoria-opcion">
+                                    <input type="checkbox" class="form-check-input" [name]="'categoria-' + categoria.id"
+                                        [ngModel]="categoriaId === categoria.id"
+                                        (ngModelChange)="seleccionarCategoria(categoria.id, $event)">
+                                    <span class="form-check-label">{{ categoria.nombre }}</span>
+                                </label>
+                                }
+                            </div>
+                            }
+                        </fieldset>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger" [disabled]="guardando()"
+                            (click)="cerrarModal()">
+                            <i class="bi bi-x-circle me-1"></i>Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success"
+                            [disabled]="guardando() || cargandoCategorias() || categorias().length === 0">
+                            <i class="bi bi-check-circle me-1"></i>
+                            {{ guardando() ? 'Guardando...' : (productoEditando() !== null ? 'Actualizar producto' : 'Guardar producto') }}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+    }
+</div>
+
+@if (notificacion()) {
+<div class="producto-toast" role="status" aria-live="polite">
+    <span class="producto-toast-icon" aria-hidden="true">✓</span>
+    <span>{{ notificacion() }}</span>
+</div>
+}
