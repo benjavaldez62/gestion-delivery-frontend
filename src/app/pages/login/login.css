@@ -109,6 +109,17 @@ button:disabled {
     background: #ff5200;
 }
 
+.login-card a {
+    color: var(--theme);
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.login-card a:hover {
+    color: var(--theme-hover);
+    text-decoration: underline;
+}
+
 /* GOOGLE AUTH PARTE */
 .google-wrapper {
     display: flex;
