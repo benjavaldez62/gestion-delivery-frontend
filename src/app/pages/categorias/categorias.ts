@@ -86,7 +86,17 @@ export class Categorias implements OnInit {
         this.categoriasDesactivadas.set(respuesta.categoriasDesactivadas);
         this.cargando.set(false);
       },
-    })
+      error: (err) => {
+        if (err.status === 404) {
+          this.categoriasDesactivadas.set([]);
+        } else {
+          console.error('Error al obtener categorías desactivadas:', err);
+          this.error.set('No se pudieron cargar las categorías desactivadas.');
+        }
+
+        this.cargando.set(false);
+      },
+    });
   }
 
   guardarCategoria(): void {

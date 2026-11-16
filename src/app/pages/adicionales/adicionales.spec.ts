@@ -1,15 +1,17 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
+import { vi } from 'vitest';
 import { Adicionales } from './adicionales';
-import { AdicionalesService } from '../../services/adicionales';
+import { Adicional, AdicionalesService } from '../../services/adicionales';
 
 describe('Adicionales', () => {
   let component: Adicionales;
   let fixture: ComponentFixture<Adicionales>;
   const adicionalesServiceMock = {
-    obtenerAdicionales: () => of({ adicionales: [] }),
-    obtenerAdicionalesDesactivados: () => of({ adicionalesDesactivados: [] }),
+    obtenerAdicionales: vi.fn(() => of({ adicionales: [] as Adicional[] })),
+    obtenerAdicionalesDesactivados: vi.fn(() => of({ adicionalesDesactivados: [] as Adicional[] })),
     obtenerCategorias: () => of({ categorias: [{ id: 7, nombre: 'Salsas' }] }),
+    restaurarAdicional: vi.fn(() => of({ message: 'Adicional restaurado.' })),
   };
 
   beforeEach(async () => {
@@ -41,5 +43,28 @@ describe('Adicionales', () => {
     const filas = fixture.nativeElement.querySelectorAll('tbody tr');
     expect(filas[0].cells[3].textContent).toContain('Salsas');
     expect(filas[1].cells[3].textContent).toContain('Salsas');
+  });
+
+  it('limpia la lista de desactivados si restaurar deja esa lista vacía', () => {
+    const adicional: Adicional = {
+      id: 2,
+      nombre: 'Salsa suave',
+      descripcion: null,
+      precio: 120,
+      activo: true,
+      categoria_id: 7,
+    };
+    vi.spyOn(window, 'confirm').mockReturnValue(true);
+    adicionalesServiceMock.restaurarAdicional.mockReturnValue(of({ message: 'Adicional restaurado.' }));
+    adicionalesServiceMock.obtenerAdicionales.mockReturnValue(of({ adicionales: [adicional] }));
+    adicionalesServiceMock.obtenerAdicionalesDesactivados.mockReturnValue(
+      throwError(() => ({ status: 404 }))
+    );
+    component.adicionalesDesactivados.set([adicional]);
+
+    component.restaurarAdicional(adicional);
+
+    expect(component.adicionales()).toEqual([adicional]);
+    expect(component.adicionalesDesactivados()).toEqual([]);
   });
 });
