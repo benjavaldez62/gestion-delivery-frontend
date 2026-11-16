@@ -36,7 +36,7 @@
                   <svg viewBox="0 0 16 16" aria-hidden="true"><path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm5 6a5 5 0 0 0-10 0h2a3 3 0 0 1 6 0h2Z" /></svg>
                   Cliente
                 </dt>
-                <dd>{{ pedido.cliente?.username || '—' }}</dd>
+                <dd>{{ nombreCliente(pedido) || '—' }}</dd>
               </div>
               <div class="order-field">
                 <dt>

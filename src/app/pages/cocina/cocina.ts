@@ -8,6 +8,7 @@ import {
   EstadoPedido,
   PedidoCocina,
 } from '../../services/cocina';
+import { resolverNombreClientePedido } from '../../utils/cliente-pedido';
 
 const ESTADOS_COCINA = ['Pendiente', 'En preparación', 'Listo para entregar'];
 const INTERVALO_ACTUALIZACION_MS = 20000;
@@ -26,6 +27,8 @@ export class Cocina implements OnDestroy, OnInit {
   private readonly cancelarActualizacion = new Subject<void>();
   private cocineroId: number | null = null;
   private notificacionTimeout: ReturnType<typeof setTimeout> | undefined;
+
+  readonly nombreCliente = resolverNombreClientePedido;
 
   estados: EstadoPedido[] = [];
   pedidos: PedidoCocina[] = [];
