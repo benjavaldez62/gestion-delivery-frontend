@@ -198,4 +198,20 @@ describe('Cocina', () => {
       vi.useRealTimers();
     }
   });
+
+  it('prioriza nombre_cliente sobre cliente.username en la tarjeta de cocina', () => {
+    cocinaService.obtenerPedidos.mockReturnValueOnce(of([
+      { ...pedido, id: 60, nombre_cliente: 'Carlos Gómez', cliente: { username: 'web_3454998877' } },
+      { ...pedido, id: 61, nombre_cliente: '   ', cliente: { username: 'gusmachax779' } },
+    ]));
+    component.recargar();
+    fixture.detectChanges();
+
+    const nombres = Array.from(
+      (fixture.nativeElement as HTMLElement).querySelectorAll('.customer-name'),
+      (el) => el.textContent?.trim(),
+    );
+
+    expect(nombres).toEqual(['Carlos Gómez', 'gusmachax779']);
+  });
 });

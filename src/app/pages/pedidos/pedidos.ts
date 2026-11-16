@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, OnInit, inject } from '@angular/core';
 import { TimeoutError, finalize, forkJoin, timeout } from 'rxjs';
 import { AsignacionesPersonalPedido, CampoAsignacion, PedidoAdministracion, PedidosService, UsuarioAsignable } from '../../services/pedidos';
+import { resolverNombreClientePedido } from '../../utils/cliente-pedido';
 
 @Component({
   imports: [CommonModule],
@@ -14,6 +15,8 @@ import { AsignacionesPersonalPedido, CampoAsignacion, PedidoAdministracion, Pedi
 export class Pedidos implements OnInit {
   private readonly pedidosService = inject(PedidosService);
   private readonly changeDetector = inject(ChangeDetectorRef);
+
+  readonly nombreCliente = resolverNombreClientePedido;
 
   pedidos: PedidoAdministracion[] = [];
   personal: UsuarioAsignable[] = [];

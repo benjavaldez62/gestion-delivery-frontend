@@ -12,6 +12,7 @@ export interface UsuarioAsignable {
 
 export interface PedidoAdministracion {
   id: number;
+  nombre_cliente?: string | null;
   cliente: { id: number; username: string } | null;
   cocinero: UsuarioAsignable | null;
   repartidor: UsuarioAsignable | null;

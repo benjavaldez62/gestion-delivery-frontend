@@ -52,8 +52,8 @@
                   }
                 </div>
 
-                @if (pedido.cliente?.username) {
-                  <p class="customer-name">{{ pedido.cliente?.username }}</p>
+                @if (nombreCliente(pedido); as clienteVisible) {
+                  <p class="customer-name">{{ clienteVisible }}</p>
                 }
 
                 <ul class="order-items">

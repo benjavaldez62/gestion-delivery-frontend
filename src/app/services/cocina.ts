@@ -14,6 +14,7 @@ export interface EstadoPedido {
 
 export interface PedidoCocina {
   id: number;
+  nombre_cliente?: string | null;
   cocinero: UsuarioCocina | null;
   estado: EstadoPedido;
   cliente: {

@@ -88,4 +88,22 @@ describe('Pedidos', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelector('button')).toBeNull();
   });
+
+  it('prioriza nombre_cliente sobre cliente.username y conserva el fallback cuando falta', () => {
+    service.obtenerPedidos.mockReturnValueOnce(of([
+      { ...pedido, id: 10, nombre_cliente: 'Carlos Gómez', cliente: { id: 4, username: 'web_3454998877' } },
+      { ...pedido, id: 11, nombre_cliente: '   ', cliente: { id: 5, username: 'juan-martin96' } },
+    ]));
+    component.recargar();
+    fixture.detectChanges();
+
+    const nombres = Array.from(
+      fixture.nativeElement.querySelectorAll('.order-field dd'),
+      (dd) => (dd as HTMLElement).textContent?.trim(),
+    );
+
+    expect(nombres).toContain('Carlos Gómez');
+    expect(nombres).toContain('juan-martin96');
+    expect(nombres).not.toContain('web_3454998877');
+  });
 });
