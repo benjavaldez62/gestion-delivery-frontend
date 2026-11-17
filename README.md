@@ -1,148 +1,185 @@
 # Sistema de Gestión de Delivery — La Posta (Frontend)
 
-Aplicación web desarrollada en **Angular 22** para la plataforma de pedidos y delivery del restaurante "La Posta". El sistema provee un portal interactivo y responsivo para clientes y personal operativo, integrando catálogo dinámico de productos, gestión reactiva de carrito de compras con persistencia local, selector de modificadores y consumo de la API REST del backend.
+Aplicación web desarrollada en **Angular 22** para la plataforma de pedidos y delivery del restaurante "La Posta". Brinda un portal público para explorar el catálogo y armar pedidos con derivación a Telegram, junto con paneles operativos y administrativos protegidos por rol que consumen la API REST del backend en Laravel.
 
 ---
 
 ## 1. Arquitectura y Tecnologías
 
-El proyecto sigue una arquitectura modular desacoplada basada en componentes independientes (*Standalone Components*), gestión de estado mediante **Angular Signals** y tipado estricto en **TypeScript**:
+El proyecto implementa una arquitectura modular basada en **Standalone Components**, gestión de estado reactiva con **Angular Signals** y tipado estricto en **TypeScript**:
 
 | Componente | Tecnología | Versión | Rol en el Sistema |
 | :--- | :--- | :---: | :--- |
-| **Framework** | Angular | `^22.2.0` | Arquitectura basada en Standalone Components y nueva sintaxis de control de flujo (`@if`, `@for`). |
-| **Lenguaje** | TypeScript | `~5.6.2` | Tipado estático estricto para modelos de dominio, servicios e interfaces. |
-| **Gestión de Estado** | Signals API | Nativo | Estado reactivo síncrono y predecible mediante `signal`, `computed` y `effect`. |
-| **Diseño y Estilos** | Bootstrap | `^5.3.3` | Sistema de grillas responsivo, layout móvil y componentes de interfaz. |
-| **Iconografía** | SVG Vectorial | Estándar W3C | Iconografía vectorial inline accesible (`aria-hidden`) sin dependencias de fuentes pesadas ni emojis. |
-| **Testing** | Vitest | `^2.1.8` | Suite de pruebas unitarias y de integración rápida para servicios y componentes. |
-| **HTTP Client** | `@angular/common/http` | `^22.2.0` | Comunicación asíncrona con el backend mediante `provideHttpClient()`. |
+| **Framework** | Angular | `^22.2.0` | Standalone Components y control de flujo moderno (`@if`, `@for`, `@switch`). |
+| **Lenguaje** | TypeScript | `~6.0.2` | Tipado estático para modelos, servicios y formularios reactivos. |
+| **Gestión de Estado** | Signals API | Nativo | Estado reactivo síncrono (`signal`, `computed`, `effect`). |
+| **Programación Reactiva** | RxJS | `~7.8.0` | Composición HTTP, `forkJoin`, polling con `exhaustMap` y manejo de `404`. |
+| **Estilos y Tipografía** | Bootstrap + CSS Custom | `^5.3.8` | Grilla responsiva, paleta de marca (`#FF5200`) y fuentes `Outfit` + `Inter`. |
+| **Iconografía** | Bootstrap Icons + SVG | `1.11.3` | Íconos vectoriales e inline accesibles (`aria-hidden`), sin emojis en código ni UI. |
+| **Autenticación Externa** | Google Identity Services | `@types/google.accounts ^0.0.18` | Botón de acceso con Google integrado en `/login`. |
+| **Testing** | Vitest + jsdom | `^5.0.0` / `^30.0.0` | Suite de pruebas unitarias y de componentes vía `@angular/build:unit-test`. |
 
 ---
 
-## 2. Módulos y Componentes Clave
+## 2. Módulos y Funcionalidades Principales
 
-### 2.1. Gestión Reactiva de Carrito (`CartService`)
-Ubicación: `src/app/services/cart.ts`
-- **Estado Global con Signals:** Expone señales reactivas para la lista de ítems (`itemsSignal`), subtotal (`subtotal`), costo de envío (`costoEnvio`) y monto total (`montoTotal`).
-- **Persistencia en LocalStorage:** Sincronización bidireccional automática mediante `effect()`. Los ítems se recuperan al cargar la página y se guardan ante cualquier modificación bajo la clave `la_posta_cart`.
-- **Identificador Compuesto:** Cada ítem utiliza una clave `idTemporal` compuesta por `productoId` y los IDs ordenados de sus adicionales (`{productoId}_{adicionalId1}_{adicionalId2}`), garantizando que productos iguales con combinaciones diferentes de modificadores no colisionen.
-- **Cálculo Financiero:** Cada adicional se computa sobre el precio unitario del producto (`(precio_producto + sum(adicionales)) * cantidad`).
+### 2.1. Inicio, Menú y Tarjetas de Producto (`Inicio`, `MenuListComponent`, `ProductCardComponent`)
+Ubicación: `src/app/pages/inicio/`, `src/app/pages/menu/`, `src/app/components/menu-list/`, `src/app/components/product-card/`
+- En `/inicio` se presentan las categorías activas en carrusel y accesos directos al catálogo filtrado por categoría.
+- En `/menu`, `MenuListComponent` muestra inicialmente las categorías disponibles y la opción **Ver todos los productos**, además de un buscador por nombre tolerante a tildes y mayúsculas.
+- `ProductCardComponent` permite ajustar cantidad, consultar imágenes con fallback por categoría (`utils/categoria-imagen.ts`) y desplegar hasta 2 adicionales en categorías habilitadas mediante `supportsAdditionals()` (`models/menu.ts`, con normalización NFD para reconocer categorías acentuadas como `Sándwiches`).
 
-### 2.2. Panel Lateral Deslizable (`CartDrawer`)
-Ubicación: `src/app/components/cart-drawer/`
-- Componente *Standalone* montado en el layout principal con animación lateral suave y fondo con desenfoque (`backdrop-filter: blur(4px)`).
-- Visualización detallada de cada producto, sus adicionales seleccionados con precio unitario, selector interactivo de cantidades y eliminación individual o vaciado completo.
-- Botón de checkout conectado al payload estándar para el envío de órdenes a la API de backend.
+### 2.2. Gestión Reactiva de Carrito (`CartService`, `/carrito`, `HeaderComponent`)
+Ubicación: `src/app/services/cart.ts`, `src/app/pages/carrito/`, `src/app/components/header/`
+- **Estado Global con Signals:** Expone `items`, `totalCount`, `subtotal`, `costoEnvio` (`$1500`) y `montoTotal`.
+- **Persistencia en `localStorage`:** Sincronización automática bajo la clave `la_posta_cart`, validando estructura de array al hidratar en `loadFromStorage()`.
+- **Identificador Compuesto:** Cada línea utiliza `idTemporal` (`{productoId}_{adicionalIdsOrdenados}`) para evitar colisiones entre combinaciones distintas de adicionales sobre un mismo producto.
+- **Vista Dedicada y Previsualización:** `HeaderComponent` muestra el contador reactivo del carrito y un acceso rápido, mientras que `/carrito` permite modificar cantidades, editar adicionales en línea, quitar ítems o continuar al checkout.
 
-### 2.3. Navegación y Encabezado (`HeaderComponent`)
-Ubicación: `src/app/components/header/`
-- Barra de navegación principal que incluye acceso a las secciones de Inicio, Categorías y Gestión.
-- Botón de carrito con indicador numérico reactivo (*badge*) sincronizado en tiempo real con la cantidad total de artículos del `CartService`.
+### 2.3. Checkout y Confirmación por Telegram (`/checkout`)
+Ubicación: `src/app/pages/checkout/` (`checkout.ts`, `payment-selector.ts`)
+- Solicita nombre completo y dirección (hasta 25 caracteres cada uno), teléfono (hasta 25 dígitos con `+` opcional al inicio), aclaraciones (hasta 255 caracteres) y método de pago.
+- Al continuar envía `POST /api/checkout/borradores`. El servidor valida los productos y recalcula los importes; los valores mostrados en el carrito son estimados y el costo de envío estimado ($1500) coincide con el configurado en el backend.
+- Actualmente solo está operativo el pago en efectivo (`tarjeta` y `transferencia` figuran deshabilitados). Permite ingresar el monto con el que abona el cliente para estimar el vuelto; el pago no se confirma automáticamente al registrar el pre-pedido.
+- Tras guardar el borrador se consulta `GET /api/configuracion-publica` para construir el enlace hacia el bot configurado en el backend (`TelegramMessageBuilderService`) sin exponer tokens en el frontend. Si la configuración pública falla, informa el error y permite reintentar conservando el carrito y sin duplicar el pre-pedido.
 
-### 2.4. Catálogo y Categorías (`CategoriasService` y Vistas)
-Ubicación: `src/app/services/categorias.ts`, `src/app/pages/categorias/`, `src/app/pages/inicio/`
-- Consumo de endpoints de categorías y productos activos desde la API REST.
+### 2.4. Autenticación, Recuperación de Contraseña, Guards e Interceptor
+Ubicación: `src/app/pages/login/`, `src/app/pages/recuperacion/`, `src/app/pages/perfil/`, `src/app/guards/`, `src/app/interceptors/`, `src/app/services/auth.ts`
+- **Acceso por Rol y Redirección:** `AuthService.rutaInicial()` redirige según el rol autenticado (`Administrador` / `SuperAdmin` -> `/dashboard`, `Cocinero` -> `/cocina`, `Repartidor` -> `/repartos`, `Cliente` o desconocido -> `/inicio`). `authGuard` y `guardRole` protegen las rutas y evitan bucles de redirección.
+- **Google Sign-In:** Integrado en `/login` usando `googleClientId` (`src/app/config/api.ts`). Requiere tener el origen local o productivo autorizado en Google Cloud Console y `GOOGLE_CLIENT_ID` configurado en el backend.
+- **Interceptor HTTP (`authInterceptor`):** Inyecta el Bearer Token en peticiones hacia `apiUrl` (`config/api.ts`), excluye `/login` y `/auth/google`, y ante una respuesta `401` limpia la sesión y redirige a `/login`.
+- **Recuperación de contraseña:** Desde `/login`, `/recuperar-contrasena` envía `POST /api/forgot-password` distinguiendo correos del dominio `test.com` (instruye contactar al administrador), cuenta inexistente, inactiva o fallo SMTP. `/restablecer-contrasena` lee token y correo desde el fragmento de la URL, limpia la barra de direcciones, valida nueva contraseña local (sin modificar cuentas de Google) y cierra la sesión local tras guardar.
+- **Perfil (`/perfil`):** Permite al usuario autenticado actualizar su nombre, correo, teléfono y dirección (`PUT /api/profile`), reflejando el nuevo nombre de inmediato en el encabezado.
 
-### 2.5. Checkout
-- La ruta `/checkout` permite completar nombre y dirección (hasta 25 caracteres cada uno), teléfono (hasta 25 dígitos y + opcional al inicio), aclaraciones (hasta 255 caracteres) y método de pago, y consultar el resumen del carrito.
-- Al continuar se guarda un borrador mediante `POST /api/checkout/borradores`. El servidor valida los productos y recalcula los precios; los importes del carrito son estimados.
-- Por ahora solo se puede elegir efectivo. Tarjeta y transferencia se muestran deshabilitadas. Es posible indicar el importe para calcular el vuelto estimado; el pago no se confirma automáticamente al guardar el pre-pedido.
-- Luego de guardar, se consulta `GET /api/configuracion-publica` para abrir el bot configurado en el backend con un texto preparado con los precios calculados por el servidor. El cliente debe revisarlo y enviarlo. Si la configuración no está disponible se informa el error y se permite reintentar sin crear otro pre-pedido. Se conserva el carrito.
-- El nombre del bot y su token se configuran solo en el `.env` del backend; el token nunca se expone al frontend. La recepción y confirmación requieren que el bot correspondiente esté funcionando.
-- Al confirmar un pedido se registra el pago en efectivo como pendiente. El repartidor asignado confirma el cobro al marcar la entrega; se envía un ticket no fiscal por Telegram. Si falla el envío, el tablero informa el error y permite reintentarlo sin repetir el cobro.
-- Administradores y SuperAdmin pueden consultar pagos y métodos en `/pagos`, buscar por número de pago, pedido o cliente, nombre o teléfono y filtrar por estado o método. Los ingresos diarios y mensuales suman solo pagos cobrados según la fecha y zona horaria de pagos, independientemente de los filtros. Solo efectivo es operativo; activar otros métodos requiere una implementación posterior.
-- La URL local de la API se configura en `src/app/config/api.ts`. El costo de envío estimado es de $1500 y debe coincidir con el costo calculado por el backend.
-
-### 2.6. Recuperación de contraseña
-- Desde el login, `¿Olvidaste tu contraseña?` abre `/recuperar-contrasena`. Se distinguen correo inexistente, usuario inactivo, errores de envío y limitación; esto permite enumerar cuentas y debe coordinarse con el criterio de privacidad de SD-150.
-- Los correos del dominio exacto `test.com` deben contactar al administrador; no se les envía enlace ni notificación automática. El flujo administrativo corresponde a una tarea independiente.
-- El enlace recibido abre `/restablecer-contrasena` con el token y correo en el fragmento. El frontend elimina el fragmento de la barra y permite establecer una nueva contraseña; al hacerlo se cierra la sesión local.
-- El envío real requiere configurar SMTP y `FRONTEND_URL` en Laravel. La confirmación indica aceptación por el servidor SMTP, no entrega garantizada en la bandeja. Esta recuperación afecta a la contraseña local, no a la cuenta de Google.
-
-### 2.7. Tablero de cocina
-- Los pedidos asignados al cocinero se actualizan automáticamente cada 20 segundos. También se puede actualizar el tablero manualmente; si falla la actualización automática se conserva la información visible y se reintenta.
-
-### 2.8. Perfil de usuario
-- El menú de perfil muestra el nombre de la sesión, permite cerrar sesión y enlaza al formulario para actualizar nombre, correo, teléfono y dirección.
-- El nombre actualizado se refleja inmediatamente en el encabezado sin volver a iniciar sesión.
+### 2.5. Panel Administrativo y Tableros Operativos
+- **Dashboard (`/dashboard`):** Indicadores clave, equipo disponible, alertas de pedidos sin asignar y gráficos de distribución por estado y método de pago con selector de período (`Hoy`, `7 días`, `30 días`, `Todo`).
+- **Pedidos (`/pedidos`):** Listado de órdenes para asignación de cocinero y repartidor, priorizando `nombre_cliente` con respaldo a `cliente.username` mediante `resolverNombreClientePedido()` (`utils/cliente-pedido.ts`).
+- **Cocina (`/cocina`):** Tablero Kanban (`Pendiente`, `En preparación`, `Listo para entregar`) con actualización automática cada 20 segundos y tolerancia a fallos de red en polling.
+- **Repartos (`/repartos`):** Tablero Kanban (`Listo para entregar`, `En camino`, `Entregado`), registro automático de cobro en efectivo al entregar, manejo de alertas ante fallos de envío de ticket y reintento manual sin duplicar cobros, usando `exhaustMap` en polling.
+- **Pagos (`/pagos`):** Resumen de ingresos cobrados en la zona horaria del backend (`pagos_timezone`), consulta de envíos cobrados por repartidor según fecha (valor estimado como total menos subtotal, no representa liquidación pagada), filtros combinados por búsqueda/estado/método y visor seguro del ticket original guardado.
+- **ABMs (`/categorias`, `/productos`, `/adicionales`, `/metodos-pago`, `/roles`, `/usuarios`):** Gestión de registros activos y desactivados con alta, edición, baja lógica, restauración y carga concurrente con `forkJoin`.
 
 ---
 
-## 3. Estructura del Proyecto
+## 3. Mapa de Rutas y Control de Acceso
+
+Definido en `src/app/app.routes.ts`:
+
+| Ruta | Componente | Acceso / Guards |
+| :--- | :--- | :--- |
+| `/` y `/**` | Redirección a `/inicio` | Público |
+| `/inicio`, `/menu`, `/carrito`, `/checkout` | `Inicio`, `Menu`, `Carrito`, `Checkout` | Invitados y rol `Cliente` (`guardRole` con `allowAnonymous: true`) |
+| `/login` | `Login` | Público |
+| `/recuperar-contrasena`, `/restablecer-contrasena` | `RecuperarContrasena`, `RestablecerContrasena` | Público |
+| `/perfil` | `Perfil` | Cualquier usuario autenticado (`authGuard`) |
+| `/dashboard`, `/pedidos`, `/pagos` | `Dashboard`, `Pedidos`, `Pagos` | `Administrador` / `SuperAdmin` |
+| `/categorias`, `/productos`, `/adicionales` | `Categorias`, `Productos`, `Adicionales` | `Administrador` / `SuperAdmin` |
+| `/metodos-pago`, `/roles`, `/usuarios` | `MetodoPagos`, `Roles`, `Usuarios` | `Administrador` / `SuperAdmin` |
+| `/cocina` | `Cocina` | `Cocinero` |
+| `/repartos` | `Repartos` | `Repartidor` |
+
+---
+
+## 4. Estructura del Proyecto
 
 ```text
 frontend/
+├── public/                              # Recursos estáticos
 ├── src/
-│   ├── app/
-│   │   ├── components/
-│   │   │   ├── cart-drawer/      # Panel lateral interactivo del carrito de compras
-│   │   │   ├── footer/           # Pie de página institucional
-│   │   │   └── header/           # Encabezado, navegación y badge de carrito
-│   │   ├── models/
-│   │   │   └── cart.ts           # Interfaces de TypeScript (CartItem, CartItemAdicional, CheckoutPayload)
-│   │   ├── pages/
-│   │   │   ├── categorias/       # Vista de categorías de productos
-│   │   │   └── inicio/           # Vista principal de bienvenida y destacados
-│   │   ├── services/
-│   │   │   ├── cart.ts           # Servicio reactivo de carrito con Signals y LocalStorage
-│   │   │   └── categorias.ts     # Servicio para consumo de categorías del backend
-│   │   ├── app.config.ts         # Configuración de proveedores (provideRouter, provideHttpClient)
-│   │   ├── app.html              # Layout raíz con Header, RouterOutlet, CartDrawer y Footer
-│   │   ├── app.routes.ts         # Definición de rutas del cliente
-│   │   └── app.ts                # Componente raíz Standalone
-│   ├── index.html
-│   └── styles.css                # Estilos globales y utilidades
-├── public/                       # Recursos estáticos
+│   ├── index.html                       # Fuentes Google (Outfit, Inter) y Bootstrap Icons
+│   ├── styles.css                       # Sistema visual, variables de marca (#FF5200) y estilos compartidos
+│   └── app/
+│       ├── app.config.ts                # Configuración de router y provideHttpClient(withInterceptors(...))
+│       ├── app.html                     # Layout raíz (Header, RouterOutlet, Footer)
+│       ├── app.routes.ts                # Definición de rutas y guards por rol
+│       ├── app.ts                       # Componente raíz Standalone
+│       ├── config/
+│       │   └── api.ts                   # URL base de la API (apiUrl) y googleClientId
+│       ├── components/
+│       │   ├── footer/                  # Pie de página institucional
+│       │   ├── header/                  # Navegación por rol, badge de carrito y menú de perfil
+│       │   ├── menu-list/               # Buscador, selector de categorías y grilla del menú
+│       │   └── product-card/            # Tarjeta de producto con stepper y adicionales
+│       ├── guards/
+│       │   ├── auth-guard.ts            # Protección de rutas autenticadas
+│       │   └── role-guard.ts            # Control de acceso por rol y allowAnonymous
+│       ├── interceptors/
+│       │   └── auth-interceptor.ts      # Inyección de Bearer Token y cierre ante 401
+│       ├── models/
+│       │   ├── cart.ts                  # Tipos de carrito y payload de checkout
+│       │   └── menu.ts                  # Modelos del menú y regla supportsAdditionals()
+│       ├── pages/
+│       │   ├── adicionales/             # ABM de adicionales
+│       │   ├── carrito/                 # Vista dedicada del carrito
+│       │   ├── categorias/              # ABM de categorías
+│       │   ├── checkout/                # Formulario de checkout y selector de pago
+│       │   ├── cocina/                  # Tablero Kanban de cocina
+│       │   ├── dashboard/               # Panel de KPIs, alertas y métricas
+│       │   ├── inicio/                  # Landing pública y categorías destacadas
+│       │   ├── login/                   # Inicio de sesión clásico y con Google
+│       │   ├── menu/                    # Página contenedora del catálogo público
+│       │   ├── metodos-pago/            # ABM de métodos de pago
+│       │   ├── pagos/                   # Consulta de ingresos, envíos y comprobantes
+│       │   ├── pedidos/                 # Gestión y asignación administrativa de pedidos
+│       │   ├── perfil/                  # Edición del perfil propio
+│       │   ├── productos/               # ABM de productos
+│       │   ├── recuperacion/            # Solicitud y restablecimiento de contraseña
+│       │   ├── repartos/                # Tablero Kanban de repartos
+│       │   ├── roles/                   # ABM de roles
+│       │   └── usuarios/                # ABM de usuarios
+│       ├── services/                    # 18 servicios HTTP/estado (auth, cart, checkout, dashboard, pedidos, pagos, ABMs, telegram)
+│       └── utils/
+│           ├── categoria-imagen.ts      # Imágenes fallback por categoría
+│           ├── cliente-pedido.ts        # Resolución de nombre visible del cliente
+│           └── http-404.ts              # Helper ignorar404Vacio() para listados vacíos
+├── angular.json                         # Budgets de compilación (anyComponentStyle: 6kB warn / 8kB error)
 ├── package.json
 └── tsconfig.json
 ```
 
 ---
 
-## 4. Requisitos Previos
+## 5. Requisitos Previos e Instalación
 
-- **Node.js:** Versión 18.x o 20.x LTS recomendada.
-- **npm:** Versión 9.x o superior.
-- **Angular CLI:** Versión 19.x (`npm install -g @angular/cli`).
-- **Backend Activo:** Servidor Laravel ejecutándose localmente en `http://localhost:8000`.
+- **Node.js:** Versión `20.x` o `22.x` LTS recomendada.
+- **npm:** Versión `10.x` o `11.x` (`packageManager: npm@11.21.0`).
+- **Angular CLI:** Versión `22.x` (`@angular/cli ^22.2.2`).
+- **Backend Activo:** Servidor Laravel ejecutándose localmente en `http://127.0.0.1:8000`.
 
----
+### Pasos de Instalación
 
-## 5. Instalación y Configuración
-
-1. Clonar el repositorio y posicionarse en la carpeta `frontend`:
+1. Clonar el repositorio y posicionarse en la rama `dev`:
    ```bash
    git clone https://github.com/benjavaldez62/gestion-delivery-frontend.git
    cd gestion-delivery-frontend
+   git checkout dev
    ```
-
-2. Instalar las dependencias del proyecto:
+2. Instalar dependencias:
    ```bash
    npm install
    ```
+3. Verificar `src/app/config/api.ts`: confirmar que `apiUrl` apunte al backend (`http://127.0.0.1:8000/api`) y que `googleClientId` corresponda a un cliente OAuth con el origen del frontend habilitado en Google Cloud Console.
 
 ---
 
 ## 6. Comandos de Ejecución
 
-En **Pagos**, el administrador puede consultar por fecha los envíos cobrados por repartidor, con detalle por pedido y alertas de datos incompletos. El importe es una estimación (total menos subtotal), no una liquidación pagada, y solo representa el adicional si corresponde al repartidor el 100 % del envío. La fecha usa la zona horaria de pagos; los cobros anteriores al cambio pueden conservar fecha UTC.
-
-En el listado de pagos, el número de comprobante abre el ticket original no fiscal, incluida la fecha y hora de emisión en los tickets nuevos. Si no tiene contenido guardado, se indica que requiere revisión.
-
 ### Servidor de Desarrollo
-Para iniciar el servidor local con recarga en caliente:
+
 ```bash
 npm start
 # o alternativamente:
 ng serve
 ```
-La aplicación estará accesible en `http://localhost:4200/`.
+
+La aplicación estará disponible en `http://localhost:4200/`.
 
 ### Pruebas Unitarias (Vitest)
-El proyecto utiliza **Vitest** como motor de pruebas de alta velocidad:
+
+Suite configurada con `@angular/build:unit-test` (`38` archivos de prueba y `169` tests pasando sobre `dev`):
+
 ```bash
-# Ejecutar todas las pruebas una sola vez (modo CI):
+# Ejecutar todas las pruebas una sola vez (CI):
 npm test -- --watch=false
 
 # Ejecutar pruebas en modo observador:
@@ -150,7 +187,9 @@ npm test
 ```
 
 ### Compilación para Producción
-Para generar los binarios optimizados en el directorio `dist/`:
+
+Genera los archivos optimizados en `dist/frontend/` (con presupuestos `anyComponentStyle` de `6kB` warning / `8kB` error):
+
 ```bash
 npm run build
 ```
@@ -159,6 +198,18 @@ npm run build
 
 ## 7. Convenciones de Desarrollo
 
-- **Conventional Commits:** Todos los mensajes de commit deben seguir la especificación estándar (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`).
-- **Prohibición de Emojis:** Queda expresamente prohibido incorporar emojis en archivos de código, plantillas HTML o estilos CSS. Toda iconografía debe representarse mediante vectores SVG accesibles.
-- **Idioma del Repositorio:** Comentarios de código, nombres de interfaces, modelos y documentación deben redactarse en español neutro y profesional.
+- **Rama Base:** Todas las ramas de características, fixes y documentación parten y apuntan hacia `dev`.
+- **Conventional Commits:** Usar formato estándar (`feat:`, `fix:`, `docs:`, `test:`, `refactor:`, `chore:`) sin líneas `Co-Authored-By` ni atribuciones de IA.
+- **Prohibición de Emojis:** No incorporar emojis en plantillas HTML, código fuente ni estilos CSS; usar Bootstrap Icons o SVGs vectoriales accesibles.
+- **Idioma del Repositorio:** Comentarios de código, interfaces, modelos y documentación redactados en español neutro y profesional.
+
+---
+
+## 8. Equipo de Desarrollo (Grupo 2)
+
+Proyecto desarrollado para la cátedra **Programación IV**:
+
+- **Valdez, Benjamín Ezequiel**
+- **Alanis, Fabricio**
+- **Berra, Agustina Inés**
+- **Berra Panelo, Florencia María**
