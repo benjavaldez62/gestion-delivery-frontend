@@ -21,7 +21,7 @@
 
 .kitchen-eyebrow {
   margin: 0 0 0.4rem;
-  color: #f4a261;
+  color: var(--theme);
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -30,7 +30,7 @@
 
 .kitchen-heading h1 {
   margin: 0;
-  color: #fc6107;
+  color: var(--header);
   font-size: clamp(1.8rem, 3vw, 2.5rem);
   font-weight: 700;
 }
@@ -117,16 +117,16 @@
 }
 
 .column-pending .column-heading {
-  background: #ad0d8b;
+  background: #D97706;
 }
 
 .column-preparing .column-heading {
-  background: #89023E;
+  background: #EA580C;
   color: #ffffff;
 }
 
 .column-ready .column-heading {
-  background: #788475;
+  background: #0D9488;
 }
 
 .order-count {

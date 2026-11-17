@@ -1,22 +1,15 @@
-/* Boton nuevo método de pago */
-.btn-icono-hover .icono-hover {
-    display: none;
-}
-.btn-icono-hover:hover .icono-normal {
-    display: none;
-}
-.btn-icono-hover:hover .icono-hover {
-    display: inline-block;
-}
-
 .container-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
     padding-left: 0px;
     padding-right: 0px;
 }
 /* Tarjetas de método de pagos */
 div > .card {
     border-radius: 15px;
-    min-width: 630px;
+    flex: 1 1 460px;
+    min-width: 0;
 }
 .card-header {
     font-weight: 700;
@@ -26,7 +19,8 @@ div > .card {
 
 /* MODAL Y FORMULARIO */
 div>.modal-dialog {
-    min-width: 700px;
+    max-width: 760px;
+    width: calc(100% - 1.5rem);
 }
 .modal-content {
     border-radius: 16px;
@@ -39,6 +33,6 @@ label.form-label {
     font-size: 18px;
 }
 .input-metodo-pago:focus {
-    border-color: var(--theme4);
+    border-color: var(--theme);
     box-shadow: none;
 }

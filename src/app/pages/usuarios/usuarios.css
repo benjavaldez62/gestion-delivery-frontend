@@ -1,27 +1,9 @@
 /* FILTRO */
-.filtro-box {
-    border-left: solid 5px #ff5200;
-    border-radius: 10px;
-    background-color: #f1f1f1;
-}
 input.check {
     transform: scale(1.3);
 }
 input.check:focus {
-    background-color: #ff5200;
-}
-
-/* Botón NUEVO USUARIO */
-.btn-icono-hover .icono-hover {
-    display: none;
-}
-
-.btn-icono-hover:hover .icono-normal {
-    display: none;
-}
-
-.btn-icono-hover:hover .icono-hover {
-    display: inline-block;
+    background-color: var(--theme);
 }
 
 /* Tarjetas de usuarios */
@@ -36,7 +18,8 @@ div > .card {
 
 /* Modal y formulario */
 div > .modal-dialog {
-    min-width: 800px;
+    max-width: 760px;
+    width: calc(100% - 1.5rem);
 }
 
 .modal-content {
@@ -54,6 +37,6 @@ label.form-label {
 }
 
 .input-usuario:focus {
-    border: solid 1.8px var(--theme4);
+    border: solid 1.8px var(--theme);
     box-shadow: none;
 }
