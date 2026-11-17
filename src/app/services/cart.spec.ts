@@ -253,4 +253,14 @@ describe('CartService', () => {
     service.toggleCart();
     expect(service.isDrawerOpen()).toBe(true);
   });
+
+  it('ignora valores no-array guardados en localStorage sin lanzar excepción', () => {
+    localStorage.setItem('la_posta_cart', '{"corrupto":true}');
+    TestBed.resetTestingModule();
+    TestBed.configureTestingModule({});
+    const cartRecuperado = TestBed.inject(CartService);
+
+    expect(cartRecuperado.items()).toEqual([]);
+    expect(cartRecuperado.subtotal()).toBe(0);
+  });
 });

@@ -61,4 +61,18 @@ describe('guardRole', () => {
       expect(router.serializeUrl(result)).toBe('/login');
     }
   });
+
+  it('redirects Cliente to /inicio when denied an admin-only route', () => {
+    localStorage.setItem('token', 'token');
+    localStorage.setItem('rol_usuario', 'Cliente');
+
+    const result = TestBed.runInInjectionContext(() =>
+      guardRole(rutaConRoles(['Administrador']), router.routerState.snapshot),
+    );
+
+    expect(result instanceof UrlTree).toBe(true);
+    if (result instanceof UrlTree) {
+      expect(router.serializeUrl(result)).toBe('/inicio');
+    }
+  });
 });

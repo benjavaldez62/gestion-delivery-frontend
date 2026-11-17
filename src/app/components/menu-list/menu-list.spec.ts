@@ -354,4 +354,16 @@ describe('MenuListComponent', () => {
     expect(cart.items()).toEqual([]);
     expect(getAdditionals).not.toHaveBeenCalled();
   });
+
+  it('habilita adicionales aunque la categoría Sándwiches tenga tilde', () => {
+    const component = fixture.componentInstance;
+    const sandwich: MenuProduct = {
+      ...product,
+      id: 15,
+      nombre: 'Sándwich de milanesa',
+      categoria: { id: 4, nombre: 'Sándwiches' },
+    };
+
+    expect(component.permiteAdicionales(sandwich)).toBe(true);
+  });
 });

@@ -172,7 +172,7 @@ export class AuthService {
         if (rol === 'repartidor') {
             return '/repartos';
         }
-        return '/categorias';
+        return '/inicio';
     }
 
     // Cerrar sesión - LogOut

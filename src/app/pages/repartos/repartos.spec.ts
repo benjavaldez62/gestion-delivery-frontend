@@ -1,5 +1,5 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
-import { of } from 'rxjs';
+import { of, throwError } from 'rxjs';
 import { PedidoReparto, RepartosService } from '../../services/repartos';
 import { Repartos } from './repartos';
 
@@ -135,5 +135,21 @@ describe('Repartos', () => {
     component.reenviarTicket(component.pedidos[1]);
     expect(service.reenviarTicket).toHaveBeenCalledWith(enCamino.id);
     expect(component.mensaje).toBe('Ticket enviado por Telegram.');
+  });
+
+  it('reintenta cargar usuario y estados al recargar si falló el inicio', () => {
+    fixture.destroy();
+    service.obtenerUsuario.mockReturnValueOnce(throwError(() => new Error('red')));
+
+    fixture = TestBed.createComponent(Repartos);
+    component = fixture.componentInstance;
+    fixture.detectChanges();
+    expect(component.error).toContain('red');
+
+    service.obtenerUsuario.mockReturnValueOnce(of({ id: 7 }));
+    component.recargar();
+
+    expect(component.error).toBe('');
+    expect(component.pedidos.map((item) => item.id)).toEqual([42, 43, 44]);
   });
 });

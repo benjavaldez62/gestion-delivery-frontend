@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
 import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
-import { TimeoutError, catchError, finalize, forkJoin, map, of, switchMap, timeout, timer } from 'rxjs';
+import { TimeoutError, catchError, exhaustMap, filter, finalize, forkJoin, map, of, timeout, timer } from 'rxjs';
 import { EstadoReparto, PedidoReparto, RepartosService } from '../../services/repartos';
 
 const ESTADOS_REPARTO = ['Listo para entregar', 'En camino', 'Entregado'];
@@ -21,6 +21,8 @@ export class Repartos implements OnDestroy, OnInit {
   private readonly destroyRef = inject(DestroyRef);
   private repartidorId: number | null = null;
   private notificacionTimeout: ReturnType<typeof setTimeout> | undefined;
+  private alertaTicketPendiente = false;
+  private actualizacionIniciada = false;
 
   estados: EstadoReparto[] = [];
   pedidos: PedidoReparto[] = [];
@@ -31,37 +33,7 @@ export class Repartos implements OnDestroy, OnInit {
   mensaje = '';
 
   ngOnInit(): void {
-    forkJoin({
-      usuario: this.repartosService.obtenerUsuario().pipe(timeout({ first: 15000 })),
-      estados: this.repartosService.obtenerEstados().pipe(timeout({ first: 15000 })),
-    })
-      .pipe(takeUntilDestroyed(this.destroyRef))
-      .subscribe({
-        next: ({ usuario, estados }) => {
-          const estadosReparto = ESTADOS_REPARTO.map((nombre) =>
-            estados.find((estado) => this.normalizar(estado.nombre) === this.normalizar(nombre)),
-          );
-
-          if (estadosReparto.some((estado) => !estado)) {
-            this.error = 'No se encontraron todos los estados necesarios para gestionar repartos.';
-            this.cargando = false;
-            this.changeDetector.markForCheck();
-            return;
-          }
-
-          this.repartidorId = usuario.id;
-          this.estados = estadosReparto.filter(
-            (estado): estado is EstadoReparto => estado !== undefined,
-          );
-          this.cargarPedidos();
-          this.escucharPedidos();
-        },
-        error: (error: unknown) => {
-          this.error = this.mensajeError(error, 'No se pudo iniciar el tablero de repartos.');
-          this.cargando = false;
-          this.changeDetector.markForCheck();
-        },
-      });
+    this.cargarTablero();
   }
 
   ngOnDestroy(): void {
@@ -69,6 +41,11 @@ export class Repartos implements OnDestroy, OnInit {
   }
 
   recargar(): void {
+    if (this.repartidorId === null || this.estados.length === 0) {
+      this.cargarTablero();
+      return;
+    }
+
     this.cargarPedidos();
   }
 
@@ -157,7 +134,9 @@ export class Repartos implements OnDestroy, OnInit {
   reenviarTicket(pedido: PedidoReparto): void {
     if (this.actualizandoPedidoId !== null) return;
     this.error = '';
+    this.alertaTicketPendiente = false;
     this.mensaje = '';
+    this.limpiarTimeoutNotificacion();
     this.actualizandoPedidoId = pedido.id;
     this.repartosService.reenviarTicket(pedido.id).pipe(
       timeout({ first: 15000 }),
@@ -167,17 +146,61 @@ export class Repartos implements OnDestroy, OnInit {
       }),
       takeUntilDestroyed(this.destroyRef),
     ).subscribe({
-      next: respuesta => { this.mensaje = respuesta.message; },
+      next: respuesta => {
+        this.mostrarNotificacion(respuesta.message);
+      },
       error: (error: unknown) => {
+        this.alertaTicketPendiente = true;
         this.error = this.mensajeError(error, 'No se pudo enviar el ticket.');
       },
     });
   }
 
+  private cargarTablero(): void {
+    this.cargando = true;
+    this.error = '';
+
+    forkJoin({
+      usuario: this.repartosService.obtenerUsuario().pipe(timeout({ first: 15000 })),
+      estados: this.repartosService.obtenerEstados().pipe(timeout({ first: 15000 })),
+    })
+      .pipe(takeUntilDestroyed(this.destroyRef))
+      .subscribe({
+        next: ({ usuario, estados }) => {
+          const estadosReparto = ESTADOS_REPARTO.map((nombre) =>
+            estados.find((estado) => this.normalizar(estado.nombre) === this.normalizar(nombre)),
+          );
+
+          if (estadosReparto.some((estado) => !estado)) {
+            this.error = 'No se encontraron todos los estados necesarios para gestionar repartos.';
+            this.cargando = false;
+            this.changeDetector.markForCheck();
+            return;
+          }
+
+          this.repartidorId = usuario.id;
+          this.estados = estadosReparto.filter(
+            (estado): estado is EstadoReparto => estado !== undefined,
+          );
+          this.cargarPedidos();
+          if (!this.actualizacionIniciada) {
+            this.actualizacionIniciada = true;
+            this.escucharPedidos();
+          }
+        },
+        error: (error: unknown) => {
+          this.error = this.mensajeError(error, 'No se pudo iniciar el tablero de repartos.');
+          this.cargando = false;
+          this.changeDetector.markForCheck();
+        },
+      });
+  }
+
   private escucharPedidos(): void {
     timer(INTERVALO_ACTUALIZACION_MS, INTERVALO_ACTUALIZACION_MS)
       .pipe(
-        switchMap(() =>
+        filter(() => !this.cargando && this.actualizandoPedidoId === null && this.arrastrandoPedidoId === null),
+        exhaustMap(() =>
           this.repartosService.obtenerPedidos().pipe(
             timeout({ first: 15000 }),
             map((pedidos) => this.pedidosAsignados(pedidos)),
@@ -193,7 +216,9 @@ export class Repartos implements OnDestroy, OnInit {
       .subscribe((pedidos) => {
         if (pedidos) {
           this.pedidos = pedidos;
-          this.error = '';
+          if (!this.alertaTicketPendiente) {
+            this.error = '';
+          }
         }
         this.changeDetector.markForCheck();
       });
@@ -206,6 +231,7 @@ export class Repartos implements OnDestroy, OnInit {
 
     this.cargando = true;
     this.error = '';
+    this.alertaTicketPendiente = false;
     this.repartosService
       .obtenerPedidos()
       .pipe(
@@ -244,6 +270,7 @@ export class Repartos implements OnDestroy, OnInit {
     }
 
     this.error = '';
+    this.alertaTicketPendiente = false;
     this.mensaje = '';
     this.limpiarTimeoutNotificacion();
     this.actualizandoPedidoId = pedido.id;
@@ -264,15 +291,13 @@ export class Repartos implements OnDestroy, OnInit {
             actual.id === pedido.id ? respuesta.pedido : actual,
           );
           if (respuesta.comprobante_enviado === false) {
+            this.alertaTicketPendiente = true;
             this.error = respuesta.message ?? 'El cobro se registró, pero no se pudo enviar el ticket.';
             return;
           }
-          this.mensaje = respuesta.message ?? `El pedido #${pedido.id} avanzó a ${estadoDestino.nombre} correctamente.`;
-          this.notificacionTimeout = setTimeout(() => {
-            this.mensaje = '';
-            this.notificacionTimeout = undefined;
-            this.changeDetector.markForCheck();
-          }, 4000);
+          this.mostrarNotificacion(
+            respuesta.message ?? `El pedido #${pedido.id} avanzó a ${estadoDestino.nombre} correctamente.`,
+          );
         },
         error: (error: unknown) => {
           this.error = this.mensajeError(error, `No se pudo actualizar el pedido #${pedido.id}.`);
@@ -305,6 +330,16 @@ export class Repartos implements OnDestroy, OnInit {
       return error.message;
     }
     return fallback;
+  }
+
+  private mostrarNotificacion(texto: string): void {
+    this.limpiarTimeoutNotificacion();
+    this.mensaje = texto;
+    this.notificacionTimeout = setTimeout(() => {
+      this.mensaje = '';
+      this.notificacionTimeout = undefined;
+      this.changeDetector.markForCheck();
+    }, 4000);
   }
 
   private limpiarTimeoutNotificacion(): void {
