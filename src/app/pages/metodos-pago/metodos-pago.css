@@ -1,0 +1,38 @@
+.container-cards {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1.5rem;
+    padding-left: 0px;
+    padding-right: 0px;
+}
+/* Tarjetas de método de pagos */
+div > .card {
+    border-radius: 15px;
+    flex: 1 1 460px;
+    min-width: 0;
+}
+.card-header {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+
+/* MODAL Y FORMULARIO */
+div>.modal-dialog {
+    max-width: 760px;
+    width: calc(100% - 1.5rem);
+}
+.modal-content {
+    border-radius: 16px;
+}
+label {
+    font-weight: 500;
+    padding-bottom: 4px;
+}
+label.form-label {
+    font-size: 18px;
+}
+.input-metodo-pago:focus {
+    border-color: var(--theme);
+    box-shadow: none;
+}

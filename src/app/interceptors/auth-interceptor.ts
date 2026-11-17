@@ -1,20 +1,43 @@
-import { HttpInterceptorFn } from '@angular/common/http';
+import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
+import { inject } from '@angular/core';
+import { Router } from '@angular/router';
+import { catchError, throwError } from 'rxjs';
+import { apiUrl } from '../config/api';
+import { AuthService } from '../services/auth';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
-  const token = localStorage.getItem('token');
+  const authService = inject(AuthService);
+  const router = inject(Router);
+  const token = authService.obtenerToken();
+  const apiBase = apiUrl.replace(/\/+$/, '');
 
   // Solo enviar el token a nuestra API Laravel.
-  const esApiLaravel = req.url.startsWith('http://127.0.0.1:8000/api/');
+  const esApiLaravel = req.url === apiBase || req.url.startsWith(`${apiBase}/`);
+  const esRutaLogin = req.url.endsWith('/login') || req.url.endsWith('/auth/google');
 
-  if (token && esApiLaravel && !req.url.endsWith('/login')) {
-    const requestAutenticada = req.clone({
-      setHeaders: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+  const request = token && esApiLaravel && !esRutaLogin
+    ? req.clone({
+        setHeaders: {
+          Authorization: `Bearer ${token}`,
+        },
+      })
+    : req;
 
-    return next(requestAutenticada);
-  }
+  return next(request).pipe(
+    catchError((error: unknown) => {
+      if (
+        error instanceof HttpErrorResponse &&
+        error.status === 401 &&
+        esApiLaravel &&
+        !esRutaLogin
+      ) {
+        authService.limpiarSesion();
+        if (router.url !== '/login') {
+          void router.navigateByUrl('/login');
+        }
+      }
 
-  return next(req);
+      return throwError(() => error);
+    }),
+  );
 };

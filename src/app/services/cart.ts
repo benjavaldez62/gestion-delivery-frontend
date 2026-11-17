@@ -164,46 +164,6 @@ export class CartService {
     this.removeStorage();
   }
 
-  // Cargar datos de prueba para testing visual
-  cargarDatosPrueba(): void {
-    const demoItems: CartItem[] = [
-      {
-        idTemporal: '1_1-2',
-        productoId: 1,
-        nombre: 'Hamburguesa Doble Artesanal',
-        precioUnitario: 4500,
-        cantidad: 2,
-        adicionales: [
-          { id: 1, nombre: 'Panceta crocante', precio: 600 },
-          { id: 2, nombre: 'Queso cheddar extra', precio: 500 }
-        ],
-        subtotal: (4500 + 600 + 500) * 2
-      },
-      {
-        idTemporal: '2_',
-        productoId: 2,
-        nombre: 'Pizza Especial Mozzarella',
-        precioUnitario: 6200,
-        cantidad: 1,
-        adicionales: [],
-        subtotal: 6200
-      },
-      {
-        idTemporal: '3_3',
-        productoId: 3,
-        nombre: 'Papas Rústicas con Cheddar',
-        precioUnitario: 2800,
-        cantidad: 1,
-        adicionales: [
-          { id: 3, nombre: 'Salsa barbacoa casera', precio: 300 }
-        ],
-        subtotal: 2800 + 300
-      }
-    ];
-
-    this.itemsSignal.set(demoItems);
-  }
-
   // Alias para mantener compatibilidad
   clearCart(): void {
     this.clear();
@@ -228,7 +188,11 @@ export class CartService {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         const raw = window.localStorage.getItem(this.STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
+        if (!raw) {
+          return [];
+        }
+        const parsed: unknown = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
       }
     } catch (e) {
       console.warn('No se pudo acceder a localStorage:', e);

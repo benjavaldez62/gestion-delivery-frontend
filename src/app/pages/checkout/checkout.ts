@@ -1,12 +1,13 @@
 import { DecimalPipe } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
-import { Component, inject, signal } from '@angular/core';
+import { Component, DestroyRef, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, ValidatorFn, Validators } from '@angular/forms';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
-import { finalize } from 'rxjs';
+import { finalize, timeout } from 'rxjs';
 import { CartService } from '../../services/cart';
 import { BorradorCheckout, CheckoutService, MetodoPago } from '../../services/checkout';
+import { ConfiguracionPublicaService } from '../../services/configuracion-publica';
 import { DatosMensajeTelegram, TelegramMessageBuilder } from '../../services/telegram-message-builder';
 import { PaymentSelectorComponent } from './payment-selector';
 
@@ -28,18 +29,22 @@ export class Checkout {
   private readonly checkout = inject(CheckoutService);
   private readonly fb = inject(FormBuilder);
   private readonly telegram = inject(TelegramMessageBuilder);
+  private readonly configuracion = inject(ConfiguracionPublicaService);
+  private readonly destroyRef = inject(DestroyRef);
 
   readonly guardando = signal(false);
+  readonly cargandoTelegram = signal(false);
   readonly error = signal('');
   readonly borrador = signal<BorradorCheckout | null>(null);
   readonly datosTelegram = signal<DatosMensajeTelegram | null>(null);
   readonly enlaceTelegram = signal('');
   readonly confirmandoTelegram = signal(false);
   readonly formulario = this.fb.nonNullable.group({
-    direccion: ['', [Validators.required, Validators.maxLength(255), Validators.pattern(/\S/)]],
-    telefono: ['', [Validators.required, Validators.maxLength(30), Validators.pattern(/^(?=(?:[^0-9]*[0-9]){6})[0-9+() \-]{6,30}$/)]],
-    notas: ['', [Validators.maxLength(500)]],
-    metodoPago: this.fb.nonNullable.control<MetodoPago | ''>('', Validators.required),
+    nombreCliente: ['', [Validators.required, Validators.maxLength(25), Validators.pattern(/\S/)]],
+    direccion: ['', [Validators.required, Validators.maxLength(25), Validators.pattern(/\S/)]],
+    telefono: ['', [Validators.required, Validators.pattern(/^\+?[0-9]{1,25}$/)]],
+    notas: ['', [Validators.maxLength(255)]],
+    metodoPago: this.fb.nonNullable.control<MetodoPago | ''>('', [Validators.required, Validators.pattern(/^efectivo$/)]),
     montoRecibido: this.fb.control<number | null>(null, [Validators.min(0), importeValido]),
   });
 
@@ -58,6 +63,20 @@ export class Checkout {
     return Math.round(((this.formulario.controls.montoRecibido.value ?? 0) - this.cart.montoTotal()) * 100) / 100;
   }
 
+  filtrarTelefono(event: Event): void {
+    const input = event.target;
+    if (!(input instanceof HTMLInputElement)) return;
+    const original = input.value;
+    const limpiar = (valor: string) => (valor.startsWith('+') ? '+' : '') + valor.replace(/[^0-9]/g, '');
+    const telefono = limpiar(original);
+    if (original !== telefono) {
+      const posicion = limpiar(original.slice(0, input.selectionStart ?? original.length)).length;
+      input.value = telefono;
+      this.formulario.controls.telefono.setValue(telefono);
+      input.setSelectionRange(posicion, posicion);
+    }
+  }
+
   guardar(): void {
     if (this.guardando() || this.borrador() || this.formulario.invalid || this.montoInsuficiente() || this.cart.items().length === 0) {
       this.formulario.markAllAsTouched();
@@ -73,6 +92,7 @@ export class Checkout {
     this.error.set('');
     this.guardando.set(true);
     this.checkout.guardarBorrador({
+      nombre_cliente: valores.nombreCliente.trim(),
       direccion: valores.direccion.trim(),
       telefono: valores.telefono.trim(),
       notas: valores.notas.trim(),
@@ -87,6 +107,7 @@ export class Checkout {
     }).pipe(finalize(() => this.guardando.set(false))).subscribe({
       next: (respuesta) => {
         this.datosTelegram.set({
+          nombreCliente: valores.nombreCliente.trim(),
           direccion: valores.direccion.trim(),
           telefono: valores.telefono.trim(),
           notas: valores.notas.trim(),
@@ -105,18 +126,34 @@ export class Checkout {
   }
 
   prepararTelegram(): void {
+    if (this.cargandoTelegram()) return;
     const datos = this.datosTelegram();
     if (!datos) {
       this.error.set('No se encontró el resumen del borrador para Telegram.');
       return;
     }
+    let mensaje: string;
     try {
-      this.enlaceTelegram.set(this.telegram.enlace(this.telegram.construir(datos)));
-      this.error.set('');
-      this.confirmandoTelegram.set(true);
+      mensaje = this.telegram.construir(datos);
+      this.telegram.validarMensaje(mensaje);
     } catch (error) {
       if (!(error instanceof RangeError)) throw error;
       this.error.set(error.message);
+      return;
     }
+    this.error.set('');
+    this.enlaceTelegram.set('');
+    this.cargandoTelegram.set(true);
+    this.configuracion.obtenerBotTelegram().pipe(
+      timeout({ first: 15000 }),
+      finalize(() => this.cargandoTelegram.set(false)),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe({
+      next: username => {
+        this.enlaceTelegram.set(this.telegram.enlace(mensaje, username));
+        this.confirmandoTelegram.set(true);
+      },
+      error: () => this.error.set('No se pudo obtener la configuración de Telegram. Intentá nuevamente.'),
+    });
   }
 }

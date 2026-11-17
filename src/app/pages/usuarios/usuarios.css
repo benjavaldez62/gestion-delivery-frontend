@@ -1,0 +1,42 @@
+/* FILTRO */
+input.check {
+    transform: scale(1.3);
+}
+input.check:focus {
+    background-color: var(--theme);
+}
+
+/* Tarjetas de usuarios */
+div > .card {
+    border-radius: 15px;
+}
+
+.card-header {
+    font-weight: 700;
+    font-size: 16px;
+}
+
+/* Modal y formulario */
+div > .modal-dialog {
+    max-width: 760px;
+    width: calc(100% - 1.5rem);
+}
+
+.modal-content {
+    border-radius: 16px;
+}
+
+label {
+    font-weight: 500;
+    padding-bottom: 4px;
+    margin-top: 4px;
+}
+
+label.form-label {
+    font-size: 18px;
+}
+
+.input-usuario:focus {
+    border: solid 1.8px var(--theme);
+    box-shadow: none;
+}

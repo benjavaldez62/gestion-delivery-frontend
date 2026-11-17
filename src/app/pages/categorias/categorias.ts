@@ -1,26 +1,207 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
-import { CategoriasService, Categoria } from '../../services/categorias';
+import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
+import { CategoriasService, Categoria, nuevaCategoria } from '../../services/categorias';
+import { ignorar404Vacio } from '../../utils/http-404';
 
 @Component({
   selector: 'app-categorias',
+  imports: [FormsModule],
   templateUrl: './categorias.html',
   styleUrl: './categorias.css'
 })
+
 export class Categorias implements OnInit {
+
+  // MODAL
+  modalAbierto = signal(false);
+  estadoCategoria = true;
+
+  abrirModal(): void {
+    this.categoriaEditando.set(null);
+    this.nombre = '';
+    this.descripcion = '';
+    this.error.set('');
+    this.errorGuardar.set('');
+    this.mensaje.set('');
+    this.modalAbierto.set(true);
+  }
+
+  // editar categoria
+  editarCategoria(categoria: Categoria): void {
+    this.categoriaEditando.set(categoria.id);
+    this.nombre = categoria.nombre;
+    this.descripcion = categoria.descripcion ?? '';
+    this.estadoCategoria = categoria.activo;
+    this.error.set('');
+    this.errorGuardar.set('');
+    this.mensaje.set('');
+    this.modalAbierto.set(true);
+  }
+
+  cerrarModal(): void {
+    if (this.guardando()) {
+      return;
+    }
+
+    this.modalAbierto.set(false);
+    this.categoriaEditando.set(null);
+  }
+
   private categoriasService = inject(CategoriasService);
+
   categorias = signal<Categoria[]>([]);
+  categoriasDesactivadas = signal<Categoria[]>([]);
   cargando = signal(true);
   error = signal('');
+  errorGuardar = signal('');
+
+  nombre = '';
+  descripcion = '';
+  activo = true;
+
+  guardando = signal(false);
+  mensaje = signal('');
+
   ngOnInit(): void {
-    this.categoriasService.obtenerCategorias().subscribe({
-      next: (respuesta) => {
-        this.categorias.set(respuesta.categorias);
+
+    this.cargarCategorias();
+  }
+
+  cargarCategorias(): void {
+    this.cargando.set(true);
+    this.error.set('');
+
+    forkJoin({
+      activas: this.categoriasService.obtenerCategorias().pipe(
+        ignorar404Vacio({ message: 'No hay categorías disponibles.', categorias: [] as Categoria[] }),
+      ),
+      desactivadas: this.categoriasService.obtenerCategoriasDesactivadas().pipe(
+        ignorar404Vacio({ message: 'No hay categorías desactivadas.', categoriasDesactivadas: [] as Categoria[] }),
+      ),
+    }).subscribe({
+      next: ({ activas, desactivadas }) => {
+        this.categorias.set(activas.categorias);
+        this.categoriasDesactivadas.set(desactivadas.categoriasDesactivadas);
         this.cargando.set(false);
       },
       error: (err) => {
-        console.error('Error al obtener categorías:', err);
+        console.error('Error al cargar categorías:', err);
         this.error.set('No se pudieron cargar las categorías.');
         this.cargando.set(false);
+      },
+    });
+  }
+
+  guardarCategoria(): void {
+    this.mensaje.set('');
+    this.errorGuardar.set('');
+
+    const datos: nuevaCategoria = {
+      nombre: this.nombre.trim(),
+      descripcion: this.descripcion.trim(),
+      ...(this.categoriaEditando() !== null ? { activo: this.estadoCategoria } : {}),
+    };
+
+    if (datos.nombre.length < 2) {
+      this.errorGuardar.set('El nombre debe tener al menos 2 caracteres.');
+      return;
+    } else if (datos.nombre.length > 50) {
+      this.errorGuardar.set('El nombre no debe superar los 50 caracteres.');
+      return;
+    }
+
+    this.guardando.set(true);
+
+    const id = this.categoriaEditando();
+
+    const solicitud =
+      id === null
+        ? this.categoriasService.crearCategoria(datos)
+        : this.categoriasService.actualizarCategoria(id, datos);
+
+    this.guardando.set(true);
+
+    solicitud.subscribe({
+      next: (respuesta) => {
+        this.mensaje.set(respuesta.message);
+
+        this.nombre = '';
+        this.descripcion = '';
+
+        this.guardando.set(false);
+
+        this.modalAbierto.set(false);
+
+        this.categoriaEditando.set(null);
+
+        this.cargarCategorias();
+      },
+      error: (err) => {
+        console.error('Error al guardar categoría:', err);
+
+        if (err.status === 422) {
+          this.errorGuardar.set(
+            err.error?.errors?.nombre?.[0] ??
+            err.error?.errors?.descripcion?.[0] ??
+            err.error?.message ??
+            'Revisá los datos ingresados.'
+          );
+        } else {
+          this.errorGuardar.set('No se pudo guardar la categoría. Verificá la conexión con Laravel.');
+        }
+
+        this.guardando.set(false);
+      },
+    });
+  }
+
+  categoriaEditando = signal<number | null>(null);
+
+  // eliminar
+  eliminarCategoria(categoria: Categoria): void {
+    const confirmar = confirm(`¿Estás seguro que querés eliminar la categoría "${categoria.nombre}"?`);
+
+    // Caso 'Cancelar'
+    if (!confirmar) {
+      return;
+    }
+    
+    // Caso 'Eliminar'
+    this.error.set('');
+    this.mensaje.set('');
+    this.categoriasService.eliminarCategoria(categoria.id).subscribe({
+      next: (respuesta) => {
+        this.mensaje.set(respuesta.message);
+        this.cargarCategorias();
+      },
+      error: (err) => {
+        console.error('Error al eliminar la categoría:', err);
+
+        this.error.set(err.error?.message ?? 'No se pudo eliminar la categoría');
+      }
+    })
+  }
+
+  // restaurar
+  restaurarCategoria(categoria: Categoria): void {
+    const conrfirmar = confirm(`¿Querés restaurar la categoría "${categoria.nombre}"?`);
+
+    // caso 'Cancelar'
+    if(!conrfirmar) {
+      return;
+    }
+
+    // caso 'Restaurar'
+    this.categoriasService.restaurarCategoria(categoria.id).subscribe({
+      next: (respuesta) => {
+        this.mensaje.set(respuesta.message);
+
+        // Actualizar listas de categorias (activas y desactivadas)
+        this.cargarCategorias();
+      },
+      error: (err) => {
+        this.error.set( err.error?.message || 'No se pudo restaurar la categoría.' );
       }
     });
   }

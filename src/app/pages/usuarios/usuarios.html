@@ -1,0 +1,254 @@
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Usuarios</h1>
+        <div class="d-flex align-items-center flex-wrap px-3 py-2 filtro-box">
+            <strong>Filtrar por Rol:</strong>
+            <div class="ms-3">
+                @for (rol of roles(); track rol.id) {
+                <label class="form-check form-check-inline me-3">
+                    <input type="checkbox" class="form-check-input me-1" [name]="'filtro-rol-' + rol.id"
+                        [ngModel]="rolesSeleccionados().includes(rol.id)"
+                        (ngModelChange)="actualizarFiltroRol(rol.id, $event)">
+                    {{ rol.nombre }} ({{ cantidadUsuariosPorRol().get(rol.id) ?? 0 }})
+                </label>
+                }
+            </div>
+            <button type="button" class=" btn btn-sm btn-outline-danger" (click)="limpiarFiltrosRoles()">
+                <i class="bi bi-sliders2"></i> Quitar filtros
+            </button>
+        </div>
+        <button type="button" class="btn btn-primary btn-icono-hover" (click)="abrirModal()">
+            <span class="mr-1 px-1">
+                <i class="bi bi-plus-lg icono-normal"></i>
+                <i class="bi bi-plus-circle-dotted icono-hover"></i>
+            </span>
+            Nuevo usuario
+        </button>
+    </div>
+
+    @if (mensaje()) {
+    <div class="alert alert-success alert-dismissible">
+        {{ mensaje() }}
+        <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set('')"></button>
+    </div>
+    }
+    @if (error() && !modalAbierto()) {
+    <div class="alert alert-danger alert-dismissible">
+        {{ error() }}
+        <button type="button" class="btn-close" (click)="error.set('')"></button>
+    </div>
+    }
+
+    <!-- Listado de usuarios activos -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            Listado de usuarios disponibles
+        </div>
+        <div class="card-body">
+            @if (cargando()) {
+            <div class="alert alert-info">
+                Cargando usuarios...
+            </div>
+            } @else if (usuarios().length === 0) {
+            <p class="text-muted mb-0">
+                No hay usuarios registrados.
+            </p>
+            } @else if (usuariosFiltrados().length === 0) {
+            <p class="text-muted mb-0">
+                No hay usuarios que coincidan con los roles seleccionados.
+            </p>
+            } @else {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover align-middle">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th class="text-end pe-5">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (usuario of usuariosFiltrados(); track usuario.id) {
+                        <tr>
+                            <td>{{ usuario.id }}</td>
+                            <td>{{ usuario.name }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td>{{ usuario.role?.nombre }}</td>
+                            <td class="text-end">
+                                <span class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-md btn-outline-primary me-4" title="editar"
+                                        (click)="editarUsuario(usuario)"><i class="bi bi-pencil-square"></i></button>
+                                    <button type="button" class="btn btn-md btn-danger me-4" title="desactivar"
+                                        (click)="eliminarUsuario(usuario)"><i class="bi bi-dash-circle"></i></button>
+                                </span>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+        </div>
+    </div>
+
+    <!-- Listado de usuarios desactivados -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            Listado de usuarios desactivados
+        </div>
+        <div class="card-body">
+            @if (cargando()) {
+            <div class="alert alert-info">
+                Cargando usuarios desactivados...
+            </div>
+            } @else if (usuariosDesactivados().length === 0) {
+            <p class="text-muted mb-0">
+                No hay usuarios inactivos en este momento.
+            </p>
+            } @else if (usuariosDesactivadosFiltrados().length === 0) {
+            <p class="text-muted mb-0">
+                No hay usuarios inactivos que coincidan con los roles seleccionados.
+            </p>
+            } @else {
+            <div class="table-responsive">
+                <table class="table table-striped table-hover">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nombre</th>
+                            <th>Email</th>
+                            <th>Rol</th>
+                            <th class="text-end pe-3">Acciones</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @for (usuario of usuariosDesactivadosFiltrados(); track usuario.id) {
+                        <tr>
+                            <td>{{ usuario.id }}</td>
+                            <td>{{ usuario.name }}</td>
+                            <td>{{ usuario.email }}</td>
+                            <td>{{ usuario.role?.nombre }}</td>
+                            <td class="text-end">
+                                <span class="d-flex justify-content-end">
+                                    <button type="button" class="btn btn-md btn-outline-secondary me-4"
+                                        title="restaurar" (click)="restaurarUsuario(usuario)">
+                                        <i class="bi bi-arrow-clockwise text-dark-secondary"></i>
+                                    </button>
+                                </span>
+                            </td>
+                        </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+            }
+        </div>
+    </div>
+
+    @if (modalAbierto()) {
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="TituloModal"
+        (click)="cerrarModal()">
+        <div class="modal-dialog modal-dialog-centered" role="document" (click)="$event.stopPropagation()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="TituloModal">
+                        {{ usuarioEditando() !== null ? 'Editar usuario' : 'Nuevo usuario' }}
+                    </h2>
+                    <button type="button" class="btn-close" aria-label="Cerrar" [disabled]="guardando()"
+                        (click)="cerrarModal()"></button>
+                </div>
+                <form (ngSubmit)="guardarUsuario()">
+                    <div class="modal-body">
+                        @if (errorRoles()) {
+                        <div class="alert alert-danger alert-dismissible">
+                            {{ errorRoles() }}
+                            <button type="button" class="text-end btn-close" (click)="errorRoles.set('')"></button>
+                        </div>
+                        }
+                        @if (errorGuardar()) {
+                        <div class="alert alert-danger alert-dismissible">
+                            {{ errorGuardar() }}
+                            <button type="button" class="btn-close" (click)="errorGuardar.set('')"></button>
+                        </div>
+                        }
+
+                        <!-- Nombre -->
+                        <div class="mt-2 mb-3">
+                            <label for="name" class="form-label">Nombre</label>
+                            <input id="name" type="text" class="form-control input-usuario" name="name"
+                                [(ngModel)]="name" required maxlength="150" placeholder="Nombre completo">
+                        </div>
+
+                        <!-- Email -->
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input id="email" type="email" class="form-control input-usuario" name="email"
+                                [(ngModel)]="email" required maxlength="255" placeholder="usuario@ejemplo.com">
+                        </div>
+
+                        <!-- Rol -->
+                        <div class="mb-3">
+                            <label for="roleId" class="form-label">Rol</label>
+                            <select id="roleId" class="form-select input-usuario" name="roleId" [(ngModel)]="roleId"
+                                required>
+                                <option [ngValue]="null" disabled>Seleccioná un rol</option>
+                                @for (rol of roles(); track rol.id) {
+                                <option [ngValue]="rol.id">{{ rol.nombre }}</option>
+                                }
+                            </select>
+                        </div>
+
+                        <!-- Contraseña -->
+                        @if (usuarioEditando() === null) {
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Contraseña</label>
+                            <input id="password" type="password" class="form-control input-usuario" name="password"
+                                [(ngModel)]="password" required minlength="8" placeholder="Mínimo 8 caracteres">
+                        </div>
+                        } @else {
+                        <div class="mb-3">
+                            <label for="password" class="form-label">Nueva contraseña (opcional)</label>
+                            <input id="password" type="password" class="form-control input-usuario" name="password"
+                                [(ngModel)]="password" minlength="8"
+                                placeholder="Dejar vacío para conservar la contraseña actual">
+                        </div>
+
+                        <!-- Telefono -->
+                        <div class="mb-3">
+                            <label for="telefono" class="form-label">Teléfono (opcional)</label>
+                            <input id="telefono" type="tel" class="form-control input-usuario" name="telefono"
+                                [(ngModel)]="telefono" maxlength="15" placeholder="Teléfono (10 a 15 caracteres)">
+                        </div>
+
+                        <!-- Direccion -->
+                        <div class="mb-4">
+                            <label for="direccion" class="form-label">Dirección (opcional)</label>
+                            <input id="direccion" type="text" class="form-control input-usuario" name="direccion"
+                                [(ngModel)]="direccion" maxlength="255" placeholder="Dirección">
+                        </div>
+                        }
+                    </div>
+
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger" (click)="cerrarModal()">
+                            <span><i class="bi bi-x-circle"></i></span>
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success" [disabled]="guardando()">
+                            <span><i class="bi bi-check-circle"></i></span>
+                            @if (guardando()) {
+                            Guardando...
+                            } @else {
+                            {{ usuarioEditando() !== null ? 'Actualizar usuario' : 'Guardar usuario' }}
+                            }
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+    }
+</div>

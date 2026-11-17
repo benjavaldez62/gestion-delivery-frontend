@@ -1,0 +1,186 @@
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Métodos de Pago</h1>
+
+        <button type="button" class="btn btn-primary btn-icono-hover" (click)="abrirModal()">
+            <span class="mr-1 px-1">
+                <i class="bi bi-plus-lg icono-normal"></i>
+                <i class="bi bi-plus-circle-dotted icono-hover"></i>
+            </span>
+            Nuevo método de pago
+        </button>
+    </div>
+
+    @if (mensaje()) {
+    <div class="alert alert-success alert-dismissible">
+        {{ mensaje() }}
+        <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set('')"></button>
+    </div>
+    }
+    @if (error() && !modalAbierto()) {
+    <div class="alert alert-danger alert-dismissible">
+        {{ error() }}
+        <button type="button" class="btn-close" aria-label="Cerrar" (click)="error.set('')"></button>
+    </div>
+    }
+
+
+        <!-- Listado de métodos de pago activos -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                Listado de métodos de pago <span class="text-success">disponibles</span>
+            </div>
+            <div class="card-body">
+                @if (cargando()) {
+                <div class="alert alert-info">
+                    Cargando métodos de pago...
+                </div>
+                } @else if (metodosPago().length === 0) {
+                <p class="text-muted mb-0">
+                    No hay métodos de pago registrados.
+                </p>
+                } @else {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th class="text-end pe-5">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (metodoPago of metodosPago(); track metodoPago.id) {
+                            <tr>
+                                <td>{{ metodoPago.id }}</td>
+                                <td>{{ metodoPago.nombre }}</td>
+                                <td>{{ metodoPago.descripcion }}</td>
+                                <td class="text-end">
+                                    <span>
+                                        <button type="button" class="btn btn-md btn-outline-primary me-4" title="editar"
+                                            (click)="editarMetodoPago(metodoPago)"><i
+                                                class="bi bi-pencil-square"></i></button>
+                                        <button type="button" class="btn btn-md btn-danger me-4" title="desactivar"
+                                            (click)="eliminarMetodoPago(metodoPago)"><i
+                                                class="bi bi-dash-circle"></i></button>
+                                    </span>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                }
+            </div>
+        </div>
+
+        <!-- Listado de métodos de pago desactivados-->
+        <div class="card shadow-sm mb-4 justify-content-end">
+            <div class="card-header">
+                Listado de métodos de pago <span class="text-danger">desactivados</span>
+            </div>
+            <div class="card-body">
+                @if (cargando()) {
+                <div class="alert alert-info">
+                    Cargando métodos de pago desactivados...
+                </div>
+                } @else if (metodosPagoDesactivados().length === 0) {
+                <p class="text-muted mb-0">
+                    No hay métodos de pago inactivos en este momento.
+                </p>
+                } @else {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th>Descripción</th>
+                                <th class="text-end pe-5">
+                                    Acciones
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (metodoPago of metodosPagoDesactivados(); track metodoPago.id) {
+                            <tr>
+                                <td>{{ metodoPago.id }}</td>
+                                <td>{{ metodoPago.nombre }}</td>
+                                <td>{{ metodoPago.descripcion }}</td>
+                                <td class="text-end">
+                                    <span class="d-flex justify-content-end pe-4 me-2">
+                                        <button type="button" class="btn btn-md btn-outline-secondary me-4"
+                                            title="restaurar" (click)="restaurarMetodoPago(metodoPago)">
+                                            <i class="bi bi-arrow-clockwise text-dark-secondary"></i>
+                                        </button>
+                                    </span>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                }
+            </div>
+        </div>
+  
+
+
+    <!-- Modal para crear método de pago -->
+    @if(modalAbierto()) {
+
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="TituloModal"
+        (click)="cerrarModal()">
+        <div class="modal-dialog modal-dialog-centered" role="document" (click)="$event.stopPropagation()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="TituloModal">{{ metodoPagoEditando() !== null ? 'Editar Método de
+                        Pago' : 'Nuevo Método de Pago' }}</h2>
+                    <button type="button" class="btn-close" aria-label="Cerrar" [disabled]="guardando()"
+                        (click)="cerrarModal()"></button>
+                </div>
+                <form (ngSubmit)="guardarMetodoPago()">
+                    <div class="modal-body">
+                        @if (errorGuardar()) {
+                        <div class="alert alert-danger alert-dismissible">
+                            {{ errorGuardar() }}
+                            <button type="button" class="btn-close" aria-label="Cerrar"
+                                (click)="errorGuardar.set('')"></button>
+                        </div>
+                        }
+                        <div class="mt-2 mb-3">
+                            <label for="nombre" class="form-label">Nombre</label>
+                            <input id="nombre" type="text" class="form-control input-metodo-pago" name="nombre"
+                                [(ngModel)]="nombre" required minlength="2" maxlength="50" placeholder="Ej.: Carnes">
+                        </div>
+                        <div class="mb-4">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea name="descripcion" id="descripcion" class="form-control input-metodo-pago"
+                                rows="3" maxlength="255" [(ngModel)]="descripcion"
+                                placeholder="Descripción del método de pago"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger" (click)="cerrarModal()">
+                            <span><i class="bi bi-x-circle"></i></span>
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success" [disabled]="guardando()">
+                            <span><i class="bi bi-check-circle"></i></span>
+                            @if (guardando()) {
+                            Guardando...
+                            } @else {
+                            {{ metodoPagoEditando() !== null ? 'Actualizar método de pago' : 'Guardar método de pago'}}
+                            }
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+    }
+</div>

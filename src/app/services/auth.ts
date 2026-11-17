@@ -13,6 +13,21 @@ export interface Usuario {
     } | null;
 }
 
+export interface PerfilUsuario {
+    id: number;
+    name: string;
+    email: string;
+    telefono: string | null;
+    direccion: string | null;
+}
+
+export interface DatosPerfil {
+    name: string;
+    email: string;
+    telefono: string | null;
+    direccion: string | null;
+}
+
 export interface LoginResponse {
     success: boolean;
     message: string;
@@ -28,6 +43,14 @@ export interface Credenciales {
     password: string;
 }
 
+export interface PasswordResponse {
+    message: string;
+}
+
+export interface SolicitudRecuperacionResponse extends PasswordResponse {
+    action: 'enlace_enviado' | 'contactar_administrador';
+}
+
 @Injectable({
     providedIn: 'root'
 })
@@ -36,6 +59,7 @@ export class AuthService {
     private googleScript?: Promise<void>;
     private readonly token = signal<string | null>(localStorage.getItem('token'));
     private readonly rolUsuario = signal<string | null>(localStorage.getItem('rol_usuario'));
+    private readonly nombreUsuario = signal<string | null>(localStorage.getItem('nombre_usuario'));
 
     constructor(private http: HttpClient) { }
     
@@ -65,6 +89,19 @@ export class AuthService {
                     this.guardarSesion(respuesta.data.access_token, respuesta.data.user);
                 })
             );
+    }
+
+    solicitarRecuperacion(email: string): Observable<SolicitudRecuperacionResponse> {
+        return this.http.post<SolicitudRecuperacionResponse>(`${apiUrl}/forgot-password`, { email });
+    }
+
+    restablecerContrasena(email: string, token: string, password: string, passwordConfirmation: string): Observable<PasswordResponse> {
+        return this.http.post<PasswordResponse>(`${apiUrl}/reset-password`, {
+            email,
+            token,
+            password,
+            password_confirmation: passwordConfirmation,
+        });
     }
 
     // Cargamos el script de Google Identity Services
@@ -106,11 +143,28 @@ export class AuthService {
         return this.rolUsuario();
     }
 
+    obtenerNombre(): string | null {
+        return this.nombreUsuario();
+    }
+
+    obtenerPerfil(): Observable<PerfilUsuario> {
+        return this.http.get<PerfilUsuario>(`${apiUrl}/user`);
+    }
+
+    actualizarPerfil(datos: DatosPerfil): Observable<{ message: string; user: PerfilUsuario }> {
+        return this.http.put<{ message: string; user: PerfilUsuario }>(`${apiUrl}/profile`, datos).pipe(
+            tap(respuesta => {
+                localStorage.setItem('nombre_usuario', respuesta.user.name);
+                this.nombreUsuario.set(respuesta.user.name);
+            })
+        );
+    }
+
     rutaInicial(): string {
         const rol = this.obtenerRol()?.trim().toLocaleLowerCase();
 
         if (rol === 'administrador' || rol === 'superadmin') {
-            return '/pedidos';
+            return '/dashboard';
         }
         if (rol === 'cocinero') {
             return '/cocina';
@@ -118,7 +172,7 @@ export class AuthService {
         if (rol === 'repartidor') {
             return '/repartos';
         }
-        return '/categorias';
+        return '/inicio';
     }
 
     // Cerrar sesión - LogOut
@@ -131,13 +185,22 @@ export class AuthService {
     limpiarSesion(): void {
         localStorage.removeItem('token');
         localStorage.removeItem('rol_usuario');
+        localStorage.removeItem('nombre_usuario');
         this.token.set(null);
         this.rolUsuario.set(null);
+        this.nombreUsuario.set(null);
     }
 
     private guardarSesion(token: string, usuario: Usuario): void {
         localStorage.setItem('token', token);
         this.token.set(token);
+        if (usuario.name) {
+            localStorage.setItem('nombre_usuario', usuario.name);
+            this.nombreUsuario.set(usuario.name);
+        } else {
+            localStorage.removeItem('nombre_usuario');
+            this.nombreUsuario.set(null);
+        }
         if (usuario.role?.nombre) {
             localStorage.setItem('rol_usuario', usuario.role.nombre);
             this.rolUsuario.set(usuario.role.nombre);

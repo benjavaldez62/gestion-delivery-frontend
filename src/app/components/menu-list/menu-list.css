@@ -33,6 +33,59 @@
   background: var(--bg3);
 }
 
+.menu-search {
+  position: absolute;
+  top: 0;
+  right: 0;
+  z-index: 1;
+}
+
+.menu-search-control {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.menu-search-control input {
+  width: 10rem;
+  padding: 0;
+  border: 0;
+  color: #966b56;
+  background: transparent;
+  font: inherit;
+  text-align: right;
+}
+
+.menu-search-control input:focus {
+  outline: 2px solid rgba(150, 107, 86, 0.45);
+  outline-offset: 4px;
+}
+
+.menu-search-control input::placeholder {
+  color: #966b56;
+  opacity: 1;
+}
+
+.menu-search-icon {
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 auto;
+  color: #966b56;
+}
+
+.menu-heading {
+  position: relative;
+}
+
+@media (max-width: 575.98px) {
+  .menu-search {
+    position: static;
+    display: flex;
+    justify-content: flex-end;
+    margin-bottom: 1.5rem;
+  }
+}
+
 .menu-heading h1 {
   font-size: clamp(2rem, 4vw, 3rem);
 }

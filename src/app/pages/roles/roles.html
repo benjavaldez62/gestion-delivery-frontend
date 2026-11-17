@@ -1,0 +1,173 @@
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Roles</h1>
+
+        <button type="button" class="btn btn-primary btn-icono-hover" (click)="abrirModal()">
+            <span class="mr-1 px-1">
+                <i class="bi bi-plus-lg icono-normal"></i>
+                <i class="bi bi-plus-circle-dotted icono-hover"></i>
+            </span>
+            Nuevo rol
+        </button>
+    </div>
+
+
+    @if (mensaje()) {
+    <div class="alert alert-success alert-dismissible">
+        {{ mensaje() }}
+        <button type="button" class="btn-close" aria-label="Cerrar" (click)="mensaje.set('')"></button>
+    </div>
+    }
+    @if (error() && !modalAbierto()) {
+    <div class="alert alert-danger alert-dismissible">
+        {{ error() }}
+        <button type="button" class="btn-close" aria-label="Cerrar" (click)="error.set('')"></button>
+    </div>
+    }
+
+
+    <div class="container d-flex justify-content-between container-cards">
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                Listado de roles <span class="text-success">disponibles</span>
+            </div>
+            <div class="card-body">
+                @if (cargando()) {
+                <div class="alert alert-info">
+                    Cargando roles...
+                </div>
+                } @else if (roles().length === 0) {
+                <p class="text-muted mb-0">
+                    No hay roles registrados.
+                </p>
+                } @else {
+
+                <!-- Listado de roles disponibles -->
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th class="text-end pe-5">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (role of roles(); track role.id) {
+                            <tr>
+                                <td>{{ role.id }}</td>
+                                <td>{{ role.nombre }}</td>
+                                <td class="text-end">
+                                    <span class="d-flex justify-content-end">
+                                        <button type="button" class="btn btn-md btn-outline-primary me-4" title="editar"
+                                            (click)="editarRole(role)"><i class="bi bi-pencil-square"></i></button>
+                                        <button type="button" class="btn btn-md btn-danger me-4" title="desactivar"
+                                            (click)="eliminarRole(role)"><i class="bi bi-dash-circle"></i></button>
+                                    </span>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                }
+
+            </div>
+        </div>
+
+
+        <!-- Listado de roles desactivados -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-header">
+                Listado de roles <span class="text-danger">desactivados</span>
+            </div>
+            <div class="card-body">
+                @if (cargando()) {
+                <div class="alert alert-info">
+                    Cargando roles desactivados...
+                </div>
+                } @else if (rolesDesactivados().length === 0) {
+                <p class="text-muted mb-0">
+                    No hay roles inactivos en este momento.
+                </p>
+                } @else {
+                <div class="table-responsive">
+                    <table class="table table-striped table-hover">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre</th>
+                                <th class="text-end pe-3">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @for (role of rolesDesactivados(); track role.id) {
+                            <tr>
+                                <td>{{ role.id }}</td>
+                                <td>{{ role.nombre }}</td>
+                                <td class="text-end">
+                                    <span class="d-flex justify-content-end">
+                                        <button type="button" class="btn btn-md btn-outline-secondary me-4"
+                                            title="restaurar" (click)="restaurarRole(role)">
+                                            <i class="bi bi-arrow-clockwise text-dark-secondary"></i>
+                                        </button>
+                                    </span>
+                                </td>
+                            </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+                }
+            </div>
+        </div>
+    </div>
+
+
+    @if (modalAbierto()) {
+    <div class="modal d-block" tabindex="-1" role="dialog" aria-modal="true" aria-labelledby="tituloModalRol"
+        (click)="cerrarModal()">
+        <div class="modal-dialog modal-dialog-centered" role="document" (click)="$event.stopPropagation()">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2 class="modal-title fs-5" id="tituloModalRol">
+                        {{ roleEditando() !== null ? 'Editar rol' : 'Nuevo rol' }}
+                    </h2>
+                    <button type="button" class="btn-close" aria-label="Cerrar" [disabled]="guardando()"
+                        (click)="cerrarModal()"></button>
+                </div>
+                <form (ngSubmit)="guardarRole()">
+                    <div class="modal-body">
+                        @if (errorGuardar()) {
+                        <div class="alert alert-danger alert-dismissible">
+                            {{ errorGuardar() }}
+                        </div>
+                        }
+                        <div class="mt-2 mb-3">
+                            <label for="nombreRole" class="form-label">Nombre</label>
+                            <input id="nombreRole" type="text" class="form-control input-role" name="nombre"
+                                [(ngModel)]="nombre" required maxlength="30" placeholder="Ej.: Cajero">
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-danger" [disabled]="guardando()"
+                            (click)="cerrarModal()">
+                            <span><i class="bi bi-x-circle"></i></span>
+                            Cancelar
+                        </button>
+                        <button type="submit" class="btn btn-success" [disabled]="guardando()">
+                            <span><i class="bi bi-check-circle"></i></span>
+                            @if (guardando()) {
+                            Guardando...
+                            } @else {
+                            {{ roleEditando() !== null ? 'Actualizar rol' : 'Guardar rol' }}
+                            }
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+    <div class="modal-backdrop fade show"></div>
+    }
+</div>

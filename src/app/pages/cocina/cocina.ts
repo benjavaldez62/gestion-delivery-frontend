@@ -1,14 +1,17 @@
 import { HttpErrorResponse } from '@angular/common/http';
 import { CommonModule } from '@angular/common';
-import { ChangeDetectorRef, Component, OnDestroy, OnInit, inject } from '@angular/core';
-import { TimeoutError, finalize, forkJoin, map, timeout } from 'rxjs';
+import { ChangeDetectorRef, Component, DestroyRef, OnDestroy, OnInit, inject } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { EMPTY, Subject, TimeoutError, catchError, exhaustMap, filter, finalize, forkJoin, map, takeUntil, timeout, timer } from 'rxjs';
 import {
   CocinaService,
   EstadoPedido,
   PedidoCocina,
 } from '../../services/cocina';
+import { resolverNombreClientePedido } from '../../utils/cliente-pedido';
 
 const ESTADOS_COCINA = ['Pendiente', 'En preparación', 'Listo para entregar'];
+const INTERVALO_ACTUALIZACION_MS = 20000;
 
 @Component({
   imports: [CommonModule],
@@ -20,7 +23,12 @@ const ESTADOS_COCINA = ['Pendiente', 'En preparación', 'Listo para entregar'];
 export class Cocina implements OnDestroy, OnInit {
   private readonly cocinaService = inject(CocinaService);
   private readonly changeDetector = inject(ChangeDetectorRef);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly cancelarActualizacion = new Subject<void>();
+  private cocineroId: number | null = null;
   private notificacionTimeout: ReturnType<typeof setTimeout> | undefined;
+
+  readonly nombreCliente = resolverNombreClientePedido;
 
   estados: EstadoPedido[] = [];
   pedidos: PedidoCocina[] = [];
@@ -28,6 +36,7 @@ export class Cocina implements OnDestroy, OnInit {
   actualizandoPedidoId: number | null = null;
   arrastrandoPedidoId: number | null = null;
   error = '';
+  errorActualizacion = '';
   mensaje = '';
 
   ngOnDestroy(): void {
@@ -36,13 +45,17 @@ export class Cocina implements OnDestroy, OnInit {
 
   ngOnInit(): void {
     this.cargarTablero();
+    this.escucharPedidos();
   }
 
   recargar(): void {
+    if (this.actualizandoPedidoId !== null) return;
+    this.cancelarActualizacion.next();
     this.cargarTablero();
   }
 
   iniciarArrastre(event: DragEvent, pedido: PedidoCocina): void {
+    this.cancelarActualizacion.next();
     this.arrastrandoPedidoId = pedido.id;
     event.dataTransfer?.setData('text/plain', pedido.id.toString());
     if (event.dataTransfer) {
@@ -121,25 +134,24 @@ export class Cocina implements OnDestroy, OnInit {
           const estadosValidos = estadosDisponibles.filter(
             (estado): estado is EstadoPedido => estado !== undefined,
           );
-          const idsEstados = new Set(estadosValidos.map((estado) => estado.id));
-          const pedidosAsignados = pedidos.filter(
-            (pedido) =>
-              pedido.cocinero?.id === usuario.id &&
-              pedido.estado !== null &&
-              idsEstados.has(pedido.estado.id),
-          );
-
-          return { estados: estadosValidos, pedidos: pedidosAsignados };
+          return {
+            cocineroId: usuario.id,
+            estados: estadosValidos,
+            pedidos: this.pedidosAsignados(pedidos, usuario.id, estadosValidos),
+          };
         }),
         finalize(() => {
           this.cargando = false;
           this.changeDetector.markForCheck();
         }),
+        takeUntilDestroyed(this.destroyRef),
       )
       .subscribe({
-        next: ({ estados, pedidos }) => {
+        next: ({ cocineroId, estados, pedidos }) => {
+          this.cocineroId = cocineroId;
           this.estados = estados;
           this.pedidos = pedidos;
+          this.errorActualizacion = '';
         },
         error: (error: unknown) => {
           if (error instanceof TimeoutError) {
@@ -154,6 +166,36 @@ export class Cocina implements OnDestroy, OnInit {
           this.changeDetector.markForCheck();
         },
       });
+  }
+
+  private escucharPedidos(): void {
+    timer(INTERVALO_ACTUALIZACION_MS, INTERVALO_ACTUALIZACION_MS).pipe(
+      filter(() => this.cocineroId !== null && !this.cargando && this.actualizandoPedidoId === null && this.arrastrandoPedidoId === null),
+      exhaustMap(() => this.cocinaService.obtenerPedidos().pipe(
+        timeout({ first: 15000 }),
+        takeUntil(this.cancelarActualizacion),
+        catchError((error: unknown) => {
+          this.errorActualizacion = error instanceof HttpErrorResponse
+            ? this.mensajeErrorCarga(error)
+            : 'No se pudieron actualizar los pedidos de cocina. Se volverá a intentar automáticamente.';
+          this.changeDetector.markForCheck();
+          return EMPTY;
+        }),
+      )),
+      takeUntilDestroyed(this.destroyRef),
+    ).subscribe((pedidos) => {
+      if (this.cocineroId !== null) {
+        this.pedidos = this.pedidosAsignados(pedidos, this.cocineroId, this.estados);
+        this.errorActualizacion = '';
+        this.changeDetector.markForCheck();
+      }
+    });
+  }
+
+  private pedidosAsignados(pedidos: PedidoCocina[], cocineroId: number, estados: EstadoPedido[]): PedidoCocina[] {
+    const idsEstados = new Set(estados.map((estado) => estado.id));
+    return pedidos.filter((pedido) => pedido.cocinero?.id === cocineroId
+      && pedido.estado !== null && idsEstados.has(pedido.estado.id));
   }
 
   private mensajeErrorCarga(error: HttpErrorResponse): string {
@@ -177,12 +219,14 @@ export class Cocina implements OnDestroy, OnInit {
       return;
     }
 
+    this.cancelarActualizacion.next();
     this.error = '';
     this.limpiarTimeoutNotificacion();
     this.mensaje = '';
     this.actualizandoPedidoId = pedido.id;
 
-    this.cocinaService.actualizarEstado(pedido.id, estadoDestino.id).subscribe({
+    this.cocinaService.actualizarEstado(pedido.id, estadoDestino.id)
+      .pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (pedidoActualizado) => {
         this.pedidos = this.pedidos.map((item) =>
           item.id === pedido.id ? pedidoActualizado : item,

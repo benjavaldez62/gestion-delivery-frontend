@@ -21,7 +21,7 @@
 
 .kitchen-eyebrow {
   margin: 0 0 0.4rem;
-  color: #f4a261;
+  color: var(--theme);
   font-size: 0.75rem;
   font-weight: 800;
   letter-spacing: 0.14em;
@@ -30,7 +30,7 @@
 
 .kitchen-heading h1 {
   margin: 0;
-  color: #fc6107;
+  color: var(--header);
   font-size: clamp(1.8rem, 3vw, 2.5rem);
   font-weight: 700;
 }
@@ -38,6 +38,13 @@
 .kitchen-subtitle {
   margin: 0.4rem 0 0;
   color: #141314;
+}
+
+.auto-refresh-note {
+  margin: 1.2rem auto 0;
+  color: #888;
+  font-size: 0.75rem;
+  text-align: center;
 }
 
 .refresh-button,
@@ -75,70 +82,17 @@
   margin-right: 3px;
 }
 
-.kanban-board {
-  display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
-  gap: 1.25rem;
-  max-width: 1440px;
-  min-height: 430px;
-  margin: 0 auto;
-}
-
-.kanban-column {
-  overflow: hidden;
-  min-width: 0;
-  border: 1px solid rgba(227, 228, 228, 0.699);
-  border-radius: 0.9rem;
-  background: rgba(234, 238, 240, 0.45);
-}
-
-.column-heading {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-  min-height: 4.1rem;
-  padding: 0.85rem 1.1rem;
-  color: #fff;
-}
-
-.column-heading h2 {
-  margin: 0;
-  color: inherit;
-  font-size: clamp(1rem, 1.7vw, 1.35rem);
-  font-weight: 700;
-}
-
 .column-pending .column-heading {
-  background: #ad0d8b;
+  background: #D97706;
 }
 
 .column-preparing .column-heading {
-  background: #89023E;
+  background: #EA580C;
   color: #ffffff;
 }
 
 .column-ready .column-heading {
-  background: #788475;
-}
-
-.order-count {
-  display: grid;
-  width: 1.8rem;
-  height: 1.8rem;
-  place-items: center;
-  border-radius: 50%;
-  background: rgba(0, 0, 0, 0.16);
-  font-size: 0.85rem;
-  font-weight: 800;
-}
-
-.column-cards {
-  display: flex;
-  min-height: 345px;
-  flex-direction: column;
-  gap: 0.8rem;
-  padding: 0.85rem;
+  background: #0D9488;
 }
 
 .order-card {
@@ -222,29 +176,6 @@
   text-align: center;
 }
 
-.empty-column,
-.board-message {
-  margin: auto;
-  color: #b7c1c5;
-  text-align: center;
-}
-
-.board-message {
-  padding: 4rem 1rem;
-}
-
-.board-alert {
-  max-width: 1440px;
-  margin: 0 auto 1rem;
-  padding: 0.75rem 1rem;
-  border-radius: 0.65rem;
-  background: #fff;
-}
-
-.board-alert-error {
-  color: #972b2b;
-}
-
 .order-toast {
   position: fixed;
   z-index: 1050;
@@ -283,16 +214,6 @@
   to {
     opacity: 1;
     transform: translateY(0);
-  }
-}
-
-@media (max-width: 900px) {
-  .kanban-board {
-    grid-template-columns: 1fr;
-  }
-
-  .column-cards {
-    min-height: 170px;
   }
 }
 

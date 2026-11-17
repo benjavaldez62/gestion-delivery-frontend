@@ -9,19 +9,77 @@ import { Cocina } from './pages/cocina/cocina';
 import { authGuard } from './guards/auth-guard';
 import { guardRole } from './guards/role-guard';
 import { Pedidos } from './pages/pedidos/pedidos';
+import { RecuperarContrasena } from './pages/recuperacion/recuperar-contrasena';
+import { RestablecerContrasena } from './pages/recuperacion/restablecer-contrasena';
+import { Dashboard } from './pages/dashboard/dashboard';
+import { Repartos } from './pages/repartos/repartos';
+import { Usuarios } from './pages/usuarios/usuarios';
+import { Pagos } from './pages/pagos/pagos';
+import { Roles } from './pages/roles/roles';
+import { Perfil } from './pages/perfil/perfil';
+import { MetodoPagos } from './pages/metodos-pago/metodos-pago';
+import { Adicionales } from './pages/adicionales/adicionales';
+import { Productos } from './pages/productos/productos';
 
 export const routes: Routes = [
+    {
+        path: 'perfil',
+        component: Perfil,
+        canActivate: [authGuard]
+    },
+    {
+        path: 'pagos',
+        component: Pagos,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
+    {
+        path: 'metodos-pago',
+        component: MetodoPagos,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
+    {
+        path: 'dashboard',
+        component: Dashboard,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
     {
         path: 'categorias',
         component: Categorias,
         canActivate: [authGuard, guardRole],
-        data: { roles: ['Administrador', 'Cliente'] }
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
+   {
+        path: 'adicionales',
+        component: Adicionales,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
+    {
+        path: 'productos',
+        component: Productos,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
+    {
+        path: 'usuarios',
+        component: Usuarios,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
+    },
+    {
+        path: 'roles',
+        component: Roles,
+        canActivate: [authGuard, guardRole],
+        data: { roles: ['Administrador', 'SuperAdmin'] }
     },
     {
         path: 'menu',
         component: Menu,
         canActivate: [guardRole],
-        data: { roles: ['Administrador', 'Cliente'], allowAnonymous: true }
+        data: { roles: ['Cliente'], allowAnonymous: true }
     },
     {
         path: 'inicio',
@@ -38,6 +96,14 @@ export const routes: Routes = [
     {
         path: 'login',
         component: Login
+    },
+    {
+        path: 'recuperar-contrasena',
+        component: RecuperarContrasena
+    },
+    {
+        path: 'restablecer-contrasena',
+        component: RestablecerContrasena
     },
     {
         path: 'checkout',
@@ -59,7 +125,7 @@ export const routes: Routes = [
     },
     {
         path: 'repartos',
-        children: [],
+        component: Repartos,
         canActivate: [authGuard, guardRole],
         data: { roles: ['Repartidor'] }
     },

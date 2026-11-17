@@ -58,10 +58,6 @@ export class Header {
   // ==============
   public readonly cart = inject(CartService);
 
-  cargarDemo(): void {
-    this.cart.cargarDatosPrueba();
-  }
-
   remove(idTemporal: string): void {
     this.cart.removeItem(idTemporal);
   }
