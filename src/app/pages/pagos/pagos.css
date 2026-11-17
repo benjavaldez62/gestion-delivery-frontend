@@ -4,7 +4,7 @@
   padding: 32px clamp(16px, 3vw, 40px) 48px;
   background: #f7f6f3;
   color: #1c1917;
-  font-family: 'Plus Jakarta Sans', system-ui, sans-serif;
+  font-family: 'Inter', system-ui, sans-serif;
 }
 .payments-content { max-width: 1120px; margin: 0 auto; display: grid; gap: 18px; }
 .payments-heading h1 { margin: 4px 0; font-size: 28px; font-weight: 800; letter-spacing: -.025em; }
