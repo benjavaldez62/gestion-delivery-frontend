@@ -1,7 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { CategoriasService, Categoria, nuevaCategoria } from '../../services/categorias';
-import { subscribeOn } from 'rxjs';
+import { ignorar404Vacio } from '../../utils/http-404';
 
 @Component({
   selector: 'app-categorias',
@@ -21,6 +22,7 @@ export class Categorias implements OnInit {
     this.nombre = '';
     this.descripcion = '';
     this.error.set('');
+    this.errorGuardar.set('');
     this.mensaje.set('');
     this.modalAbierto.set(true);
   }
@@ -32,6 +34,7 @@ export class Categorias implements OnInit {
     this.descripcion = categoria.descripcion ?? '';
     this.estadoCategoria = categoria.activo;
     this.error.set('');
+    this.errorGuardar.set('');
     this.mensaje.set('');
     this.modalAbierto.set(true);
   }
@@ -66,34 +69,25 @@ export class Categorias implements OnInit {
   }
 
   cargarCategorias(): void {
+    this.cargando.set(true);
+    this.error.set('');
 
-    // 1. Cargamos categorias disponibles
-    this.categoriasService.obtenerCategorias().subscribe({
-      next: (respuesta) => {
-        this.categorias.set(respuesta.categorias);
+    forkJoin({
+      activas: this.categoriasService.obtenerCategorias().pipe(
+        ignorar404Vacio({ message: 'No hay categorías disponibles.', categorias: [] as Categoria[] }),
+      ),
+      desactivadas: this.categoriasService.obtenerCategoriasDesactivadas().pipe(
+        ignorar404Vacio({ message: 'No hay categorías desactivadas.', categoriasDesactivadas: [] as Categoria[] }),
+      ),
+    }).subscribe({
+      next: ({ activas, desactivadas }) => {
+        this.categorias.set(activas.categorias);
+        this.categoriasDesactivadas.set(desactivadas.categoriasDesactivadas);
         this.cargando.set(false);
       },
       error: (err) => {
-        console.error('Error al obtener categorías:', err);
+        console.error('Error al cargar categorías:', err);
         this.error.set('No se pudieron cargar las categorías.');
-        this.cargando.set(false);
-      }
-    });
-
-    // 2. Cargamos las categorias desactivadas
-    this.categoriasService.obtenerCategoriasDesactivadas().subscribe({
-      next: (respuesta) => {
-        this.categoriasDesactivadas.set(respuesta.categoriasDesactivadas);
-        this.cargando.set(false);
-      },
-      error: (err) => {
-        if (err.status === 404) {
-          this.categoriasDesactivadas.set([]);
-        } else {
-          console.error('Error al obtener categorías desactivadas:', err);
-          this.error.set('No se pudieron cargar las categorías desactivadas.');
-        }
-
         this.cargando.set(false);
       },
     });

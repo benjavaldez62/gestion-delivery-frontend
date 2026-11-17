@@ -1,6 +1,8 @@
 import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { MetodosPagoService, MetodoPago, nuevoMetodoPago } from '../../services/metodos-pago';
+import { ignorar404Vacio } from '../../utils/http-404';
 
 @Component({
   imports: [FormsModule],
@@ -19,6 +21,8 @@ export class MetodoPagos implements OnInit {
     this.nombre = '';
     this.descripcion = '';
     this.error.set('');
+    this.errorGuardar.set('');
+    this.mensaje.set('');
     this.modalAbierto.set(true);
   }
 
@@ -28,6 +32,7 @@ export class MetodoPagos implements OnInit {
     this.descripcion = metodoPago.descripcion ?? '';
     this.estadoMetodoPago = metodoPago.activo;
     this.error.set('');
+    this.errorGuardar.set('');
     this.mensaje.set('');
     this.modalAbierto.set(true);
   }
@@ -62,34 +67,29 @@ export class MetodoPagos implements OnInit {
 
   cargarMetodosPago(): void {
     this.cargando.set(true);
+    this.error.set('');
 
-    this.metodosPagoService.obtenerMetodosPago().subscribe({
-      next: (respuesta) => {
-        this.metodosPago.set(respuesta.metodosPago);
+    forkJoin({
+      activos: this.metodosPagoService.obtenerMetodosPago().pipe(
+        ignorar404Vacio({ message: 'No hay métodos de pago disponibles.', metodosPago: [] as MetodoPago[] }),
+      ),
+      desactivados: this.metodosPagoService.obtenerMetodosPagoDesactivados().pipe(
+        ignorar404Vacio({
+          message: 'No hay métodos de pago desactivados.',
+          metodosPagoDesactivados: [] as MetodoPago[],
+        }),
+      ),
+    }).subscribe({
+      next: ({ activos, desactivados }) => {
+        this.metodosPago.set(activos.metodosPago);
+        this.metodosPagoDesactivados.set(desactivados.metodosPagoDesactivados);
         this.cargando.set(false);
       },
       error: (err) => {
-        console.error('Error al obtener los métodos de pago:', err);
+        console.error('Error al cargar los métodos de pago:', err);
         this.error.set('No se pudieron cargar los métodos de pago.');
         this.cargando.set(false);
-      }
-    });
-
-    this.metodosPagoService.obtenerMetodosPagoDesactivados().subscribe({
-      next: (respuesta) => {
-        this.metodosPagoDesactivados.set(respuesta.metodosPagoDesactivados);
-        this.cargando.set(false);
       },
-      error: (err) => {
-        if (err.status === 404) {
-          this.metodosPagoDesactivados.set([]);
-        } else {
-          console.error('Error al obtener los métodos de pago desactivados:', err);
-          this.error.set('No se pudieron cargar los métodos de pago desactivados.');
-        }
-
-        this.cargando.set(false);
-      }
     });
   }
 

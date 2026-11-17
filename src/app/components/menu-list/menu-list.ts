@@ -7,6 +7,7 @@ import { Categoria, CategoriasService } from '../../services/categorias';
 import { MenuService } from '../../services/menu';
 import { MenuAdditional, MenuProduct, supportsAdditionals } from '../../models/menu';
 import { ProductCardComponent } from '../product-card/product-card';
+import { ignorar404Vacio } from '../../utils/http-404';
 
 @Component({
   imports: [ProductCardComponent],
@@ -237,7 +238,9 @@ export class MenuListComponent implements OnInit, OnDestroy {
   }
 
   private cargarCategorias(): void {
-    this.categoriasService.obtenerCategorias().subscribe({
+    this.categoriasService.obtenerCategorias()
+      .pipe(ignorar404Vacio({ message: '', categorias: [] as Categoria[] }))
+      .subscribe({
       next: (respuesta) => {
         this.categories.set(
           (respuesta?.categorias ?? []).filter((category) => category.activo)

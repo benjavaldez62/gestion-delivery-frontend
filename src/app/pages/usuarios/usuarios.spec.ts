@@ -11,6 +11,7 @@ describe('Usuarios', () => {
     obtenerUsuarios: vi.fn(() => of({ usuarios: [] as Usuario[] })),
     obtenerUsuariosDesactivados: vi.fn(() => of({ usuariosDesactivados: [] as Usuario[] })),
     obtenerRoles: () => of({ roles: [] }),
+    actualizarUsuario: vi.fn(() => of({ message: 'Usuario actualizado.', user: {} as Usuario })),
     restaurarUsuario: vi.fn(() => of({ message: 'Usuario restaurado.' })),
   };
 
@@ -79,5 +80,28 @@ describe('Usuarios', () => {
     component.limpiarFiltrosRoles();
 
     expect(component.usuariosFiltrados().map((usuario) => usuario.id)).toEqual([1, 2, 3]);
+  });
+
+  it('permite editar un usuario sin teléfono ni dirección omitiendo campos vacíos', () => {
+    const usuarioSinContacto: Usuario = {
+      id: 9,
+      name: 'Usuario Completo',
+      email: 'completo@test.com',
+      activo: true,
+      role_id: 2,
+      telefono: null,
+      direccion: null,
+    };
+
+    component.editarUsuario(usuarioSinContacto);
+    component.roleId = 1;
+    component.guardarUsuario();
+
+    expect(component.errorGuardar()).toBe('');
+    expect(usuariosServiceMock.actualizarUsuario).toHaveBeenCalledWith(9, {
+      name: 'Usuario Completo',
+      email: 'completo@test.com',
+      role_id: 1,
+    });
   });
 });

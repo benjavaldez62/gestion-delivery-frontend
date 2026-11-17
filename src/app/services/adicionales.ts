@@ -15,7 +15,7 @@ export interface Adicional {
     descripcion: string | null;
     activo: boolean;
     precio: number;
-    categoria_id?: number;
+    categoria_id?: number | null;
     categoria?: Categoria;
     deleted_at?: string | null;
 }
@@ -24,7 +24,7 @@ export interface nuevoAdicional {
     nombre: string;
     descripcion: string | null;
     precio: number; 
-    categoria_id: number; 
+    categoria_id: number | null; 
     activo: true;
 }
 
@@ -32,7 +32,7 @@ export interface AdicionalActualizado {
     nombre: string;
     descripcion?: string;
     precio: number;
-    categoria_id: number;
+    categoria_id: number | null;
 }
 
 interface RespuestaAdicionales {

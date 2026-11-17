@@ -52,4 +52,18 @@ describe('Categorias', () => {
     expect(component.categorias()).toEqual([categoria]);
     expect(component.categoriasDesactivadas()).toEqual([]);
   });
+
+  it('limpia la lista de activas sin marcar error cuando obtenerCategorias responde 404', () => {
+    categoriasServiceMock.obtenerCategorias.mockReturnValueOnce(throwError(() => ({ status: 404 })));
+    categoriasServiceMock.obtenerCategoriasDesactivadas.mockReturnValueOnce(
+      throwError(() => ({ status: 404 })),
+    );
+
+    component.cargarCategorias();
+
+    expect(component.categorias()).toEqual([]);
+    expect(component.categoriasDesactivadas()).toEqual([]);
+    expect(component.error()).toBe('');
+    expect(component.cargando()).toBe(false);
+  });
 });
