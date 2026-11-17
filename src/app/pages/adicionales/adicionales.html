@@ -196,13 +196,8 @@
                         <!-- Nombre -->
                         <div class="mt-2 mb-3">
                             <label for="nombre" class="form-label">Nombre</label>
-                            @if (adicionalEditando() === null) {
                             <input id="nombre" type="text" class="form-control input-adicional" name="nombre"
                                 [(ngModel)]="nombre" required maxlength="50" placeholder="Nombre">
-                            } @else {
-                            <input id="nombre" type="text" class="form-control input-adicional" name="nombre"
-                                [(ngModel)]="nombre" required minlength="8" maxlength="50" placeholder="Nombre">
-                            }
                         </div>
 
                         <!-- Descripcion -->
@@ -217,8 +212,8 @@
                         <div class="mb-3">
                             <label for="categoriaId" class="form-label">Categoría</label>
                             <select id="categoriaId" class="form-select input-adicional" name="categoriaId"
-                                [(ngModel)]="categoriaId" required>
-                                <option [ngValue]="null" disabled>Seleccioná una categoría</option>
+                                [(ngModel)]="categoriaId">
+                                <option [ngValue]="null">Global (todas las categorías)</option>
                                 @for (categoria of categorias(); track categoria.id) {
                                 <option [ngValue]="categoria.id">{{ categoria.nombre }}</option>
                                 }

@@ -1,6 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { AdicionalesService, Adicional, Categoria } from '../../services/adicionales';
+import { ignorar404Vacio } from '../../utils/http-404';
 
 @Component({
   imports: [FormsModule],
@@ -23,7 +25,7 @@ export class Adicionales implements OnInit {
 
     for (const adicional of adicionales) {
       const categoriaId = adicional.categoria?.id ?? adicional.categoria_id;
-      if (categoriaId !== undefined) {
+      if (categoriaId !== undefined && categoriaId !== null) {
         cantidades.set(categoriaId, (cantidades.get(categoriaId) ?? 0) + 1);
       }
     }
@@ -52,36 +54,30 @@ export class Adicionales implements OnInit {
   }
 
   cargarAdicionales(): void {
+    this.cargando.set(true);
+    this.error.set('');
 
-    // 1. Cargamos adicionales disponibles
-    this.adicionalesService.obtenerAdicionales().subscribe({
-      next: (respuesta) => {
-        this.adicionales.set(respuesta.adicionales);
+    forkJoin({
+      activos: this.adicionalesService.obtenerAdicionales().pipe(
+        ignorar404Vacio({ message: 'No hay adicionales disponibles.', adicionales: [] as Adicional[] }),
+      ),
+      desactivados: this.adicionalesService.obtenerAdicionalesDesactivados().pipe(
+        ignorar404Vacio({
+          message: 'No hay adicionales desactivados.',
+          adicionalesDesactivados: [] as Adicional[],
+        }),
+      ),
+    }).subscribe({
+      next: ({ activos, desactivados }) => {
+        this.adicionales.set(activos.adicionales);
+        this.adicionalesDesactivados.set(desactivados.adicionalesDesactivados);
         this.cargando.set(false);
       },
       error: (err) => {
-        console.error('Error al obtener adicionales:', err);
+        console.error('Error al cargar adicionales:', err);
         this.error.set('No se pudieron cargar los adicionales.');
         this.cargando.set(false);
-      }
-    });
-
-    // 2. Cargamos adicionales desactivadas
-    this.adicionalesService.obtenerAdicionalesDesactivados().subscribe({
-      next: (respuesta) => {
-        this.adicionalesDesactivados.set(respuesta.adicionalesDesactivados);
-        this.cargando.set(false);
       },
-      error: (err) => {
-        if (err.status === 404) {
-          this.adicionalesDesactivados.set([]);
-        } else {
-          console.error('Error al obtener adicionales desactivados:', err);
-          this.error.set('No se pudieron cargar los adicionales desactivados.');
-        }
-
-        this.cargando.set(false);
-      }
     });
   }
 
@@ -119,12 +115,15 @@ export class Adicionales implements OnInit {
 
     return adicionales.filter((adicional) => {
       const categoriaId = adicional.categoria?.id ?? adicional.categoria_id;
-      return categoriaId !== undefined && categoriasSeleccionadas.includes(categoriaId);
+      return categoriaId !== undefined && categoriaId !== null && categoriasSeleccionadas.includes(categoriaId);
     });
   }
 
   obtenerNombreCategoria(adicional: Adicional): string {
     const categoriaId = adicional.categoria?.id ?? adicional.categoria_id;
+    if (categoriaId === null || categoriaId === undefined) {
+      return adicional.categoria?.nombre ?? 'Global (todas las categorías)';
+    }
     return adicional.categoria?.nombre
       ?? this.categorias().find((categoria) => categoria.id === categoriaId)?.nombre
       ?? 'Categoría no disponible';
@@ -167,27 +166,19 @@ export class Adicionales implements OnInit {
     const descripcion = this.descripcion.trim();
     const precio = this.precio;
 
-    if (id === null && nombre.length === 0) {
+    if (nombre.length === 0) {
       this.errorGuardar.set('El nombre es obligatorio.');
-      return;
-    }
-    if (id === null && precio <= 0) {
-      this.errorGuardar.set('El precio debe ser un numero positivo.');
-      return;
-    }
-    if (id !== null && nombre.length < 5) {
-      this.errorGuardar.set('El nombre debe tener al menos 5 caracteres.');
       return;
     }
     if (nombre.length > 50) {
       this.errorGuardar.set('El nombre no debe superar los 50 caracteres.');
       return;
     }
-    const categoriaId = this.categoriaId;
-    if (categoriaId === null) {
-      this.errorGuardar.set('Seleccioná una categoria.');
+    if (typeof precio !== 'number' || Number.isNaN(precio) || precio <= 0) {
+      this.errorGuardar.set('El precio debe ser un numero positivo.');
       return;
     }
+    const categoriaId = this.categoriaId;
 
     this.guardando.set(true);
     const solicitud = id === null

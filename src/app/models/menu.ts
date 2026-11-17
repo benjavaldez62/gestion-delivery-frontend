@@ -31,5 +31,15 @@ const CATEGORIES_WITH_ADDITIONALS = new Set([
 ]);
 
 export function supportsAdditionals(categoryName: string | undefined): boolean {
-  return categoryName !== undefined && CATEGORIES_WITH_ADDITIONALS.has(categoryName.trim().toLocaleLowerCase());
+  if (categoryName === undefined) {
+    return false;
+  }
+
+  const normalized = categoryName
+    .trim()
+    .normalize('NFD')
+    .replace(/[\u0300-\u036f]/g, '')
+    .toLocaleLowerCase();
+
+  return CATEGORIES_WITH_ADDITIONALS.has(normalized);
 }

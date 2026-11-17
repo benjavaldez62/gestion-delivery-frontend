@@ -32,12 +32,12 @@ export interface nuevoUsuario {
 }
 
 export interface UsuarioActualizado {
-    name: string;
+    name?: string;
     email: string;
     password?: string;
     role_id: number;
-    telefono: string;
-    direccion: string;
+    telefono?: string;
+    direccion?: string;
 }
 
 interface RespuestaUsuarios {

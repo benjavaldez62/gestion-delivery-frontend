@@ -177,13 +177,8 @@
                         <!-- Nombre -->
                         <div class="mt-2 mb-3">
                             <label for="name" class="form-label">Nombre</label>
-                            @if (usuarioEditando() === null) {
                             <input id="name" type="text" class="form-control input-usuario" name="name"
                                 [(ngModel)]="name" required maxlength="150" placeholder="Nombre completo">
-                            } @else {
-                            <input id="name" type="text" class="form-control input-usuario" name="name"
-                                [(ngModel)]="name" required minlength="8" maxlength="150" placeholder="Nombre completo">
-                            }
                         </div>
 
                         <!-- Email -->
@@ -222,16 +217,16 @@
 
                         <!-- Telefono -->
                         <div class="mb-3">
-                            <label for="telefono" class="form-label">Teléfono</label>
+                            <label for="telefono" class="form-label">Teléfono (opcional)</label>
                             <input id="telefono" type="tel" class="form-control input-usuario" name="telefono"
-                                [(ngModel)]="telefono" required minlength="10" maxlength="15" placeholder="Teléfono">
+                                [(ngModel)]="telefono" maxlength="15" placeholder="Teléfono (10 a 15 caracteres)">
                         </div>
 
                         <!-- Direccion -->
                         <div class="mb-4">
-                            <label for="direccion" class="form-label">Dirección</label>
+                            <label for="direccion" class="form-label">Dirección (opcional)</label>
                             <input id="direccion" type="text" class="form-control input-usuario" name="direccion"
-                                [(ngModel)]="direccion" required minlength="5" maxlength="255" placeholder="Dirección">
+                                [(ngModel)]="direccion" maxlength="255" placeholder="Dirección">
                         </div>
                         }
                     </div>

@@ -1,7 +1,8 @@
 import { Component, OnInit, OnDestroy, inject, signal, computed } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { CategoriasService } from '../../services/categorias';
+import { Categoria, CategoriasService } from '../../services/categorias';
 import { asignarImagenCategoria } from '../../utils/categoria-imagen';
+import { ignorar404Vacio } from '../../utils/http-404';
 
 export interface CategoriaCarrusel {
   id: number;
@@ -94,7 +95,9 @@ export class Inicio implements OnInit, OnDestroy {
   }
 
   private cargarCategoriasDesdeApi(): void {
-    this.categoriasService.obtenerCategorias().subscribe({
+    this.categoriasService.obtenerCategorias()
+      .pipe(ignorar404Vacio({ message: '', categorias: [] as Categoria[] }))
+      .subscribe({
       next: (respuesta) => {
         const activas = (respuesta?.categorias ?? []).filter((c) => c.activo);
         this.categoriasBase.set(

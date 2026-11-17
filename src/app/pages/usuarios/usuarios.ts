@@ -1,6 +1,8 @@
 import { Component, OnInit, computed, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { UsuariosService, Usuario, Rol } from '../../services/usuarios';
+import { ignorar404Vacio } from '../../utils/http-404';
 
 @Component({
   imports: [FormsModule],
@@ -40,6 +42,7 @@ export class Usuarios implements OnInit {
   modalAbierto = signal(false);
   usuarioEditando = signal<number | null>(null);
 
+  private nombreOriginal = '';
   name = '';
   email = '';
   password = '';
@@ -53,36 +56,30 @@ export class Usuarios implements OnInit {
   }
 
   cargarUsuarios(): void {
+    this.cargando.set(true);
+    this.error.set('');
 
-    // 1. Cargamos usuarios disponibles
-    this.usuariosService.obtenerUsuarios().subscribe({
-      next: (respuesta) => {
-        this.usuarios.set(respuesta.usuarios);
+    forkJoin({
+      activos: this.usuariosService.obtenerUsuarios().pipe(
+        ignorar404Vacio({ message: 'No hay usuarios disponibles.', usuarios: [] as Usuario[] }),
+      ),
+      desactivados: this.usuariosService.obtenerUsuariosDesactivados().pipe(
+        ignorar404Vacio({
+          message: 'No hay usuarios desactivados.',
+          usuariosDesactivados: [] as Usuario[],
+        }),
+      ),
+    }).subscribe({
+      next: ({ activos, desactivados }) => {
+        this.usuarios.set(activos.usuarios);
+        this.usuariosDesactivados.set(desactivados.usuariosDesactivados);
         this.cargando.set(false);
       },
       error: (err) => {
-        console.error('Error al obtener usuarios:', err);
+        console.error('Error al cargar usuarios:', err);
         this.error.set('No se pudieron cargar los usuarios.');
         this.cargando.set(false);
-      }
-    });
-
-    // 2. Cargamos usuarios desactivadas
-    this.usuariosService.obtenerUsuariosDesactivados().subscribe({
-      next: (respuesta) => {
-        this.usuariosDesactivados.set(respuesta.usuariosDesactivados);
-        this.cargando.set(false);
       },
-      error: (err) => {
-        if (err.status === 404) {
-          this.usuariosDesactivados.set([]);
-        } else {
-          console.error('Error al obtener usuarios desactivados:', err);
-          this.error.set('No se pudieron cargar los usuarios desactivados.');
-        }
-
-        this.cargando.set(false);
-      }
     });
   }
 
@@ -134,6 +131,7 @@ export class Usuarios implements OnInit {
 
   editarUsuario(usuario: Usuario): void {
     this.usuarioEditando.set(usuario.id);
+    this.nombreOriginal = usuario.name.trim();
     this.name = usuario.name;
     this.email = usuario.email;
     this.password = '';
@@ -165,11 +163,12 @@ export class Usuarios implements OnInit {
     const direccion = this.direccion.trim();
     const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
 
-    if (id === null && name.length === 0) {
+    if (name.length === 0) {
       this.errorGuardar.set('El nombre es obligatorio.');
       return;
     }
-    if (id !== null && name.length < 8) {
+    const debeEnviarNombre = id === null || name !== this.nombreOriginal || name.length >= 8;
+    if (id !== null && debeEnviarNombre && name.length < 8) {
       this.errorGuardar.set('El nombre debe tener al menos 8 caracteres.');
       return;
     }
@@ -201,11 +200,11 @@ export class Usuarios implements OnInit {
         this.errorGuardar.set('La contraseña debe tener al menos 8 caracteres.');
         return;
       }
-      if (telefono.length < 10 || telefono.length > 15) {
+      if (telefono.length > 0 && (telefono.length < 10 || telefono.length > 15)) {
         this.errorGuardar.set('El teléfono debe tener entre 10 y 15 caracteres.');
         return;
       }
-      if (direccion.length < 5 || direccion.length > 255) {
+      if (direccion.length > 0 && (direccion.length < 5 || direccion.length > 255)) {
         this.errorGuardar.set('La dirección debe tener entre 5 y 255 caracteres.');
         return;
       }
@@ -221,11 +220,11 @@ export class Usuarios implements OnInit {
         activo: true,
       })
       : this.usuariosService.actualizarUsuario(id, {
-        name,
+        ...(debeEnviarNombre ? { name } : {}),
         email,
         role_id: roleId,
-        telefono,
-        direccion,
+        ...(telefono.length > 0 ? { telefono } : {}),
+        ...(direccion.length > 0 ? { direccion } : {}),
         ...(this.password.length > 0 ? { password: this.password } : {}),
       });
 
@@ -308,6 +307,7 @@ export class Usuarios implements OnInit {
   }
 
   private limpiarFormulario(): void {
+    this.nombreOriginal = '';
     this.name = '';
     this.email = '';
     this.password = '';

@@ -79,6 +79,9 @@ describe('AuthService', () => {
 
     iniciarSesionComo(3, 'Repartidor');
     expect(service.rutaInicial()).toBe('/repartos');
+
+    iniciarSesionComo(4, 'Cliente');
+    expect(service.rutaInicial()).toBe('/inicio');
   });
 
   it('clears the token and role when the session ends', () => {

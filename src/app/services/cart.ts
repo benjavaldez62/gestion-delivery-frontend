@@ -188,7 +188,11 @@ export class CartService {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         const raw = window.localStorage.getItem(this.STORAGE_KEY);
-        return raw ? JSON.parse(raw) : [];
+        if (!raw) {
+          return [];
+        }
+        const parsed: unknown = JSON.parse(raw);
+        return Array.isArray(parsed) ? parsed : [];
       }
     } catch (e) {
       console.warn('No se pudo acceder a localStorage:', e);
