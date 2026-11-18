@@ -158,13 +158,15 @@ frontend/
    ```bash
    npm install
    ```
-3. Verificar `src/app/config/api.ts`: confirmar que `apiUrl` apunte al backend (`http://127.0.0.1:8000/api`) y que `googleClientId` corresponda a un cliente OAuth con el origen del frontend habilitado en Google Cloud Console.
+3. Verificar `src/app/config/api.ts`: `apiUrl` se resuelve de forma automática mediante `resolverApiUrl()` (`http://127.0.0.1:8000/api` en entorno local o `http://<IP-LOCAL>:8000/api` al acceder desde otro dispositivo en red local), sin requerir edición manual. Confirmar además que `googleClientId` corresponda a un cliente OAuth con el origen del frontend habilitado en Google Cloud Console.
 
 ---
 
 ## 6. Comandos de Ejecución
 
 ### Servidor de Desarrollo
+
+**Modo 100% local (`localhost`):**
 
 ```bash
 npm start
@@ -174,9 +176,25 @@ ng serve
 
 La aplicación estará disponible en `http://localhost:4200/`.
 
+**Modo escucha en red local (LAN / múltiples dispositivos):**
+
+Para exponer el servidor de desarrollo a celulares u otros equipos en la misma red local:
+
+```bash
+npm run start:lan
+# o alternativamente:
+ng serve --host 0.0.0.0 --port 4200
+```
+
+Consideraciones para que funcione desde otro dispositivo de la red:
+1. `src/app/config/api.ts` resuelve automáticamente el host del backend mediante `resolverApiUrl()`: utiliza `http://127.0.0.1:8000/api` en modo local y `http://<IP-LOCAL>:8000/api` cuando se accede desde otro dispositivo en la LAN, sin necesidad de modificar `apiUrl` manualmente.
+2. Iniciar el backend con `php artisan serve --host=0.0.0.0 --port=8000` y habilitar CORS en el `.env` del backend configurando `CORS_ALLOW_LAN=true` o definiendo `FRONTEND_URL=http://<IP-LOCAL>:4200` / `CORS_ALLOWED_ORIGINS=http://<IP-LOCAL>:4200` (ejecutar `php artisan config:clear` si corresponde).
+3. Permitir tráfico entrante en los puertos TCP `4200` y `8000` en el firewall local si el sistema operativo bloquea conexiones en red privada.
+4. Acceder desde los demás dispositivos en `http://<IP-LOCAL>:4200/`. Para iniciar sesión desde una IP HTTP de red local, usar correo y contraseña (Google Identity Services no habilita IPs privadas sin HTTPS).
+
 ### Pruebas Unitarias (Vitest)
 
-Suite configurada con `@angular/build:unit-test` (`38` archivos de prueba y `169` tests pasando sobre `dev`):
+Suite configurada con `@angular/build:unit-test` (`39` archivos de prueba y `174` tests pasando):
 
 ```bash
 # Ejecutar todas las pruebas una sola vez (CI):
