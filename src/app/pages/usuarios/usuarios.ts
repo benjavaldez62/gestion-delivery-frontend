@@ -45,6 +45,7 @@ export class Usuarios implements OnInit {
   usuarioEditando = signal<number | null>(null);
 
   private nombreOriginal = '';
+  private rolOriginalNombre = '';
   name = '';
   email = '';
   password = '';
@@ -138,6 +139,7 @@ export class Usuarios implements OnInit {
     this.email = usuario.email;
     this.password = '';
     this.roleId = usuario.role?.id ?? usuario.role_id ?? null;
+    this.rolOriginalNombre = usuario.role?.nombre ?? '';
     this.telefono = usuario.telefono ?? '';
     this.direccion = usuario.direccion ?? '';
     this.errorGuardar.set('');
@@ -155,6 +157,21 @@ export class Usuarios implements OnInit {
       return false;
     }
     return this.authService.obtenerUsuarioId() === usuarioId;
+  }
+
+  esSuperAdmin(): boolean {
+    return this.authService.obtenerRol()?.trim().toLocaleLowerCase() === 'superadmin';
+  }
+
+  rolEditadoDeshabilitado(): boolean {
+    return this.rolPropioDeshabilitado()
+      || (this.rolOriginalNombre.trim().toLocaleLowerCase() === 'superadmin' && !this.esSuperAdmin());
+  }
+
+  opcionRolDeshabilitada(rol: Rol): boolean {
+    return rol.nombre.trim().toLocaleLowerCase() === 'superadmin'
+      && !this.esSuperAdmin()
+      && rol.id !== this.roleId;
   }
 
   cerrarModal(): void {
@@ -322,6 +339,7 @@ export class Usuarios implements OnInit {
 
   private limpiarFormulario(): void {
     this.nombreOriginal = '';
+    this.rolOriginalNombre = '';
     this.name = '';
     this.email = '';
     this.password = '';

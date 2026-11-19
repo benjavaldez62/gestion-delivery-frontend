@@ -17,6 +17,7 @@ describe('Usuarios', () => {
   };
   const authServiceMock = {
     obtenerUsuarioId: vi.fn(() => 9),
+    obtenerRol: vi.fn(() => 'Administrador'),
   };
 
   beforeEach(async () => {
@@ -35,6 +36,32 @@ describe('Usuarios', () => {
 
   it('should create', () => {
     expect(component).toBeTruthy();
+  });
+
+  it('prevents an administrator from changing a SuperAdmin account role or assigning it to another user', () => {
+    const superAdmin: Usuario = {
+      id: 20,
+      name: 'Super Admin',
+      email: 'superadmin@test.com',
+      activo: true,
+      role_id: 3,
+      role: { id: 3, nombre: 'SuperAdmin' },
+      telefono: null,
+      direccion: null,
+    };
+    const superAdminRole = { id: 3, nombre: 'SuperAdmin' };
+
+    component.editarUsuario(superAdmin);
+    expect(component.rolEditadoDeshabilitado()).toBe(true);
+
+    component.editarUsuario({ ...superAdmin, role: { id: 2, nombre: 'Cocinero' }, role_id: 2 });
+    expect(component.rolEditadoDeshabilitado()).toBe(false);
+    expect(component.opcionRolDeshabilitada(superAdminRole)).toBe(true);
+
+    authServiceMock.obtenerRol.mockReturnValue('SuperAdmin');
+    component.editarUsuario(superAdmin);
+    expect(component.rolEditadoDeshabilitado()).toBe(false);
+    expect(component.opcionRolDeshabilitada(superAdminRole)).toBe(false);
   });
 
   afterEach(() => {
