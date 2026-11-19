@@ -58,6 +58,9 @@ export interface SolicitudRecuperacionResponse extends PasswordResponse {
 export class AuthService {
     private googleScript?: Promise<void>;
     private readonly token = signal<string | null>(localStorage.getItem('token'));
+    private readonly usuarioId = signal<number | null>(
+        localStorage.getItem('usuario_id') ? Number(localStorage.getItem('usuario_id')) : null
+    );
     private readonly rolUsuario = signal<string | null>(localStorage.getItem('rol_usuario'));
     private readonly nombreUsuario = signal<string | null>(localStorage.getItem('nombre_usuario'));
 
@@ -143,6 +146,10 @@ export class AuthService {
         return this.rolUsuario();
     }
 
+    obtenerUsuarioId(): number | null {
+        return this.usuarioId();
+    }
+
     obtenerNombre(): string | null {
         return this.nombreUsuario();
     }
@@ -184,9 +191,11 @@ export class AuthService {
     // limpiamos la sesión - revocamos token
     limpiarSesion(): void {
         localStorage.removeItem('token');
+        localStorage.removeItem('usuario_id');
         localStorage.removeItem('rol_usuario');
         localStorage.removeItem('nombre_usuario');
         this.token.set(null);
+        this.usuarioId.set(null);
         this.rolUsuario.set(null);
         this.nombreUsuario.set(null);
     }
@@ -194,6 +203,13 @@ export class AuthService {
     private guardarSesion(token: string, usuario: Usuario): void {
         localStorage.setItem('token', token);
         this.token.set(token);
+        if (usuario.id) {
+            localStorage.setItem('usuario_id', String(usuario.id));
+            this.usuarioId.set(usuario.id);
+        } else {
+            localStorage.removeItem('usuario_id');
+            this.usuarioId.set(null);
+        }
         if (usuario.name) {
             localStorage.setItem('nombre_usuario', usuario.name);
             this.nombreUsuario.set(usuario.name);

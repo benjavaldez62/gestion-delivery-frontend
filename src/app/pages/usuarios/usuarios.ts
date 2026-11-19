@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { UsuariosService, Usuario, Rol } from '../../services/usuarios';
 import { ignorar404Vacio } from '../../utils/http-404';
+import { AuthService } from '../../services/auth';
 
 @Component({
   imports: [FormsModule],
@@ -12,6 +13,7 @@ import { ignorar404Vacio } from '../../utils/http-404';
 })
 export class Usuarios implements OnInit {
   private usuariosService = inject(UsuariosService);
+  private authService = inject(AuthService);
 
   usuarios = signal<Usuario[]>([]);
   usuariosDesactivados = signal<Usuario[]>([]);
@@ -43,6 +45,7 @@ export class Usuarios implements OnInit {
   usuarioEditando = signal<number | null>(null);
 
   private nombreOriginal = '';
+  private rolOriginalNombre = '';
   name = '';
   email = '';
   password = '';
@@ -136,11 +139,53 @@ export class Usuarios implements OnInit {
     this.email = usuario.email;
     this.password = '';
     this.roleId = usuario.role?.id ?? usuario.role_id ?? null;
+    this.rolOriginalNombre = usuario.role?.nombre ?? '';
     this.telefono = usuario.telefono ?? '';
     this.direccion = usuario.direccion ?? '';
     this.errorGuardar.set('');
     this.mensaje.set('');
     this.modalAbierto.set(true);
+  }
+
+  esUsuarioPropio(usuario: Usuario): boolean {
+    return this.authService.obtenerUsuarioId() === usuario.id;
+  }
+
+  esUsuarioSuperAdmin(usuario: Usuario): boolean {
+    return usuario.role?.nombre.trim().toLocaleLowerCase() === 'superadmin';
+  }
+
+  puedeEditarUsuario(usuario: Usuario): boolean {
+    return !this.esUsuarioSuperAdmin(usuario) || this.esSuperAdmin();
+  }
+
+  puedeDesactivarUsuario(usuario: Usuario): boolean {
+    return !this.esUsuarioSuperAdmin(usuario) || this.esSuperAdmin();
+  }
+
+  rolPropioDeshabilitado(): boolean {
+    const usuarioId = this.usuarioEditando();
+    if (usuarioId === null) {
+      return false;
+    }
+    return this.authService.obtenerUsuarioId() === usuarioId;
+  }
+
+  esSuperAdmin(): boolean {
+    return this.authService.obtenerRol()?.trim().toLocaleLowerCase() === 'superadmin';
+  }
+
+  rolEditadoDeshabilitado(): boolean {
+    const rolOriginal = this.rolOriginalNombre.trim().toLocaleLowerCase();
+    return this.rolPropioDeshabilitado()
+      || (rolOriginal === 'superadmin' && !this.esSuperAdmin())
+      || (rolOriginal === 'administrador' && !this.esSuperAdmin());
+  }
+
+  opcionRolDeshabilitada(rol: Rol): boolean {
+    return rol.nombre.trim().toLocaleLowerCase() === 'superadmin'
+      && !this.esSuperAdmin()
+      && rol.id !== this.roleId;
   }
 
   cerrarModal(): void {
@@ -222,7 +267,7 @@ export class Usuarios implements OnInit {
       : this.usuariosService.actualizarUsuario(id, {
         ...(debeEnviarNombre ? { name } : {}),
         email,
-        role_id: roleId,
+        ...(!this.rolPropioDeshabilitado() ? { role_id: roleId } : {}),
         ...(telefono.length > 0 ? { telefono } : {}),
         ...(direccion.length > 0 ? { direccion } : {}),
         ...(this.password.length > 0 ? { password: this.password } : {}),
@@ -252,7 +297,9 @@ export class Usuarios implements OnInit {
             'Revisá los datos ingresados.'
           );
         } else {
-          this.errorGuardar.set('No se pudo guardar el usuario. Verificá la conexión con Laravel.');
+          this.errorGuardar.set(
+            err.error?.message ?? 'No se pudo guardar el usuario. Verificá la conexión con Laravel.'
+          );
         }
         this.guardando.set(false);
       }
@@ -308,6 +355,7 @@ export class Usuarios implements OnInit {
 
   private limpiarFormulario(): void {
     this.nombreOriginal = '';
+    this.rolOriginalNombre = '';
     this.name = '';
     this.email = '';
     this.password = '';

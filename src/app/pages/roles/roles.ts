@@ -2,6 +2,7 @@ import { Component, OnInit, inject, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { catchError, forkJoin, of, throwError } from 'rxjs';
 import { NuevoRole, RolesService, Role } from '../../services/roles';
+import { AuthService } from '../../services/auth';
 
 @Component({
   imports: [FormsModule],
@@ -11,6 +12,7 @@ import { NuevoRole, RolesService, Role } from '../../services/roles';
 })
 export class Roles implements OnInit {
   private rolesService = inject(RolesService);
+  private authService = inject(AuthService);
 
   roles = signal<Role[]>([]);
   rolesDesactivados = signal<Role[]>([]);
@@ -53,6 +55,20 @@ export class Roles implements OnInit {
 
     this.modalAbierto.set(false);
     this.roleEditando.set(null);
+  }
+
+  esRolPropio(role: Role): boolean {
+    const rolActual = this.authService.obtenerRol()?.trim().toLocaleLowerCase();
+    return !!rolActual && role.nombre.trim().toLocaleLowerCase() === rolActual;
+  }
+
+  rolEditandoPropio(): boolean {
+    const id = this.roleEditando();
+    if (id === null) {
+      return false;
+    }
+    const role = this.roles().find((item) => item.id === id);
+    return role ? this.esRolPropio(role) : false;
   }
 
   cargarRoles(): void {

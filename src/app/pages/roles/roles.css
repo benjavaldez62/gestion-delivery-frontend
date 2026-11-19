@@ -35,3 +35,11 @@ label.form-label {
     border-color: var(--theme);
     box-shadow: none;
 }
+
+.btn-editar-rol:disabled {
+    color: #6c757d;
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    opacity: 1;
+    cursor: not-allowed;
+}

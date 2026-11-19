@@ -73,15 +73,15 @@
 }
 
 .column-ready .column-heading {
-  background: #0D9488;
+  background: #58a35b;
 }
 
 .column-transit .column-heading {
-  background: #2563EB;
+  background: #1bad47;
 }
 
 .column-delivered .column-heading {
-  background: #16A34A;
+  background: #22a620;
 }
 
 .order-card {
