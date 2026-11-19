@@ -3,6 +3,7 @@ import { FormsModule } from '@angular/forms';
 import { forkJoin } from 'rxjs';
 import { UsuariosService, Usuario, Rol } from '../../services/usuarios';
 import { ignorar404Vacio } from '../../utils/http-404';
+import { AuthService } from '../../services/auth';
 
 @Component({
   imports: [FormsModule],
@@ -12,6 +13,7 @@ import { ignorar404Vacio } from '../../utils/http-404';
 })
 export class Usuarios implements OnInit {
   private usuariosService = inject(UsuariosService);
+  private authService = inject(AuthService);
 
   usuarios = signal<Usuario[]>([]);
   usuariosDesactivados = signal<Usuario[]>([]);
@@ -143,6 +145,18 @@ export class Usuarios implements OnInit {
     this.modalAbierto.set(true);
   }
 
+  esUsuarioPropio(usuario: Usuario): boolean {
+    return this.authService.obtenerUsuarioId() === usuario.id;
+  }
+
+  rolPropioDeshabilitado(): boolean {
+    const usuarioId = this.usuarioEditando();
+    if (usuarioId === null) {
+      return false;
+    }
+    return this.authService.obtenerUsuarioId() === usuarioId;
+  }
+
   cerrarModal(): void {
     if (this.guardando()) {
       return;
@@ -222,7 +236,7 @@ export class Usuarios implements OnInit {
       : this.usuariosService.actualizarUsuario(id, {
         ...(debeEnviarNombre ? { name } : {}),
         email,
-        role_id: roleId,
+        ...(!this.rolPropioDeshabilitado() ? { role_id: roleId } : {}),
         ...(telefono.length > 0 ? { telefono } : {}),
         ...(direccion.length > 0 ? { direccion } : {}),
         ...(this.password.length > 0 ? { password: this.password } : {}),

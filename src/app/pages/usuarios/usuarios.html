@@ -192,7 +192,7 @@
                         <div class="mb-3">
                             <label for="roleId" class="form-label">Rol</label>
                             <select id="roleId" class="form-select input-usuario" name="roleId" [(ngModel)]="roleId"
-                                required>
+                                required [disabled]="rolPropioDeshabilitado()">
                                 <option [ngValue]="null" disabled>Seleccioná un rol</option>
                                 @for (rol of roles(); track rol.id) {
                                 <option [ngValue]="rol.id">{{ rol.nombre }}</option>

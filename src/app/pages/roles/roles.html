@@ -60,8 +60,10 @@
                                 <td class="text-end">
                                     <span class="d-flex justify-content-end">
                                         <button type="button" class="btn btn-md btn-outline-primary me-4" title="editar"
+                                            [disabled]="esRolPropio(role)"
                                             (click)="editarRole(role)"><i class="bi bi-pencil-square"></i></button>
                                         <button type="button" class="btn btn-md btn-danger me-4" title="desactivar"
+                                            [disabled]="esRolPropio(role)"
                                             (click)="eliminarRole(role)"><i class="bi bi-dash-circle"></i></button>
                                     </span>
                                 </td>
@@ -146,7 +148,8 @@
                         <div class="mt-2 mb-3">
                             <label for="nombreRole" class="form-label">Nombre</label>
                             <input id="nombreRole" type="text" class="form-control input-role" name="nombre"
-                                [(ngModel)]="nombre" required maxlength="30" placeholder="Ej.: Cajero">
+                                [(ngModel)]="nombre" required maxlength="30" placeholder="Ej.: Cajero"
+                                [disabled]="rolEditandoPropio()">
                         </div>
                     </div>
                     <div class="modal-footer">
@@ -155,7 +158,8 @@
                             <span><i class="bi bi-x-circle"></i></span>
                             Cancelar
                         </button>
-                        <button type="submit" class="btn btn-success" [disabled]="guardando()">
+                        <button type="submit" class="btn btn-success"
+                            [disabled]="guardando() || rolEditandoPropio()">
                             <span><i class="bi bi-check-circle"></i></span>
                             @if (guardando()) {
                             Guardando...
