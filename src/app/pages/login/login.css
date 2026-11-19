@@ -42,7 +42,7 @@
 }
 
 .login-card {
-    width: min(500px, calc(100% - 24px));
+    min-width: 500px;
     padding: 40px;
     background: white;
     border-radius: 12px;
@@ -89,7 +89,7 @@ button {
     width: 100%;
     padding: 12px;
     border: none;
-    border-radius: 10px;
+    border-radius: 6px;
     background: var(--theme);
     color: white;
     font-family: 'Outfit', sans-serif;
