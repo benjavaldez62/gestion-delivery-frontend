@@ -83,16 +83,16 @@
 }
 
 .column-pending .column-heading {
-  background: #D97706;
+  background: #f49146;
 }
 
 .column-preparing .column-heading {
-  background: #EA580C;
+  background: #ef7606;
   color: #ffffff;
 }
 
 .column-ready .column-heading {
-  background: #0D9488;
+  background: #e95a0d;
 }
 
 .order-card {
