@@ -78,9 +78,11 @@
                             <td>{{ usuario.role?.nombre }}</td>
                             <td class="text-end">
                                 <span class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-md btn-outline-primary me-4" title="editar"
+                                    <button type="button" class="btn btn-md btn-outline-primary btn-editar-usuario me-4" title="editar"
+                                        [disabled]="!puedeEditarUsuario(usuario)"
                                         (click)="editarUsuario(usuario)"><i class="bi bi-pencil-square"></i></button>
-                                    <button type="button" class="btn btn-md btn-danger me-4" title="desactivar"
+                                    <button type="button" class="btn btn-md btn-danger btn-desactivar-usuario me-4" title="desactivar"
+                                        [disabled]="!puedeDesactivarUsuario(usuario)"
                                         (click)="eliminarUsuario(usuario)"><i class="bi bi-dash-circle"></i></button>
                                 </span>
                             </td>

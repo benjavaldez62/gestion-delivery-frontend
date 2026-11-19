@@ -40,3 +40,19 @@ label.form-label {
     border: solid 1.8px var(--theme);
     box-shadow: none;
 }
+
+.btn-editar-usuario:disabled {
+    color: #6c757d;
+    background-color: #e9ecef;
+    border-color: #ced4da;
+    opacity: 1;
+    cursor: not-allowed;
+}
+
+.btn-desactivar-usuario:disabled {
+    color: #dc6473;
+    background-color: #f8d7da;
+    border-color: #f5c2c7;
+    opacity: 1;
+    cursor: not-allowed;
+}

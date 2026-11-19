@@ -151,6 +151,18 @@ export class Usuarios implements OnInit {
     return this.authService.obtenerUsuarioId() === usuario.id;
   }
 
+  esUsuarioSuperAdmin(usuario: Usuario): boolean {
+    return usuario.role?.nombre.trim().toLocaleLowerCase() === 'superadmin';
+  }
+
+  puedeEditarUsuario(usuario: Usuario): boolean {
+    return !this.esUsuarioSuperAdmin(usuario) || this.esSuperAdmin();
+  }
+
+  puedeDesactivarUsuario(usuario: Usuario): boolean {
+    return !this.esUsuarioSuperAdmin(usuario) || this.esSuperAdmin();
+  }
+
   rolPropioDeshabilitado(): boolean {
     const usuarioId = this.usuarioEditando();
     if (usuarioId === null) {
@@ -164,8 +176,10 @@ export class Usuarios implements OnInit {
   }
 
   rolEditadoDeshabilitado(): boolean {
+    const rolOriginal = this.rolOriginalNombre.trim().toLocaleLowerCase();
     return this.rolPropioDeshabilitado()
-      || (this.rolOriginalNombre.trim().toLocaleLowerCase() === 'superadmin' && !this.esSuperAdmin());
+      || (rolOriginal === 'superadmin' && !this.esSuperAdmin())
+      || (rolOriginal === 'administrador' && !this.esSuperAdmin());
   }
 
   opcionRolDeshabilitada(rol: Rol): boolean {
@@ -283,7 +297,9 @@ export class Usuarios implements OnInit {
             'Revisá los datos ingresados.'
           );
         } else {
-          this.errorGuardar.set('No se pudo guardar el usuario. Verificá la conexión con Laravel.');
+          this.errorGuardar.set(
+            err.error?.message ?? 'No se pudo guardar el usuario. Verificá la conexión con Laravel.'
+          );
         }
         this.guardando.set(false);
       }
