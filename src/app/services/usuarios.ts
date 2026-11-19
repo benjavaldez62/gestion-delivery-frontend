@@ -35,7 +35,7 @@ export interface UsuarioActualizado {
     name?: string;
     email: string;
     password?: string;
-    role_id: number;
+    role_id?: number;
     telefono?: string;
     direccion?: string;
 }

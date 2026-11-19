@@ -3,6 +3,7 @@ import { of, throwError } from 'rxjs';
 import { vi } from 'vitest';
 import { Usuarios } from './usuarios';
 import { Usuario, UsuariosService } from '../../services/usuarios';
+import { AuthService } from '../../services/auth';
 
 describe('Usuarios', () => {
   let component: Usuarios;
@@ -14,11 +15,17 @@ describe('Usuarios', () => {
     actualizarUsuario: vi.fn(() => of({ message: 'Usuario actualizado.', user: {} as Usuario })),
     restaurarUsuario: vi.fn(() => of({ message: 'Usuario restaurado.' })),
   };
+  const authServiceMock = {
+    obtenerUsuarioId: vi.fn(() => 9),
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Usuarios],
-      providers: [{ provide: UsuariosService, useValue: usuariosServiceMock }],
+      providers: [
+        { provide: UsuariosService, useValue: usuariosServiceMock },
+        { provide: AuthService, useValue: authServiceMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Usuarios);
@@ -101,7 +108,6 @@ describe('Usuarios', () => {
     expect(usuariosServiceMock.actualizarUsuario).toHaveBeenCalledWith(9, {
       name: 'Usuario Completo',
       email: 'completo@test.com',
-      role_id: 1,
     });
   });
 });

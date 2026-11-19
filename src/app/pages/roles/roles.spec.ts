@@ -4,16 +4,24 @@ import { HttpTestingController, provideHttpClientTesting } from '@angular/common
 import { vi } from 'vitest';
 import { apiUrl } from '../../config/api';
 import { Roles } from './roles';
+import { AuthService } from '../../services/auth';
 
 describe('Roles', () => {
   let component: Roles;
   let fixture: ComponentFixture<Roles>;
   let http: HttpTestingController;
+  const authServiceMock = {
+    obtenerRol: vi.fn(() => 'Administrador'),
+  };
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
       imports: [Roles],
-      providers: [provideHttpClient(), provideHttpClientTesting()],
+      providers: [
+        provideHttpClient(),
+        provideHttpClientTesting(),
+        { provide: AuthService, useValue: authServiceMock },
+      ],
     }).compileComponents();
 
     fixture = TestBed.createComponent(Roles);
@@ -60,5 +68,17 @@ describe('Roles', () => {
 
     expect(component.roles()).toEqual([role]);
     expect(component.rolesDesactivados()).toEqual([]);
+  });
+
+  it('deshabilita el rol asignado a la cuenta actual', () => {
+    const role = { id: 1, nombre: 'Administrador' };
+    const otroRole = { id: 2, nombre: 'Cocinero' };
+    component.roles.set([role, otroRole]);
+
+    expect(component.esRolPropio(role)).toBe(true);
+    expect(component.esRolPropio(otroRole)).toBe(false);
+
+    component.editarRole(role);
+    expect(component.rolEditandoPropio()).toBe(true);
   });
 });
