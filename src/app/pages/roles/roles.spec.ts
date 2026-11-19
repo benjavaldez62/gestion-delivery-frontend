@@ -81,4 +81,16 @@ describe('Roles', () => {
     component.editarRole(role);
     expect(component.rolEditandoPropio()).toBe(true);
   });
+
+  it('aplica estilo de botón deshabilitado al editar el rol asignado a la cuenta actual', () => {
+    fixture.detectChanges();
+    http.expectOne(`${apiUrl}/roles`).flush({ message: 'OK', roles: [] });
+    http.expectOne(`${apiUrl}/roles-desactivados`).flush({ message: 'OK', rolesDesactivados: [] });
+    component.roles.set([{ id: 1, nombre: 'Administrador' }]);
+    fixture.detectChanges();
+
+    const button: HTMLButtonElement = fixture.nativeElement.querySelector('.btn-editar-rol');
+    expect(button.disabled).toBe(true);
+    expect(button.classList.contains('btn-editar-rol')).toBe(true);
+  });
 });

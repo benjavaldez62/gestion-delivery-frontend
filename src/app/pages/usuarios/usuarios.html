@@ -78,9 +78,11 @@
                             <td>{{ usuario.role?.nombre }}</td>
                             <td class="text-end">
                                 <span class="d-flex justify-content-end">
-                                    <button type="button" class="btn btn-md btn-outline-primary me-4" title="editar"
+                                    <button type="button" class="btn btn-md btn-outline-primary btn-editar-usuario me-4" title="editar"
+                                        [disabled]="!puedeEditarUsuario(usuario)"
                                         (click)="editarUsuario(usuario)"><i class="bi bi-pencil-square"></i></button>
-                                    <button type="button" class="btn btn-md btn-danger me-4" title="desactivar"
+                                    <button type="button" class="btn btn-md btn-danger btn-desactivar-usuario me-4" title="desactivar"
+                                        [disabled]="!puedeDesactivarUsuario(usuario)"
                                         (click)="eliminarUsuario(usuario)"><i class="bi bi-dash-circle"></i></button>
                                 </span>
                             </td>
@@ -192,10 +194,10 @@
                         <div class="mb-3">
                             <label for="roleId" class="form-label">Rol</label>
                             <select id="roleId" class="form-select input-usuario" name="roleId" [(ngModel)]="roleId"
-                                required [disabled]="rolPropioDeshabilitado()">
+                                required [disabled]="rolEditadoDeshabilitado()">
                                 <option [ngValue]="null" disabled>Seleccioná un rol</option>
                                 @for (rol of roles(); track rol.id) {
-                                <option [ngValue]="rol.id">{{ rol.nombre }}</option>
+                                <option [ngValue]="rol.id" [disabled]="opcionRolDeshabilitada(rol)">{{ rol.nombre }}</option>
                                 }
                             </select>
                         </div>
