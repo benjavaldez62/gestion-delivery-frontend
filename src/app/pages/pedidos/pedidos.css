@@ -60,11 +60,14 @@
 
 .order-card {
   min-width: 0;
-  padding: 20px 18px;
+  padding: 20px 20px;
   border: 1px solid #e8e6e5;
   border-radius: 0.95rem;
   background: #fff;
   box-shadow: 0 1px 2px rgb(0 0 0 / 5%);
+}
+.order-card:hover {
+  border-color: #d8d8d8;
 }
 
 .order-card-heading {
@@ -88,7 +91,7 @@
   border-radius: 999px;
   background: #fff0e8;
   color: #a63a0b;
-  font-size: 0.58rem;
+  font-size: 11px;
   font-weight: 800;
   line-height: 1.2;
 }
@@ -130,7 +133,7 @@
   gap: 0.5rem;
   min-width: 0;
   margin: 0;
-  font-size: 0.75rem;
+  font-size: 14px;
 }
 
 .order-field dt {
@@ -159,7 +162,7 @@
   border-radius: 0.65rem;
   background-color: #fff;
   color: #161616;
-  font-size: 0.72rem;
+  font-size: 14px;
 }
 
 .order-field select:focus {
@@ -185,7 +188,7 @@
   color: #fff;
   font-size: 15px;
   font-weight: 700;
-  width: 180px;
+  width: 200px;
 }
 .order-assignment-actions button:hover {
   background: #e04e0b;
